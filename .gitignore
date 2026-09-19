@@ -1,0 +1,44 @@
+# Target / Build Output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.kotlin
+
+# Database & Sensitive Files
+src/main/resources/db.properties
+
+# IntelliJ IDEA (Ignores all local workspace settings)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# VS Code
+.vscode/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Log Files
+*.log
