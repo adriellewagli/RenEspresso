@@ -67,6 +67,7 @@ public class DatabaseManager {
     }
 
 
+    // PANG TEST LANG TO
     public static void main(String[] args) {
         System.out.println("Testing MariaDB connection via HikariCP...");
         try (Connection conn = getConnection()) {

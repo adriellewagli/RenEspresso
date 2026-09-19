@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="TOP_CENTER" prefWidth="380.0" spacing="16.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 20px; -fx-border-radius: 20px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 5);" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <padding>
+        <Insets bottom="32.0" left="28.0" right="28.0" top="20.0" />
+    </padding>
+    <children>
+
+        <StackPane prefHeight="64.0" prefWidth="64.0">
+            <children>
+                <ImageView fx:id="iconImageView" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
+            </children>
+        </StackPane>
+
+        <VBox alignment="CENTER" spacing="8.0">
+            <children>
+                <Label fx:id="titleLabel" text="Are you sure?" textFill="#111827">
+                    <font>
+                        <Font name="System Bold" size="22.0" />
+                    </font>
+                </Label>
+                <Label fx:id="messageLabel" alignment="CENTER" text="This action can’t be undone. Please&#10;confirm if you want to proceed." textAlignment="CENTER" textFill="#6B7280" wrapText="true">
+                    <font>
+                        <Font size="13.5" />
+                    </font>
+                </Label>
+            </children>
+        </VBox>
+
+        <HBox alignment="CENTER" spacing="12.0">
+            <children>
+                <Button fx:id="cancelButton" maxHeight="Infinity" maxWidth="1.0" prefHeight="42.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #D1D5DB; -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-cursor: hand;" text="Cancel" textFill="#111827" HBox.hgrow="ALWAYS">
+                    <font>
+                        <Font name="System Bold" size="14.0" />
+                    </font>
+                </Button>
+                <Button fx:id="confirmButton" maxHeight="Infinity" maxWidth="1.0" prefHeight="42.0" style="-fx-background-color: #E11D48; -fx-background-radius: 10px; -fx-cursor: hand;" text="Confirm" textFill="WHITE" HBox.hgrow="ALWAYS">
+                    <font>
+                        <Font name="System Bold" size="14.0" />
+                    </font>
+                </Button>
+            </children>
+            <VBox.margin>
+                <Insets top="8.0" />
+            </VBox.margin>
+        </HBox>
+    </children>
+</VBox>
