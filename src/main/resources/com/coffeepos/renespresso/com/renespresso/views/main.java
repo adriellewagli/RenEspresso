@@ -7,10 +7,11 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("ForgotPassword.fxml"));
+        // Updated to forgotPasswordView.fxml
+        Parent root = FXMLLoader.load(getClass().getResource("forgotPasswordView.fxml"));
         Scene scene = new Scene(root);
         
-        // Load the CSS file
+        // Load CSS stylesheet
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         
         primaryStage.setTitle("Renespresso POS - Reset Password");
