@@ -1,19 +1,13 @@
 package com.coffeepos.renespresso;
 
+import com.coffeepos.renespresso.util.NavigateUtil;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
 public class App extends Application {
+
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/com/coffeepos/renespresso/views/RegisterView.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        stage.setTitle("RenEspresso - Login");
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage stage) {
+        NavigateUtil.navigateTo(stage, "LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 }
