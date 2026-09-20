@@ -17,4 +17,6 @@ module com.coffeepos.renespresso {
     exports com.coffeepos.renespresso.controller;
     opens com.coffeepos.renespresso.controller to javafx.fxml;
 
+    exports com.coffeepos.renespresso.util;
+
 }

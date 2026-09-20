@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefWidth="400.0" spacing="16.0" style="-fx-background-color: #fffdf7; -fx-border-color: #dcc7aa; -fx-border-width: 1.5px; -fx-border-radius: 12px; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 12, 0, 0, 4);" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.ConfirmAlertController">
+    <padding>
+        <Insets bottom="20.0" left="24.0" right="24.0" top="24.0" />
+    </padding>
+    <children>
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
+                <Label fx:id="iconLabel" style="-fx-font-size: 26px; -fx-text-fill: #6f4e37;" text="❓" />
+                <Label fx:id="titleLabel" style="-fx-text-fill: #6f4e37;" text="Confirmation Title">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+
+        <!-- Message Body -->
+        <Label fx:id="messageLabel" maxWidth="352.0" style="-fx-text-fill: #555555; -fx-opacity: 0.9;" text="Are you sure you want to proceed with this action?" wrapText="true">
+            <font>
+                <Font size="13.0" />
+            </font>
+        </Label>
+
+        <!-- Action Buttons -->
+        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <children>
+                <Button fx:id="cancelButton" onAction="#handleCancel" prefHeight="34.0" prefWidth="95.0" style="-fx-background-color: transparent; -fx-border-color: #dcc7aa; -fx-border-radius: 6px; -fx-text-fill: #6f4e37; -fx-cursor: hand;" text="Cancel">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Button>
+                <Button fx:id="confirmButton" onAction="#handleConfirm" prefHeight="34.0" prefWidth="95.0" style="-fx-background-color: #6f4e37; -fx-text-fill: #fffdf7; -fx-background-radius: 6px; -fx-cursor: hand;" text="Confirm">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Button>
+            </children>
+            <VBox.margin>
+                <Insets top="4.0" />
+            </VBox.margin>
+        </HBox>
+    </children>
+</VBox>

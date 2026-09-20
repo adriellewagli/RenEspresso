@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="500.0" prefWidth="850.0" style="-fx-background-color: #f5e6ca;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.LoginController">
+<AnchorPane prefHeight="580.0" prefWidth="850.0" style="-fx-background-color: #f5e6ca;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.LoginController">
     <children>
         <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -104,7 +104,7 @@
                                 <!-- Forgot Password Link -->
                                 <HBox alignment="CENTER_RIGHT">
                                     <children>
-                                        <Hyperlink fx:id="forgotPasswordLink" style="-fx-text-fill: #6f4e37; -fx-underline: false; -fx-opacity: 0.85;" text="Forgot Password?">
+                                        <Hyperlink fx:id="forgotPasswordLink" onAction="#handleForgotPasswordNavigation" style="-fx-text-fill: #6f4e37; -fx-underline: false; -fx-opacity: 0.85;" text="Forgot Password?">
                                             <font>
                                                 <Font size="11.0" />
                                             </font>
@@ -117,7 +117,7 @@
                         <!-- Action Buttons & Navigation -->
                         <VBox alignment="CENTER" spacing="12.0">
                             <children>
-                                <Button fx:id="loginButton" maxWidth="1.7976931348623157E308" prefHeight="44.0" style="-fx-background-color: #6f4e37; -fx-background-radius: 8px; -fx-text-fill: #fffdf7; -fx-cursor: hand;" text="Login">
+                                <Button fx:id="loginButton" maxWidth="1.7976931348623157E308" onAction="#handleLogin" prefHeight="44.0" style="-fx-background-color: #6f4e37; -fx-background-radius: 8px; -fx-text-fill: #fffdf7; -fx-cursor: hand;" text="Login">
                                     <font>
                                         <Font name="System Bold" size="14.0" />
                                     </font>
@@ -130,7 +130,7 @@
                                                 <Font size="12.0" />
                                             </font>
                                         </Label>
-                                        <Hyperlink fx:id="registerLink" style="-fx-text-fill: #6f4e37; -fx-underline: false;" text="Register">
+                                        <Hyperlink fx:id="registerLink" onAction="#handleRegisterNavigation" style="-fx-text-fill: #6f4e37; -fx-underline: false;" text="Register">
                                             <font>
                                                 <Font name="System Bold" size="12.0" />
                                             </font>
