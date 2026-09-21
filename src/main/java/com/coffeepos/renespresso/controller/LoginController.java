@@ -1,5 +1,7 @@
 package com.coffeepos.renespresso.controller;
 
+import com.coffeepos.renespresso.dao.UserDAO;
+import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
 import javafx.event.ActionEvent;
@@ -103,13 +105,19 @@ public class LoginController {
             return;
         }
 
-        boolean isAuthenticated = authenticateUser(username, password);
+        User user = UserDAO.authenticate(username, password);
 
-        if (isAuthenticated) {
-            AlertUtil.showSuccess("Welcome", "Login successful!");
-            NavigateUtil.navigateTo(event, "ClientView.fxml", "Renespresso POS Terminal", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
+        if (user != null) {
+            AlertUtil.showSuccess("Welcome", "Login successful! Logging in as " + user.getFullName());
+
+            // Route user depending on role
+            if ("admin".equalsIgnoreCase(user.getRole()) || "manager".equalsIgnoreCase(user.getRole())) {
+                NavigateUtil.navigateTo(event, "AdminDashboardView.fxml", "Renespresso - Admin Dashboard", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
+            } else {
+                NavigateUtil.navigateTo(event, "ClientView.fxml", "Renespresso POS Terminal", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
+            }
         } else {
-            AlertUtil.showError("Authentication Failed", "Invalid username or password.");
+            AlertUtil.showError("Authentication Failed", "Invalid username or password, or account is inactive.");
         }
     }
 
@@ -125,6 +133,6 @@ public class LoginController {
     }
 
     private boolean authenticateUser(String username, String password) {
-        return "admin".equalsIgnoreCase(username) && "password".equals(password);
+        return UserDAO.authenticate(username, password) != null;
     }
 }
