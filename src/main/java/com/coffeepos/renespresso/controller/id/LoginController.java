@@ -112,7 +112,7 @@ public class LoginController {
 
             // Route user depending on role
             if ("admin".equalsIgnoreCase(user.getRole()) || "manager".equalsIgnoreCase(user.getRole())) {
-                NavigateUtil.navigateTo(event, "AdminDashboardView.fxml", "Renespresso - Admin Dashboard", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
+                NavigateUtil.navigateTo(event, "main/AdminDashboardView.fxml", "Renespresso - Admin Dashboard", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
             } else {
                 NavigateUtil.navigateTo(event, "ClientView.fxml", "Renespresso POS Terminal", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
             }
@@ -124,12 +124,12 @@ public class LoginController {
     // NAVIGATIONS
     @FXML
     private void handleRegisterNavigation(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "RegisterView.fxml", "Renespresso - Register Account", NavigateUtil.WindowMode.AUTH_DIALOG);
+        NavigateUtil.navigateTo(event, "id/RegisterView.fxml", "Renespresso - Register Account", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 
     @FXML
     private void handleForgotPasswordNavigation(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "ForgotPasswordView.fxml", "Renespresso - Reset Password", NavigateUtil.WindowMode.AUTH_DIALOG);
+        NavigateUtil.navigateTo(event, "id/ForgotPasswordView.fxml", "Renespresso - Reset Password", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 
     private boolean authenticateUser(String username, String password) {

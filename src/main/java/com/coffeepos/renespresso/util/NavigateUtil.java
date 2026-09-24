@@ -12,24 +12,25 @@ import java.net.URL;
 
 public class NavigateUtil {
 
+    // Point to the root views folder instead of just the 'id' subfolder
     private static final String VIEWS_PATH = "/com/coffeepos/renespresso/views/";
 
     public enum WindowMode {
-        //PAG NASA LABAS
+        // PAG NASA LABAS
         AUTH_DIALOG,
-        //PAG NASA LOOB
+        // PAG NASA LOOB
         FULLSCREEN_WORKSPACE
     }
 
-    //HELPERS SA PARAM
-    public static void navigateTo(Event event, String fxmlName, String title, WindowMode mode) {
+    // HELPERS SA PARAM
+    public static void navigateTo(Event event, String fxmlPath, String title, WindowMode mode) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        navigateTo(stage, fxmlName, title, mode);
+        navigateTo(stage, fxmlPath, title, mode);
     }
 
-    //PARA TAWAG TAWAG NALANG PAG SWITCH NG WINDOWS
-    public static void navigateTo(Stage stage, String fxmlName, String title, WindowMode mode) {
-        String fullPath = VIEWS_PATH + fxmlName;
+    // PARA TAWAG TAWAG NALANG PAG SWITCH NG WINDOWS
+    public static void navigateTo(Stage stage, String fxmlPath, String title, WindowMode mode) {
+        String fullPath = VIEWS_PATH + fxmlPath;
         try {
             URL xmlUrl = NavigateUtil.class.getResource(fullPath);
             if (xmlUrl == null) {
@@ -54,10 +55,10 @@ public class NavigateUtil {
 
             } else if (mode == WindowMode.FULLSCREEN_WORKSPACE) {
                 // Allow resizing when maximized
-                //stage.setResizable(true);
+                // stage.setResizable(true);
 
                 // Maximize window to fill desktop workspace (includes taskbar)
-                //stage.setMaximized(true);
+                // stage.setMaximized(true);
 
                 // OPTIONAL FOR TOUCH/KIOSK TERMINALS:
                 // Uncomment the line below for true borderless full screen mode
