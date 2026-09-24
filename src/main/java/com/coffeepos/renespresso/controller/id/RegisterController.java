@@ -242,7 +242,7 @@ public class RegisterController {
     // PAPUNTANG LOGIN
     @FXML
     private void handleLoginNavigation(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+        NavigateUtil.navigateTo(event, "id/LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 
     // PLACEHOLDER FOR DB LOGIC

@@ -5,13 +5,33 @@ import com.coffeepos.renespresso.util.NavigateUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class ForgotPasswordController {
 
     @FXML
-    private TextField emailField;
+    private TextField usernameField;
+
+    @FXML
+    private PasswordField newPasswordField;
+
+    @FXML
+    private TextField newPasswordTextField;
+
+    @FXML
+    private CheckBox showNewPasswordToggle;
+
+    @FXML
+    private PasswordField confirmPasswordField;
+
+    @FXML
+    private TextField confirmPasswordTextField;
+
+    @FXML
+    private CheckBox showConfirmPasswordToggle;
 
     @FXML
     private Button sendResetButton;
@@ -23,44 +43,97 @@ public class ForgotPasswordController {
     public void initialize() {
         sendResetButton.setOnAction(this::handleSendResetLink);
         backToLoginLink.setOnAction(this::handleBackToLogin);
+
+        // SYNC TEXT FIELDS FOR TOGGLE VISIBILITY
+        syncPasswordFields(newPasswordField, newPasswordTextField);
+        syncPasswordFields(confirmPasswordField, confirmPasswordTextField);
     }
 
-    //RESET PASSWORD
+    private void syncPasswordFields(PasswordField passwordField, TextField textField) {
+        passwordField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!textField.getText().equals(newValue)) {
+                textField.setText(newValue);
+            }
+        });
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!passwordField.getText().equals(newValue)) {
+                passwordField.setText(newValue);
+            }
+        });
+    }
+
+    // TOGGLE NEW PASSWORD VISIBILITY
+    @FXML
+    private void toggleNewPasswordVisibility(ActionEvent event) {
+        boolean show = showNewPasswordToggle.isSelected();
+        newPasswordTextField.setVisible(show);
+        newPasswordTextField.setManaged(show);
+        newPasswordField.setVisible(!show);
+        newPasswordField.setManaged(!show);
+    }
+
+    // TOGGLE CONFIRM PASSWORD VISIBILITY
+    @FXML
+    private void toggleConfirmPasswordVisibility(ActionEvent event) {
+        boolean show = showConfirmPasswordToggle.isSelected();
+        confirmPasswordTextField.setVisible(show);
+        confirmPasswordTextField.setManaged(show);
+        confirmPasswordField.setVisible(!show);
+        confirmPasswordField.setManaged(!show);
+    }
+
+    // RESET PASSWORD
     @FXML
     private void handleSendResetLink(ActionEvent event) {
-        String email = emailField.getText().trim();
+        String username = usernameField.getText().trim();
+        String newPassword = newPasswordField.getText();
+        String confirmPassword = confirmPasswordField.getText();
 
-        //BASIC VALIDATION
-        if (email.isEmpty()) {
-            AlertUtil.showWarning("Validation Error", "Please enter your email address.");
+        // VALIDATIONS
+        if (username.isEmpty()) {
+            AlertUtil.showWarning("Validation Error", "Please enter your username.");
             return;
         }
 
-        //EMAIL FORMAT VALIDATION
-        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            AlertUtil.showWarning("Invalid Email", "Please enter a valid email address.");
+        if (newPassword.isEmpty()) {
+            AlertUtil.showWarning("Validation Error", "Please enter your new password.");
             return;
         }
 
-        // PLACEHOLDER LANG ITO SA DB/EMAIL SERVICE
-        boolean isSent = processPasswordReset(email);
+        if (newPassword.length() < 6) {
+            AlertUtil.showWarning("Weak Password", "Password must be at least 6 characters long.");
+            return;
+        }
 
-        if (isSent) {
-            AlertUtil.showSuccess("Reset Link Sent", "If an account exists for " + email + ", a password reset link has been sent.");
-            NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+        if (confirmPassword.isEmpty()) {
+            AlertUtil.showWarning("Validation Error", "Please confirm your new password.");
+            return;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            AlertUtil.showWarning("Password Mismatch", "New password and confirm password do not match.");
+            return;
+        }
+
+        // DB/Backend integration call
+        boolean isResetSuccessful = processPasswordReset(username, newPassword);
+
+        if (isResetSuccessful) {
+            AlertUtil.showSuccess("Password Reset", "Your password has been successfully updated.");
+            NavigateUtil.navigateTo(event, "id/LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
         } else {
-            AlertUtil.showError("Error", "Unable to process password reset request. Please try again.");
+            AlertUtil.showError("Error", "Unable to update password. Please verify your username and try again.");
         }
     }
 
-    //PAPUNTANG LOGIN
+    // BACK TO LOGIN
     @FXML
     private void handleBackToLogin(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+        NavigateUtil.navigateTo(event, "id/LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 
-    //PLACE HOLDER LANG ITO
-    private boolean processPasswordReset(String email) {
+    // PLACEHOLDER FOR DB LOGIC
+    private boolean processPasswordReset(String username, String newPassword) {
         return true;
     }
 }
