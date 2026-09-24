@@ -1,17 +1,16 @@
 package com.coffeepos.renespresso.controller.id;
 
+import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -69,16 +68,16 @@ public class RegisterController {
         visiblePasswordField.textProperty().bindBidirectional(passwordField.textProperty());
         visibleConfirmPasswordField.textProperty().bindBidirectional(confirmPasswordField.textProperty());
 
-        // Initialize Role Options
+        // Initialize and style Role ComboBox to match RenEspresso theme
         if (roleComboBox != null) {
-            roleComboBox.getItems().setAll("CASHIER", "ADMIN", "SUPERADMIN");
+            roleComboBox.getItems().setAll("CASHIER", "MANAGER", "SUPERVISOR");
             roleComboBox.setValue("CASHIER");
+            styleComboBoxPalette();
         }
 
         // --- ENTER KEY UX NAVIGATION ---
-        fullNameField.setOnAction(e -> usernameField.requestFocus());
-
-        usernameField.setOnAction(e -> {
+        usernameField.setOnAction(e -> fullNameField.requestFocus());
+        fullNameField.setOnAction(e -> {
             if (isPasswordVisible) {
                 visiblePasswordField.requestFocus();
             } else {
@@ -95,6 +94,62 @@ public class RegisterController {
         // Buttons & Links
         signUpButton.setOnAction(this::handleSignUp);
         loginLink.setOnAction(this::handleLoginNavigation);
+    }
+
+    /**
+     * Styles the ComboBox cells, selected cell, and dropdown menu to match
+     * dark coffee (#5E3023) and warm cream (#F3E9DC) palette with normal font weight.
+     */
+    private void styleComboBoxPalette() {
+        // Custom cell renderer for items inside the dropdown list
+        roleComboBox.setCellFactory(listView -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("-fx-background-color: transparent;");
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: #5E3023; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #F3E9DC;");
+
+                    // Dynamic hover effect
+                    hoverProperty().addListener((obs, wasHovered, isNowHovered) -> {
+                        if (isNowHovered) {
+                            setStyle("-fx-text-fill: #F3E9DC; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #5E3023;");
+                        } else {
+                            setStyle("-fx-text-fill: #5E3023; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #F3E9DC;");
+                        }
+                    });
+                }
+            }
+        });
+
+        // Custom cell renderer for the main displayed item when closed
+        roleComboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: #5E3023; -fx-font-weight: normal;");
+                }
+            }
+        });
+
+        // Style the popup container when opened
+        roleComboBox.showingProperty().addListener((obs, wasShowing, isShowing) -> {
+            if (isShowing) {
+                Platform.runLater(() -> {
+                    Node popup = roleComboBox.getScene().getWindow().getScene().getRoot();
+                    if (popup != null) {
+                        popup.setStyle("-fx-background-color: #F3E9DC; -fx-border-color: #5E3023; -fx-border-radius: 6px;");
+                    }
+                });
+            }
+        });
     }
 
     private void focusConfirmPassword() {
@@ -116,16 +171,18 @@ public class RegisterController {
         passwordField.setVisible(!isPasswordVisible);
         passwordField.setManaged(!isPasswordVisible);
 
-        if (isPasswordVisible) {
-            visiblePasswordField.requestFocus();
-            visiblePasswordField.selectEnd();
-            eyeIconPath.setContent(EYE_OPEN_PATH);
-            eyeIconPath.setOpacity(1.0);
-        } else {
-            passwordField.requestFocus();
-            passwordField.selectEnd();
-            eyeIconPath.setContent(EYE_SLASHED_PATH);
-            eyeIconPath.setOpacity(0.55);
+        if (eyeIconPath != null) {
+            if (isPasswordVisible) {
+                visiblePasswordField.requestFocus();
+                visiblePasswordField.selectEnd();
+                eyeIconPath.setContent(EYE_OPEN_PATH);
+                eyeIconPath.setOpacity(1.0);
+            } else {
+                passwordField.requestFocus();
+                passwordField.selectEnd();
+                eyeIconPath.setContent(EYE_SLASHED_PATH);
+                eyeIconPath.setOpacity(0.55);
+            }
         }
     }
 
@@ -140,16 +197,18 @@ public class RegisterController {
         confirmPasswordField.setVisible(!isConfirmPasswordVisible);
         confirmPasswordField.setManaged(!isConfirmPasswordVisible);
 
-        if (isConfirmPasswordVisible) {
-            visibleConfirmPasswordField.requestFocus();
-            visibleConfirmPasswordField.selectEnd();
-            confirmEyeIconPath.setContent(EYE_OPEN_PATH);
-            confirmEyeIconPath.setOpacity(1.0);
-        } else {
-            confirmPasswordField.requestFocus();
-            confirmPasswordField.selectEnd();
-            confirmEyeIconPath.setContent(EYE_SLASHED_PATH);
-            confirmEyeIconPath.setOpacity(0.55);
+        if (confirmEyeIconPath != null) {
+            if (isConfirmPasswordVisible) {
+                visibleConfirmPasswordField.requestFocus();
+                visibleConfirmPasswordField.selectEnd();
+                confirmEyeIconPath.setContent(EYE_OPEN_PATH);
+                confirmEyeIconPath.setOpacity(1.0);
+            } else {
+                confirmPasswordField.requestFocus();
+                confirmPasswordField.selectEnd();
+                confirmEyeIconPath.setContent(EYE_SLASHED_PATH);
+                confirmEyeIconPath.setOpacity(0.55);
+            }
         }
     }
 
@@ -159,7 +218,9 @@ public class RegisterController {
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
-        String selectedRole = roleComboBox != null ? roleComboBox.getValue() : "CASHIER";
+        String selectedRole = roleComboBox != null && roleComboBox.getValue() != null
+                ? roleComboBox.getValue()
+                : "CASHIER";
 
         // 1. BASIC VALIDATION
         if (fullName.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
@@ -179,21 +240,20 @@ public class RegisterController {
             return;
         }
 
-        // 4. ALWAYS TRIGGER ADMIN VALIDATION MODAL ON SIGN UP
+        // 4. ADMIN VALIDATION MODAL ON SIGN UP
         Stage currentStage = (Stage) signUpButton.getScene().getWindow();
         boolean isAuthorized = promptAdminValidation(currentStage);
 
-        // Abort signup if validation fails or popup is closed
         if (!isAuthorized) {
             return;
         }
 
-        // 5. MOCK REGISTRATION
+        // 5. DATABASE REGISTRATION
         boolean isCreated = registerUserInDatabase(fullName, username, password, selectedRole);
 
         if (isCreated) {
             AlertUtil.showSuccess("Success", "Account created successfully as [" + selectedRole + "]! Please log in.");
-            NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+            NavigateUtil.navigateTo(event, "id/LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
         } else {
             AlertUtil.showError("Registration Error", "Could not create account. Username might already be taken.");
         }
@@ -201,15 +261,12 @@ public class RegisterController {
 
     private boolean promptAdminValidation(Stage ownerStage) {
         try {
-            // Updated path pointing to the 'views' directory
             URL fxmlUrl = getClass().getResource("/com/coffeepos/renespresso/views/id/AdminValidationView.fxml");
 
-            // Fallback relative path to views
             if (fxmlUrl == null) {
                 fxmlUrl = getClass().getResource("../views/AdminValidationView.fxml");
             }
 
-            // Flat fallback
             if (fxmlUrl == null) {
                 fxmlUrl = getClass().getResource("/views/AdminValidationView.fxml");
             }
@@ -239,14 +296,12 @@ public class RegisterController {
         }
     }
 
-    // PAPUNTANG LOGIN
     @FXML
     private void handleLoginNavigation(ActionEvent event) {
         NavigateUtil.navigateTo(event, "id/LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 
-    // PLACEHOLDER FOR DB LOGIC
     private boolean registerUserInDatabase(String fullName, String username, String password, String role) {
-        return true;
+        return UserDAO.registerUser(username, password, fullName, role);
     }
 }

@@ -10,6 +10,7 @@ module com.coffeepos.renespresso {
     requires net.synedra.validatorfx;
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
+    requires jbcrypt;
 
     exports com.coffeepos.renespresso;
     opens com.coffeepos.renespresso to javafx.fxml;
@@ -21,5 +22,6 @@ module com.coffeepos.renespresso {
     opens com.coffeepos.renespresso.controller.util to javafx.fxml;
     exports com.coffeepos.renespresso.controller.main;
     opens com.coffeepos.renespresso.controller.main to javafx.fxml;
+    opens com.coffeepos.renespresso.util to javafx.fxml;
 
 }
