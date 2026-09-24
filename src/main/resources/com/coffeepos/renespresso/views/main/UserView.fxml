@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane prefHeight="768.0" prefWidth="1280.0" style="-fx-background-color: #F3E9DC; -fx-font-family: 'Segoe UI', sans-serif;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controllers.UserController">
+<StackPane prefHeight="768.0" prefWidth="1280.0" style="-fx-background-color: #F3E9DC; -fx-font-family: 'Segoe UI', sans-serif;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.main.UserViewController">
 
     <!-- MAIN APP LAYOUT -->
     <HBox prefHeight="768.0" prefWidth="1280.0">
