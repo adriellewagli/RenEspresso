@@ -1,129 +1,135 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="768.0" prefWidth="1200.0"
-            style="-fx-background-color: #FAF8F5;"
-            stylesheets="@style/dashboard.css"
-            xmlns="http://javafx.com/fxml/1"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.coffeepos.renespresso.controller.main.AdminDashboardController">
+<StackPane prefHeight="768.0" prefWidth="1280.0"
+           style="-fx-background-color: #F3E9DC; -fx-font-family: 'Segoe UI', sans-serif;"
+           stylesheets="@../../style/main/dashboard.css"
+           xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.coffeepos.renespresso.controller.main.AdminDashboardController">
 
-    <!-- TOP HEADER -->
-    <top>
-        <HBox alignment="CENTER_LEFT" prefHeight="60.0" style="-fx-background-color: #FFFFFF; -fx-padding: 0 24; -fx-border-color: #EFE8E0; -fx-border-width: 0 0 1 0;">
-            <children>
-                <Label text="RENESPRESSO" textFill="#5C3A21">
-                    <font><Font name="System Bold" size="17.0" /></font>
-                </Label>
-                <Label text="  /  Dashboard" textFill="#9C8C80">
-                    <font><Font size="15.0" /></font>
-                </Label>
-                <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="activeShiftLabel" text="Morning Shift" style="-fx-background-color: #F5EBE1; -fx-text-fill: #A0522D; -fx-padding: 4 12; -fx-background-radius: 20; -fx-font-size: 11px; -fx-font-weight: bold;">
-                    <HBox.margin><Insets right="12.0" /></HBox.margin>
-                </Label>
-                <Label fx:id="adminNameLabel" text="Manager" textFill="#3D2E24">
-                    <font><Font name="System Bold" size="13.0" /></font>
-                </Label>
-            </children>
-        </HBox>
-    </top>
+    <HBox prefHeight="768.0" prefWidth="1280.0">
+        <!-- SIDEBAR -->
+        <VBox prefWidth="220.0" spacing="15.0" style="-fx-background-color: #5E3023; -fx-padding: 20 15 20 15;">
+            <!-- Brand / Logo Header -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-padding: 0 0 10 0;">
+                <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 20px; -fx-font-weight: bold;" text="☕ RenEspresso" />
+            </HBox>
 
-    <!-- LEFT SIDEBAR -->
-    <left>
-        <VBox prefWidth="210.0" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-padding: 20 12; -fx-border-color: #EFE8E0; -fx-border-width: 0 1 0 0;">
-            <children>
-                <Button fx:id="btnDashboard" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" style="-fx-background-color: #F5EBE1; -fx-text-fill: #8B4513; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 14;" text="Dashboard" />
-                <Button fx:id="btnStaff" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent; -fx-text-fill: #7A6A5D; -fx-background-radius: 8; -fx-padding: 10 14;" text="Staff &amp; Users" />
-                <Button fx:id="btnProducts" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent; -fx-text-fill: #7A6A5D; -fx-background-radius: 8; -fx-padding: 10 14;" text="Product Menu" />
-                <Button fx:id="btnInventory" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent; -fx-text-fill: #7A6A5D; -fx-background-radius: 8; -fx-padding: 10 14;" text="Inventory" />
-                <Button fx:id="btnSales" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent; -fx-text-fill: #7A6A5D; -fx-background-radius: 8; -fx-padding: 10 14;" text="Sales &amp; Z-Read" />
-                <Region VBox.vgrow="ALWAYS" />
-                <Button fx:id="btnLogout" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" style="-fx-background-color: #FDF2F2; -fx-text-fill: #C62828; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 14;" text="Logout" />
-            </children>
+            <Separator style="-fx-opacity: 0.2;" />
+
+            <!-- Navigation Buttons -->
+            <Button fx:id="btnDashboard" alignment="BASELINE_LEFT" maxWidth="Infinity"
+                    style="-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;" text="📊  Dashboard" />
+
+            <Button fx:id="btnStaff" alignment="BASELINE_LEFT" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="👥  Staff &amp; Users" />
+
+            <Button fx:id="btnProducts" alignment="BASELINE_LEFT" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="☕  Product Menu" />
+
+            <Button fx:id="btnInventory" alignment="BASELINE_LEFT" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📦  Inventory" />
+
+            <Button fx:id="btnSales" alignment="BASELINE_LEFT" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📈  Sales &amp; Z-Read" />
+
+            <!-- Manager Info Card (Placed right under Sales & Z-Read) -->
+            <VBox spacing="4.0" style="-fx-background-color: rgba(243, 233, 220, 0.12); -fx-padding: 12 10; -fx-background-radius: 8;">
+                <Label fx:id="adminNameLabel" style="-fx-text-fill: #F3E9DC; -fx-font-size: 12px; -fx-font-weight: bold;" text="Manager" />
+                <Label fx:id="activeShiftLabel" style="-fx-text-fill: #C08552; -fx-font-size: 11px;" text="Morning Shift" />
+            </VBox>
+
+            <!-- Spacer pushes Logout to the bottom -->
+            <Region VBox.vgrow="ALWAYS" />
+
+            <!-- Logout Button (Isolated at the bottom) -->
+            <Button fx:id="btnLogout" alignment="BASELINE_LEFT" maxWidth="Infinity"
+                    style="-fx-background-color: rgba(217, 83, 79, 0.2); -fx-text-fill: #FFB3B3; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8; -fx-padding: 10 14;" text="🚪  Logout" />
         </VBox>
-    </left>
 
-    <!-- MAIN CONTENT AREA -->
-    <center>
-        <VBox spacing="20.0" style="-fx-padding: 24;">
-            <children>
+        <!-- MAIN CONTENT AREA -->
+        <VBox spacing="20.0" style="-fx-padding: 25;" HBox.hgrow="ALWAYS">
 
-                <!-- ROW 1: KPI CARDS -->
-                <HBox spacing="16.0">
-                    <children>
-                        <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card">
-                            <children>
-                                <Label text="TODAY'S SALES" styleClass="kpi-title" />
-                                <Label fx:id="lblTodaySales" text="₱14,825.00" styleClass="kpi-value" />
-                                <Label text="+12.4% vs yesterday" styleClass="kpi-subtext-green" />
-                            </children>
-                        </VBox>
-                        <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card">
-                            <children>
-                                <Label text="TRANSACTIONS" styleClass="kpi-title" />
-                                <Label fx:id="lblTotalTransactions" text="142 Orders" styleClass="kpi-value" />
-                                <Label text="Avg ₱104.40 / order" styleClass="kpi-subtext" />
-                            </children>
-                        </VBox>
-                        <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card">
-                            <children>
-                                <Label text="TOP SELLER" styleClass="kpi-title" />
-                                <Label fx:id="lblTopSeller" text="Spanish Latte" styleClass="kpi-value-accent" />
-                                <Label text="68 Cups Sold" styleClass="kpi-subtext" />
-                            </children>
-                        </VBox>
-                        <VBox HBox.hgrow="ALWAYS" styleClass="kpi-card">
-                            <children>
-                                <Label text="LOW STOCK ALERTS" styleClass="kpi-title" />
-                                <Label fx:id="lblLowStock" text="3 Items" styleClass="kpi-value-red" />
-                                <Label text="Whole Milk, Oat Milk, Caramel" styleClass="kpi-subtext-red" />
-                            </children>
-                        </VBox>
-                    </children>
+            <!-- Header Title Banner -->
+            <VBox spacing="5.0">
+                <HBox alignment="CENTER_LEFT">
+                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Admin Dashboard" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 18px;" text="  /  Overview" />
                 </HBox>
+                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Real-time management metrics, system updates, and audit logs." />
+            </VBox>
 
-                <!-- ROW 2: MODERN DATA TABLE CONTAINER -->
-                <VBox VBox.vgrow="ALWAYS" styleClass="table-card">
-                    <children>
-                        <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 16 0;">
-                            <children>
-                                <VBox>
-                                    <children>
-                                        <Label text="System Audit Logs" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2C1E16;" />
-                                        <Label text="Real-time log of security events and manager overrides" style="-fx-font-size: 12px; -fx-text-fill: #9C8C80;" />
-                                    </children>
-                                </VBox>
-                            </children>
-                        </HBox>
-
-                        <!-- Modern Table View -->
-                        <TableView fx:id="auditTable" VBox.vgrow="ALWAYS" styleClass="modern-table">
-                            <columns>
-                                <TableColumn fx:id="colTime" text="TIMESTAMP" prefWidth="140" />
-                                <TableColumn fx:id="colUser" text="USER" prefWidth="150" />
-                                <TableColumn fx:id="colRole" text="ROLE" prefWidth="120" />
-                                <TableColumn fx:id="colAction" text="ACTION" prefWidth="200" />
-                                <TableColumn fx:id="colDetails" text="DETAILS" prefWidth="400" />
-                            </columns>
-                            <columnResizePolicy>
-                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                            </columnResizePolicy>
-                        </TableView>
-                    </children>
+            <!-- ROW 1: KPI METRIC CARDS -->
+            <HBox spacing="20.0">
+                <VBox HBox.hgrow="ALWAYS" prefWidth="250.0" spacing="8.0"
+                      style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 2);">
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold;" text="TODAY'S SALES" />
+                    <Label fx:id="lblTodaySales" style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="₱14,825.00" />
+                    <Label style="-fx-text-fill: #2E7D32; -fx-font-size: 11px; -fx-font-weight: bold;" text="+12.4% vs yesterday" />
                 </VBox>
 
-            </children>
+                <VBox HBox.hgrow="ALWAYS" prefWidth="250.0" spacing="8.0"
+                      style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 2);">
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold;" text="TRANSACTIONS" />
+                    <Label fx:id="lblTotalTransactions" style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="142 Orders" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 11px;" text="Avg ₱104.40 / order" />
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS" prefWidth="250.0" spacing="8.0"
+                      style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 2);">
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold;" text="TOP SELLER" />
+                    <Label fx:id="lblTopSeller" style="-fx-text-fill: #C08552; -fx-font-size: 28px; -fx-font-weight: bold;" text="Spanish Latte" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 11px;" text="68 Cups Sold" />
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS" prefWidth="250.0" spacing="8.0"
+                      style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 2);">
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold;" text="LOW STOCK ALERTS" />
+                    <Label fx:id="lblLowStock" style="-fx-text-fill: #C62828; -fx-font-size: 28px; -fx-font-weight: bold;" text="3 Items" />
+                    <Label style="-fx-text-fill: #C62828; -fx-font-size: 11px;" text="Whole Milk, Oat Milk, Caramel" />
+                </VBox>
+            </HBox>
+
+            <!-- ROW 2: MODERNIZED AUDIT LOGS CONTAINER -->
+            <VBox VBox.vgrow="ALWAYS" spacing="14.0"
+                  style="-fx-background-color: #FFFFFF; -fx-padding: 22; -fx-background-radius: 14; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 12, 0, 0, 3);">
+
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="2.0">
+                        <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #5E3023;" text="System Audit Logs" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #895737;" text="Real-time log of security events and manager overrides" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button text="🔄 Refresh Logs"
+                            style="-fx-background-color: #F3E9DC; -fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 8; -fx-padding: 8 14; -fx-cursor: hand;" />
+                </HBox>
+
+                <!-- Modern TableView -->
+                <TableView fx:id="auditTable" VBox.vgrow="ALWAYS" styleClass="modern-audit-table">
+                    <columns>
+                        <TableColumn fx:id="colTime" prefWidth="130" text="TIMESTAMP" />
+                        <TableColumn fx:id="colUser" prefWidth="140" text="USER" />
+                        <TableColumn fx:id="colRole" prefWidth="120" text="ROLE" />
+                        <TableColumn fx:id="colAction" prefWidth="210" text="ACTION" />
+                        <TableColumn fx:id="colDetails" prefWidth="380" text="DETAILS" />
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
+
         </VBox>
-    </center>
-</BorderPane>
+    </HBox>
+</StackPane>
