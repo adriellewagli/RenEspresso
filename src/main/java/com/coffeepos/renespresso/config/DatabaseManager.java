@@ -17,7 +17,7 @@ public class DatabaseManager {
 
         try (InputStream input = DatabaseManager.class.getResourceAsStream("/db.properties")) {
             if (input == null) {
-                System.err.println("DatabaseManager: db.properties not found! Falling back to defaults.");
+                System.err.println("DatabaseManager: db.properties not found! Falling back to localhost defaults.");
             } else {
                 properties.load(input);
             }
@@ -25,9 +25,10 @@ public class DatabaseManager {
             System.err.println("DatabaseConfig: Error reading db.properties: " + e.getMessage());
         }
 
+        // Updated defaults: localhost and renespresso_db
         String host = properties.getProperty("db.host", "localhost");
         String port = properties.getProperty("db.port", "3306");
-        String dbName = properties.getProperty("db.name", "coffee");
+        String dbName = properties.getProperty("db.name", "renespresso_db");
         String user = properties.getProperty("db.user", "root");
         String password = properties.getProperty("db.password", "");
 
@@ -40,7 +41,7 @@ public class DatabaseManager {
         config.setMaximumPoolSize(10);
         config.setMinimumIdle(2);
         config.setIdleTimeout(30000);
-        config.setConnectionTimeout(10000);
+        config.setConnectionTimeout(5000); // reduced timeout to fail fast on wrong host
         config.setMaxLifetime(1800000);
 
         try {
@@ -66,7 +67,6 @@ public class DatabaseManager {
         }
     }
 
-
     public static void main(String[] args) {
         System.out.println("Testing MariaDB connection via HikariCP...");
         try (Connection conn = getConnection()) {
@@ -79,8 +79,4 @@ public class DatabaseManager {
             closePool();
         }
     }
-
-
-
 }
-

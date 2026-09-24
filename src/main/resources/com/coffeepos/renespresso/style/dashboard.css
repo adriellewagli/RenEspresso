@@ -1,0 +1,174 @@
+/* Card Container */
+.kpi-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-padding: 16px;
+    -fx-border-color: #EFE8E0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+}
+
+.kpi-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #9C8C80;
+}
+
+.kpi-value {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2C1E16;
+    -fx-padding: 4px 0 2px 0;
+}
+
+.kpi-value-accent {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #A0522D;
+    -fx-padding: 4px 0 2px 0;
+}
+
+.kpi-value-red {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #C62828;
+    -fx-padding: 4px 0 2px 0;
+}
+
+.kpi-subtext {
+    -fx-font-size: 11px;
+    -fx-text-fill: #7A6A5D;
+}
+
+.kpi-subtext-green {
+    -fx-font-size: 11px;
+    -fx-text-fill: #2E7D32;
+    -fx-font-weight: bold;
+}
+
+.kpi-subtext-red {
+    -fx-font-size: 11px;
+    -fx-text-fill: #D32F2F;
+}
+
+.table-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+    -fx-border-color: #EFE8E0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+}
+
+/* ==========================
+   MODERN TABLEVIEW STYLING
+   ========================== */
+
+/* Outer Table Reset */
+.modern-table {
+    -fx-background-color: transparent;
+    -fx-base: #FFFFFF;
+    -fx-control-inner-background: #FFFFFF;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+
+.modern-table .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Remove Extra Header Column Gap */
+.modern-table .column-header-background {
+    -fx-background-color: #F8F5F0;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.modern-table .column-header-background .filler {
+    -fx-background-color: transparent;
+}
+
+/* Header Cells */
+.modern-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: #EFE8E0;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 12px 16px;
+    -fx-size: 42px;
+}
+
+.modern-table .column-header .label {
+    -fx-text-fill: #7A6A5D;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER-LEFT;
+}
+
+/* Remove Header Dividers */
+.modern-table .column-header .column-drag-header {
+    -fx-background-color: transparent;
+}
+
+/* Table Rows */
+.modern-table .table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #F8F5F0;
+    -fx-border-width: 0 0 1 0;
+    -fx-cell-size: 46px;
+}
+
+.modern-table .table-row-cell:even {
+    -fx-background-color: #FFFFFF;
+}
+
+.modern-table .table-row-cell:odd {
+    -fx-background-color: #FAF8F5;
+}
+
+/* Smooth Soft Hover State */
+.modern-table .table-row-cell:hover {
+    -fx-background-color: #F5EBE1;
+    -fx-cursor: hand;
+}
+
+/* Selected Row State */
+.modern-table .table-row-cell:selected {
+    -fx-background-color: #EFE3D5;
+}
+
+.modern-table .table-row-cell:selected .text {
+    -fx-fill: #2C1E16;
+    -fx-font-weight: bold;
+}
+
+/* Individual Cells */
+.modern-table .table-cell {
+    -fx-padding: 0 16px;
+    -fx-text-fill: #3D2E24;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER-LEFT;
+    -fx-border-color: transparent;
+}
+
+.modern-table:focused .table-row-cell:filled:focused:selected {
+    -fx-background-color: #EFE3D5;
+}
+
+/* Scrollbar Minimalist Styling */
+.modern-table .scroll-bar:vertical,
+.modern-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.modern-table .scroll-bar:vertical .thumb,
+.modern-table .scroll-bar:horizontal .thumb {
+    -fx-background-color: #EFE8E0;
+    -fx-background-radius: 10px;
+}
+
+.modern-table .scroll-bar:vertical .thumb:hover,
+.modern-table .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #D1C2B5;
+}
