@@ -12,7 +12,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="380.0" prefWidth="420.0" style="-fx-background-color: #F3E9DC;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.id.AdminValidationController">
+<AnchorPane prefHeight="380.0" prefWidth="420.0" style="-fx-background-color: #F3E9DC;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.id.AdminValidationController">
     <children>
         <VBox alignment="CENTER_LEFT" spacing="16.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <padding>
