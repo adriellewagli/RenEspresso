@@ -1,4 +1,4 @@
-package com.coffeepos.renespresso.controller;
+package com.coffeepos.renespresso.controller.id;
 
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;

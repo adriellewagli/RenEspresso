@@ -1,4 +1,4 @@
-package com.coffeepos.renespresso.controller;
+package com.coffeepos.renespresso.controller.util;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

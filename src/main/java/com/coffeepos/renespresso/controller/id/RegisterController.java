@@ -1,4 +1,4 @@
-package com.coffeepos.renespresso.controller;
+package com.coffeepos.renespresso.controller.id;
 
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
@@ -202,7 +202,7 @@ public class RegisterController {
     private boolean promptAdminValidation(Stage ownerStage) {
         try {
             // Updated path pointing to the 'views' directory
-            URL fxmlUrl = getClass().getResource("/com/coffeepos/renespresso/views/AdminValidationView.fxml");
+            URL fxmlUrl = getClass().getResource("/com/coffeepos/renespresso/views/id/AdminValidationView.fxml");
 
             // Fallback relative path to views
             if (fxmlUrl == null) {

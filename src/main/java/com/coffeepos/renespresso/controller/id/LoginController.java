@@ -1,4 +1,4 @@
-package com.coffeepos.renespresso.controller;
+package com.coffeepos.renespresso.controller.id;
 
 import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.model.User;

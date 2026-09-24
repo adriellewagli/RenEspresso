@@ -16,7 +16,7 @@
             stylesheets="@style/dashboard.css"
             xmlns="http://javafx.com/fxml/1"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.coffeepos.renespresso.controller.AdminDashboardController">
+            fx:controller="com.coffeepos.renespresso.controller.main.AdminDashboardController">
 
     <!-- TOP HEADER -->
     <top>

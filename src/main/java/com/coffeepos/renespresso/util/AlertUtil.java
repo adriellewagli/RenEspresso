@@ -1,7 +1,7 @@
 package com.coffeepos.renespresso.util;
 
-import com.coffeepos.renespresso.controller.AlertController;
-import com.coffeepos.renespresso.controller.ConfirmAlertController;
+import com.coffeepos.renespresso.controller.util.AlertController;
+import com.coffeepos.renespresso.controller.util.ConfirmAlertController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -15,8 +15,8 @@ import java.net.URL;
 
 public class AlertUtil {
 
-    private static final String ALERT_VIEW_PATH = "/com/coffeepos/renespresso/views/CustomAlertView.fxml";
-    private static final String CONFIRM_VIEW_PATH = "/com/coffeepos/renespresso/views/ConfirmAlertView.fxml";
+    private static final String ALERT_VIEW_PATH = "/com/coffeepos/renespresso/views/util/CustomAlertView.fxml";
+    private static final String CONFIRM_VIEW_PATH = "/com/coffeepos/renespresso/views/util/ConfirmAlertView.fxml";
 
     //PALLETE
     private static final String SYSTEM_PRIMARY_COLOR = "#6f4e37"; // Renespresso Coffee Brown

@@ -1,4 +1,4 @@
-package com.coffeepos.renespresso.controller;
+package com.coffeepos.renespresso.controller.main;
 
 import com.coffeepos.renespresso.util.NavigateUtil;
 import javafx.collections.FXCollections;
