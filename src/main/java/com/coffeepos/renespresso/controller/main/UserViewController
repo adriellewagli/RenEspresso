@@ -1,0 +1,246 @@
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+public class PosController {
+
+    // Models
+    public static class MenuItem {
+        String name;
+        String category;
+        double priceS, priceM, priceL;
+
+        public MenuItem(String name, String category, double priceS, double priceM, double priceL) {
+            this.name = name;
+            this.category = category;
+            this.priceS = priceS;
+            this.priceM = priceM;
+            this.priceL = priceL;
+        }
+    }
+
+    public static class CartItem {
+        String name;
+        String size;
+        double price;
+
+        public CartItem(String name, String size, double price) {
+            this.name = name;
+            this.size = size;
+            this.price = price;
+        }
+    }
+
+    // FXML Bindings
+    @FXML private VBox dashboardView;
+    @FXML private HBox salesEntryView;
+    @FXML private Button btnDashboard, btnSalesEntry;
+    @FXML private Label lblDashSales, lblDashOrders, lblDashNextTicket;
+    @FXML private Label lblCartTicket, lblSubtotal, lblVat, lblDiscount, lblTotal;
+    @FXML private HBox rowDiscount;
+    @FXML private CheckBox chkDiscount;
+    @FXML private GridPane menuGrid;
+    @FXML private ListView<HBox> cartListView;
+    @FXML private StackPane modalOverlay;
+    @FXML private Label lblModalTicket, lblModalTotal, lblClock;
+
+    // State Variables
+    private int ticketNumber = 42;
+    private int sessionOrdersCount = 0;
+    private double sessionSalesTotal = 0.0;
+    private final ObservableList<CartItem> cartItems = FXCollections.observableArrayList();
+
+    private final List<MenuItem> menuData = List.of(
+            new MenuItem("Fresh Brew / Americano", "Hot Coffee", 55.0, 75.0, 95.0),
+            new MenuItem("Classic Caffè Latte", "Hot Coffee", 65.0, 85.0, 105.0),
+            new MenuItem("Cappuccino", "Hot Coffee", 65.0, 85.0, 105.0),
+            new MenuItem("Cafè Mocha", "Hot Coffee", 75.0, 95.0, 115.0),
+            new MenuItem("Caramel Macchiato", "Hot Coffee", 80.0, 100.0, 120.0),
+            new MenuItem("Spanish Latte", "Hot Coffee", 75.0, 95.0, 115.0)
+    );
+
+    @FXML
+    public void initialize() {
+        lblClock.setText(new SimpleDateFormat("hh:mm a").format(new Date()));
+        renderMenu("All");
+        updateTotals();
+    }
+
+    // --- NAVIGATION LOGIC ---
+    @FXML
+    public void showDashboard() {
+        dashboardView.setVisible(true);
+        salesEntryView.setVisible(false);
+        btnDashboard.setStyle("-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8;");
+        btnSalesEntry.setStyle("-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-background-radius: 8;");
+    }
+
+    @FXML
+    public void showSalesEntry() {
+        dashboardView.setVisible(false);
+        salesEntryView.setVisible(true);
+        btnSalesEntry.setStyle("-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8;");
+        btnDashboard.setStyle("-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-background-radius: 8;");
+    }
+
+    // --- RENDER MENU & CARDS ---
+    private void renderMenu(String category) {
+        menuGrid.getChildren().clear();
+        int col = 0, row = 0;
+
+        for (MenuItem item : menuData) {
+            if (!category.equals("All") && !item.category.equalsIgnoreCase(category)) continue;
+
+            VBox card = new VBox(10);
+            card.setPrefWidth(220);
+            card.setStyle("-fx-background-color: #FFFFFF; -fx-padding: 15; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);");
+
+            Label title = new Label(item.name);
+            title.setStyle("-fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 14px;");
+
+            Label cat = new Label(item.category.toUpperCase());
+            cat.setStyle("-fx-text-fill: #895737; -fx-font-size: 10px;");
+
+            HBox sizes = new HBox(6);
+            sizes.getChildren().addAll(
+                    createSizeChip("S 8oz", item.priceS, item),
+                    createSizeChip("M 12oz", item.priceM, item),
+                    createSizeChip("L 16oz", item.priceL, item)
+            );
+
+            card.getChildren().addAll(cat, title, sizes);
+            menuGrid.add(card, col, row);
+
+            col++;
+            if (col > 2) {
+                col = 0;
+                row++;
+            }
+        }
+    }
+
+    private Button createSizeChip(String label, double price, MenuItem item) {
+        Button btn = new Button(label + "\n₱" + String.format("%.2f", price));
+        btn.setStyle("-fx-background-color: #F3E9DC; -fx-text-fill: #5E3023; -fx-font-size: 10px; -fx-background-radius: 6; -fx-cursor: hand; -fx-text-alignment: center;");
+        btn.setOnAction(e -> addToCart(item.name, label.split(" ")[0], price));
+        return btn;
+    }
+
+    @FXML
+    public void filterCategory(javafx.event.ActionEvent event) {
+        Button btn = (Button) event.getSource();
+        renderMenu(btn.getText());
+    }
+
+    // --- CART ACTIONS ---
+    private void addToCart(String name, String size, double price) {
+        cartItems.add(new CartItem(name, size, price));
+        refreshCartUI();
+        updateTotals();
+    }
+
+    private void refreshCartUI() {
+        cartListView.getItems().clear();
+        for (CartItem item : cartItems) {
+            HBox row = new HBox();
+            row.setAlignment(Pos.CENTER_LEFT);
+
+            VBox details = new VBox(2);
+            Label title = new Label(item.name + " (" + item.size + ")");
+            title.setStyle("-fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 12px;");
+            Label pr = new Label("₱" + String.format("%.2f", item.price));
+            pr.setStyle("-fx-text-fill: #895737; -fx-font-size: 11px;");
+            details.getChildren().addAll(title, pr);
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            Button btnRemove = new Button("✕");
+            btnRemove.setStyle("-fx-background-color: transparent; -fx-text-fill: #5E3023; -fx-cursor: hand;");
+            btnRemove.setOnAction(e -> {
+                cartItems.remove(item);
+                refreshCartUI();
+                updateTotals();
+            });
+
+            row.getChildren().addAll(details, spacer, btnRemove);
+            cartListView.getItems().add(row);
+        }
+    }
+
+    @FXML
+    public void handleDiscountToggle() {
+        updateTotals();
+    }
+
+    private void updateTotals() {
+        double rawSubtotal = cartItems.stream().mapToDouble(i -> i.price).sum();
+        boolean isDiscounted = chkDiscount.isSelected();
+
+        double vat = isDiscounted ? 0 : rawSubtotal * 0.12;
+        double discountAmount = isDiscounted ? rawSubtotal * 0.20 : 0.0;
+        double finalTotal = (rawSubtotal + vat) - discountAmount;
+
+        lblSubtotal.setText("₱" + String.format("%.2f", rawSubtotal));
+        lblVat.setText("₱" + String.format("%.2f", vat));
+
+        rowDiscount.setVisible(isDiscounted);
+        lblDiscount.setText("-₱" + String.format("%.2f", discountAmount));
+        lblTotal.setText("₱" + String.format("%.2f", finalTotal));
+
+        String ticketFormatted = String.format("#%03d", ticketNumber);
+        lblCartTicket.setText("will be ticket " + ticketFormatted);
+        lblDashNextTicket.setText(ticketFormatted);
+    }
+
+    // --- MODAL & FINALIZATION ---
+    @FXML
+    public void openConfirmationModal() {
+        if (cartItems.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Please add items to the cart first.");
+            alert.showAndWait();
+            return;
+        }
+        lblModalTicket.setText("Ticket " + String.format("#%03d", ticketNumber));
+        lblModalTotal.setText(lblTotal.getText());
+        modalOverlay.setVisible(true);
+    }
+
+    @FXML
+    public void closeConfirmationModal() {
+        modalOverlay.setVisible(false);
+    }
+
+    @FXML
+    public void confirmAndFinalizeOrder() {
+        // Increment metrics
+        double currentTotal = Double.parseDouble(lblTotal.getText().replace("₱", ""));
+        sessionSalesTotal += currentTotal;
+        sessionOrdersCount++;
+        ticketNumber++;
+
+        // Update Dashboard Display
+        lblDashSales.setText("₱" + String.format("%.2f", sessionSalesTotal));
+        lblDashOrders.setText(String.valueOf(sessionOrdersCount));
+
+        // Clear Cart & Close Modal
+        cartItems.clear();
+        chkDiscount.setSelected(false);
+        refreshCartUI();
+        updateTotals();
+        closeConfirmationModal();
+
+        // Print Feedback
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Order processed & sent to receipt printer!");
+        alert.setHeaderText("Success");
+        alert.showAndWait();
+    }
+}
