@@ -4,9 +4,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import io.github.palexdev.materialfx.controls.*?>
 
-<StackPane prefHeight="768.0" prefWidth="1280.0" style="-fx-background-color: #F3E9DC;" stylesheets="@../styles/dashboard.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.main.AdminDashboardController">
-
+<StackPane prefHeight="768.0" prefWidth="1280.0"
+           style="-fx-background-color: #F3E9DC;"
+           stylesheets="@../styles/dashboard.css"
+           xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.coffeepos.renespresso.controller.main.AdminDashboardController">
     <!-- MAIN APP LAYOUT -->
     <HBox prefHeight="768.0" prefWidth="1280.0">
         <!-- SIDEBAR NAVIGATION -->
@@ -40,8 +45,8 @@
 
             <Separator style="-fx-opacity: 0.2;" />
 
-            <!-- Logout Button -->
-            <Button fx:id="btnLogout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: #895737; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8; -fx-padding: 10 15;" text="🚪  Logout" />
+            <!-- Logout Button (MaterialFX Ripple Button) -->
+            <MFXButton fx:id="btnLogout" maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: #895737; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8; -fx-padding: 10 15;" text="🚪  Logout" />
         </VBox>
 
         <!-- CONTENT AREA (Swappable Views) -->
@@ -85,7 +90,9 @@
 
                             <!-- ROW 2: AUDIT LOGS TABLE -->
                             <VBox styleClass="dashboard-card" spacing="12.0">
-                                <Label text="System Audit Logs &amp; Overrides" styleClass="section-title" />
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="System Audit Logs &amp; Overrides" styleClass="section-title" />
+                                </HBox>
                                 <TableView fx:id="auditTable" prefHeight="320.0" styleClass="modern-audit-table">
                                     <columns>
                                         <TableColumn fx:id="colTime" text="TIMESTAMP" prefWidth="130.0" />
@@ -104,7 +111,7 @@
                 </content>
             </ScrollPane>
 
-            <!-- VIEW 2: STAFF & USERS (Placeholder matching view pattern) -->
+            <!-- VIEW 2: STAFF & USERS -->
             <VBox fx:id="staffView" spacing="15.0" style="-fx-padding: 25;" visible="false">
                 <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Staff &amp; User Accounts" />
                 <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Manage cashier accounts, permissions, and roles." />

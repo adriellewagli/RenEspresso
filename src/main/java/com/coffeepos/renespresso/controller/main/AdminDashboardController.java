@@ -41,6 +41,9 @@ public class AdminDashboardController {
         setSystemDate();
         setupAuditTableColumns();
         loadSampleAuditData();
+
+        // Highlight dashboard by default on load
+        highlightButton(btnDashboard);
     }
 
     private void setSystemDate() {
@@ -95,8 +98,7 @@ public class AdminDashboardController {
     }
 
     @FXML
-    public void showStaff(ActionEvent event) {
-        // You can either switch views inline or use your NavigateUtil here if desired:
+    public void showStaff() {
         hideAllViews();
         staffView.setVisible(true);
         highlightButton(btnStaff);
