@@ -5,30 +5,30 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class AdminDashboardController {
 
+    // Views
+    @FXML private ScrollPane dashboardView;
+    @FXML private VBox staffView, productsView, inventoryView, salesView;
+
+    // Sidebar Buttons
+    @FXML private Button btnDashboard, btnStaff, btnProducts, btnInventory, btnSales, btnLogout;
+
+    // Dashboard Metric Labels
     @FXML private Label dateLabel;
     @FXML private Label lblTodaySales;
     @FXML private Label lblTotalTransactions;
-    @FXML private Label lblTopSeller;
     @FXML private Label lblLowStock;
 
-    @FXML private Button btnDashboard;
-    @FXML private Button btnStaff;
-    @FXML private Button btnProducts;
-    @FXML private Button btnInventory;
-    @FXML private Button btnSales;
-    @FXML private Button btnLogout;
-
+    // Audit Table Bindings
     @FXML private TableView<AuditLogEntry> auditTable;
     @FXML private TableColumn<AuditLogEntry, String> colTime;
     @FXML private TableColumn<AuditLogEntry, String> colUser;
@@ -41,10 +41,6 @@ public class AdminDashboardController {
         setSystemDate();
         setupAuditTableColumns();
         loadSampleAuditData();
-
-        // Navigation Actions
-        btnStaff.setOnAction(this::handleStaffNavigation);
-        btnLogout.setOnAction(this::handleLogout);
     }
 
     private void setSystemDate() {
@@ -71,12 +67,71 @@ public class AdminDashboardController {
         auditTable.setItems(logList);
     }
 
-    private void handleStaffNavigation(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "UserManagementView.fxml", "Renespresso - User Management", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
+    // --- SIDEBAR NAVIGATION & VIEW SWITCHING ---
+    private void hideAllViews() {
+        dashboardView.setVisible(false);
+        staffView.setVisible(false);
+        productsView.setVisible(false);
+        inventoryView.setVisible(false);
+        salesView.setVisible(false);
+
+        String defaultStyle = "-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;";
+        btnDashboard.setStyle(defaultStyle);
+        btnStaff.setStyle(defaultStyle);
+        btnProducts.setStyle(defaultStyle);
+        btnInventory.setStyle(defaultStyle);
+        btnSales.setStyle(defaultStyle);
     }
 
-    private void handleLogout(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso POS - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+    private void highlightButton(Button button) {
+        button.setStyle("-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;");
+    }
+
+    @FXML
+    public void showDashboard() {
+        hideAllViews();
+        dashboardView.setVisible(true);
+        highlightButton(btnDashboard);
+    }
+
+    @FXML
+    public void showStaff(ActionEvent event) {
+        // You can either switch views inline or use your NavigateUtil here if desired:
+        hideAllViews();
+        staffView.setVisible(true);
+        highlightButton(btnStaff);
+    }
+
+    @FXML
+    public void showProducts() {
+        hideAllViews();
+        productsView.setVisible(true);
+        highlightButton(btnProducts);
+    }
+
+    @FXML
+    public void showInventory() {
+        hideAllViews();
+        inventoryView.setVisible(true);
+        highlightButton(btnInventory);
+    }
+
+    @FXML
+    public void showSales() {
+        hideAllViews();
+        salesView.setVisible(true);
+        highlightButton(btnSales);
+    }
+
+    @FXML
+    public void handleLogout(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to log out?", ButtonType.YES, ButtonType.NO);
+        alert.setHeaderText("Log Out Confirmation");
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso POS - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+            }
+        });
     }
 
     public static class AuditLogEntry {

@@ -1,249 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="768.0" prefWidth="1280.0"
-            style="-fx-background-color: #FAF8F5;"
-            stylesheets="@../styles/dashboard.css"
-            xmlns="http://javafx.com/javafx/17.0.12"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.coffeepos.renespresso.controller.main.AdminDashboardController">
+<StackPane prefHeight="768.0" prefWidth="1280.0" style="-fx-background-color: #F3E9DC;" stylesheets="@../styles/dashboard.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.main.AdminDashboardController">
 
-    <!-- LEFT ICON-BASED SIDEBAR NAVIGATION -->
-    <left>
-        <VBox prefWidth="75.0" style="-fx-background-color: #5E3023; -fx-padding: 16 10;" BorderPane.alignment="CENTER">
-            <children>
-                <!-- Brand Logo Icon Top -->
-                <VBox alignment="CENTER" prefHeight="45.0" prefWidth="45.0" style="-fx-background-color: #C08552; -fx-background-radius: 12px; -fx-cursor: hand;">
-                    <children>
-                        <Label text="☕" style="-fx-font-size: 18px;" />
-                    </children>
-                    <VBox.margin><Insets bottom="20.0" /></VBox.margin>
-                </VBox>
+    <!-- MAIN APP LAYOUT -->
+    <HBox prefHeight="768.0" prefWidth="1280.0">
+        <!-- SIDEBAR NAVIGATION -->
+        <VBox prefWidth="250.0" spacing="12.0" style="-fx-background-color: #5E3023; -fx-padding: 16 15 20 15;">
 
-                <!-- Navigation Icon Buttons -->
-                <VBox alignment="TOP_CENTER" spacing="10.0" VBox.vgrow="ALWAYS">
-                    <children>
-                        <Button fx:id="btnDashboard" alignment="CENTER" maxWidth="44.0" prefHeight="44.0" prefWidth="44.0" styleClass="sidebar-icon-btn-active" text="📊" />
-                        <Button fx:id="btnStaff" alignment="CENTER" maxWidth="44.0" prefHeight="44.0" prefWidth="44.0" styleClass="sidebar-icon-btn" text="👥" />
-                        <Button fx:id="btnProducts" alignment="CENTER" maxWidth="44.0" prefHeight="44.0" prefWidth="44.0" styleClass="sidebar-icon-btn" text="📋" />
-                        <Button fx:id="btnInventory" alignment="CENTER" maxWidth="44.0" prefHeight="44.0" prefWidth="44.0" styleClass="sidebar-icon-btn" text="📦" />
-                        <Button fx:id="btnSales" alignment="CENTER" maxWidth="44.0" prefHeight="44.0" prefWidth="44.0" styleClass="sidebar-icon-btn" text="📈" />
-                    </children>
-                </VBox>
+            <!-- Logo Header -->
+            <HBox alignment="CENTER_LEFT" prefHeight="42.0" spacing="10.0" style="-fx-padding: 0 0 2 0;">
+                <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 24px; -fx-font-weight: bold;" text="☕ RenEspresso" />
+            </HBox>
 
-                <!-- Logout Bottom Icon -->
-                <Button fx:id="btnLogout" alignment="CENTER" maxWidth="44.0" prefHeight="44.0" prefWidth="44.0" styleClass="sidebar-logout-btn" text="🚪" />
-            </children>
+            <Separator style="-fx-opacity: 0.2;" />
+
+            <!-- System Status & Admin Info -->
+            <VBox spacing="4.0" style="-fx-background-color: rgba(243, 233, 220, 0.1); -fx-padding: 10; -fx-background-radius: 8;">
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <Region style="-fx-background-color: #2ECC71; -fx-min-width: 8; -fx-min-height: 8; -fx-max-width: 8; -fx-max-height: 8; -fx-background-radius: 4;" />
+                    <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 11px; -fx-font-weight: bold;" text="ADMIN PORTAL" />
+                </HBox>
+                <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 12px; -fx-font-weight: bold;" text="Administrator" />
+                <Label fx:id="dateLabel" style="-fx-text-fill: #C08552; -fx-font-size: 11px;" text="Monday, Sep 29, 2026" />
+            </VBox>
+
+            <!-- Navigation Buttons -->
+            <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+                <Button fx:id="btnDashboard" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showDashboard" style="-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;" text="📊  Dashboard" />
+                <Button fx:id="btnStaff" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showStaff" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="👥  Staff &amp; Users" />
+                <Button fx:id="btnProducts" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showProducts" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📋  Products Management" />
+                <Button fx:id="btnInventory" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showInventory" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📦  Inventory Stock" />
+                <Button fx:id="btnSales" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showSales" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📈  Sales Reports" />
+            </VBox>
+
+            <Separator style="-fx-opacity: 0.2;" />
+
+            <!-- Logout Button -->
+            <Button fx:id="btnLogout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: #895737; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8; -fx-padding: 10 15;" text="🚪  Logout" />
         </VBox>
-    </left>
 
-    <!-- MAIN DASHBOARD WINDOW CONTAINER -->
-    <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent; -fx-background: transparent;" BorderPane.alignment="CENTER">
-            <content>
-                <VBox spacing="16.0" style="-fx-padding: 20;" VBox.vgrow="ALWAYS">
-                    <children>
+        <!-- CONTENT AREA (Swappable Views) -->
+        <StackPane HBox.hgrow="ALWAYS">
 
-                        <!-- PAGE HEADER WITH DATE -->
-                        <HBox alignment="CENTER_LEFT">
-                            <children>
-                                <VBox spacing="2.0">
-                                    <children>
-                                        <Label text="Dashboard" textFill="#5E3023" style="-fx-text-fill: #5E3023;">
-                                            <font><Font name="System Bold" size="22.0" /></font>
-                                        </Label>
-                                        <Label text="Overview of store sales health and operational diagnostics" textFill="#895737" style="-fx-text-fill: #895737;">
-                                            <font><Font size="11.0" /></font>
-                                        </Label>
-                                    </children>
-                                </VBox>
-                                <Region HBox.hgrow="ALWAYS" />
-                                <HBox alignment="CENTER" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 8px; -fx-padding: 6 12; -fx-border-color: #E2D3C0; -fx-border-radius: 8px;">
-                                    <children>
-                                        <Label text="📅" style="-fx-font-size: 12px;" />
-                                        <Label fx:id="dateLabel" text="Monday, September 29, 2026" textFill="#5E3023" style="-fx-text-fill: #5E3023;">
-                                            <font><Font name="System Bold" size="11.0" /></font>
-                                        </Label>
-                                    </children>
-                                </HBox>
-                            </children>
-                        </HBox>
+            <!-- VIEW 1: MAIN DASHBOARD -->
+            <ScrollPane fx:id="dashboardView" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" visible="true">
+                <content>
+                    <VBox spacing="20.0" style="-fx-padding: 25;">
+                        <children>
+                            <VBox spacing="4.0">
+                                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Admin Dashboard" />
+                                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Overview of store sales health and operational diagnostics" />
+                            </VBox>
 
-                        <!-- ROW 1: 4 KPI CARDS -->
-                        <HBox spacing="14.0">
-                            <children>
-                                <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card">
-                                    <children>
-                                        <HBox alignment="CENTER_LEFT">
-                                            <children>
-                                                <Label text="Today's Sales" styleClass="card-title" />
-                                                <Region HBox.hgrow="ALWAYS" />
-                                                <Label text="₱" styleClass="card-icon-badge" />
-                                            </children>
-                                        </HBox>
-                                        <Label fx:id="lblTodaySales" text="₱25,450.00" styleClass="card-metric-value">
-                                            <VBox.margin><Insets top="6.0" bottom="2.0" /></VBox.margin>
-                                        </Label>
+                            <!-- ROW 1: 4 KPI CARDS -->
+                            <HBox spacing="16.0">
+                                <children>
+                                    <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card" spacing="6.0">
+                                        <Label text="Today's Sales" styleClass="card-title" />
+                                        <Label fx:id="lblTodaySales" text="₱25,450.00" styleClass="card-metric-value" />
                                         <Label text="+12.4% from yesterday" styleClass="card-subtext-green" />
-                                    </children>
-                                </VBox>
-                                <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card">
-                                    <children>
-                                        <HBox alignment="CENTER_LEFT">
-                                            <children>
-                                                <Label text="Transactions" styleClass="card-title" />
-                                                <Region HBox.hgrow="ALWAYS" />
-                                                <Label text="🧾" styleClass="card-icon-badge" />
-                                            </children>
-                                        </HBox>
-                                        <Label fx:id="lblTotalTransactions" text="142" styleClass="card-metric-value">
-                                            <VBox.margin><Insets top="6.0" bottom="2.0" /></VBox.margin>
-                                        </Label>
+                                    </VBox>
+                                    <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card" spacing="6.0">
+                                        <Label text="Transactions" styleClass="card-title" />
+                                        <Label fx:id="lblTotalTransactions" text="142" styleClass="card-metric-value" />
                                         <Label text="Average spend: ₱179.20" styleClass="card-subtext" />
-                                    </children>
-                                </VBox>
-                                <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card">
-                                    <children>
-                                        <HBox alignment="CENTER_LEFT">
-                                            <children>
-                                                <Label text="Completed Orders" styleClass="card-title" />
-                                                <Region HBox.hgrow="ALWAYS" />
-                                                <Label text="☕" styleClass="card-icon-badge" />
-                                            </children>
-                                        </HBox>
-                                        <Label text="98" styleClass="card-metric-value">
-                                            <VBox.margin><Insets top="6.0" bottom="2.0" /></VBox.margin>
-                                        </Label>
+                                    </VBox>
+                                    <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card" spacing="6.0">
+                                        <Label text="Completed Orders" styleClass="card-title" />
+                                        <Label text="98" styleClass="card-metric-value" />
                                         <Label text="8 pending in kitchen" styleClass="card-subtext" />
-                                    </children>
-                                </VBox>
-                                <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card">
-                                    <children>
-                                        <HBox alignment="CENTER_LEFT">
-                                            <children>
-                                                <Label text="Low Stock Alerts" styleClass="card-title" />
-                                                <Region HBox.hgrow="ALWAYS" />
-                                                <Label text="⚠️" styleClass="card-icon-badge" />
-                                            </children>
-                                        </HBox>
-                                        <Label fx:id="lblLowStock" text="3" styleClass="card-metric-value-red">
-                                            <VBox.margin><Insets top="6.0" bottom="2.0" /></VBox.margin>
-                                        </Label>
+                                    </VBox>
+                                    <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card" spacing="6.0">
+                                        <Label text="Low Stock Alerts" styleClass="card-title" />
+                                        <Label fx:id="lblLowStock" text="3" styleClass="card-metric-value-red" />
                                         <Label text="Whole Milk, Oat Milk, Caramel" styleClass="card-subtext-red" />
-                                    </children>
-                                </VBox>
-                            </children>
-                        </HBox>
+                                    </VBox>
+                                </children>
+                            </HBox>
 
-                        <!-- ROW 2: SPLIT SECTION (ANALYTICS & SUMMARY STATS) -->
-                        <HBox spacing="14.0">
-                            <children>
-                                <!-- Weekly Analytics Mock Box -->
-                                <VBox HBox.hgrow="ALWAYS" styleClass="dashboard-card" prefHeight="170.0">
-                                    <children>
-                                        <HBox alignment="CENTER_LEFT">
-                                            <children>
-                                                <VBox spacing="1.0">
-                                                    <children>
-                                                        <Label text="Weekly Sales Analytics" styleClass="section-title" />
-                                                        <Label text="Visualizing net revenue trends over the past 7 days" styleClass="section-subtitle" />
-                                                    </children>
-                                                </VBox>
-                                                <Region HBox.hgrow="ALWAYS" />
-                                                <HBox spacing="3.0" style="-fx-background-color: #FAF5EF; -fx-background-radius: 6px; -fx-padding: 2;">
-                                                    <children>
-                                                        <Label style="-fx-padding: 3 8; -fx-text-fill: #895737; -fx-font-size: 10px; -fx-font-weight: bold;" text="Today" />
-                                                        <Label style="-fx-background-color: #FFFFFF; -fx-padding: 3 8; -fx-background-radius: 4px; -fx-text-fill: #5E3023; -fx-font-size: 10px; -fx-font-weight: bold;" text="This Week" />
-                                                        <Label style="-fx-padding: 3 8; -fx-text-fill: #895737; -fx-font-size: 10px; -fx-font-weight: bold;" text="This Month" />
-                                                    </children>
-                                                </HBox>
-                                            </children>
-                                        </HBox>
-                                        <Region VBox.vgrow="ALWAYS" />
-                                        <HBox alignment="BOTTOM_CENTER" spacing="30.0" style="-fx-padding: 10 5 5 5;">
-                                            <children>
-                                                <VBox alignment="BOTTOM_CENTER" spacing="4"><Label text="₱18k" styleClass="chart-bar-lbl"/><Region minHeight="45.0" maxHeight="45.0" minWidth="20.0" maxWidth="20.0" styleClass="chart-bar"/><Label text="Mon" styleClass="chart-lbl"/></VBox>
-                                                <VBox alignment="BOTTOM_CENTER" spacing="4"><Label text="₱22k" styleClass="chart-bar-lbl"/><Region minHeight="60.0" maxHeight="60.0" minWidth="20.0" maxWidth="20.0" styleClass="chart-bar"/><Label text="Tue" styleClass="chart-lbl"/></VBox>
-                                                <VBox alignment="BOTTOM_CENTER" spacing="4"><Label text="₱28k" styleClass="chart-bar-lbl"/><Region minHeight="75.0" maxHeight="75.0" minWidth="20.0" maxWidth="20.0" styleClass="chart-bar"/><Label text="Wed" styleClass="chart-lbl"/></VBox>
-                                                <VBox alignment="BOTTOM_CENTER" spacing="4"><Label text="₱34k" styleClass="chart-bar-lbl-active"/><Region minHeight="95.0" maxHeight="95.0" minWidth="20.0" maxWidth="20.0" styleClass="chart-bar-active"/><Label text="Thu" styleClass="chart-lbl-active"/></VBox>
-                                                <VBox alignment="BOTTOM_CENTER" spacing="4"><Label text="₱29k" styleClass="chart-bar-lbl"/><Region minHeight="80.0" maxHeight="80.0" minWidth="20.0" maxWidth="20.0" styleClass="chart-bar"/><Label text="Fri" styleClass="chart-lbl"/></VBox>
-                                                <VBox alignment="BOTTOM_CENTER" spacing="4"><Label text="₱31k" styleClass="chart-bar-lbl"/><Region minHeight="88.0" maxHeight="88.0" minWidth="20.0" maxWidth="20.0" styleClass="chart-bar"/><Label text="Sat" styleClass="chart-lbl"/></VBox>
-                                                <VBox alignment="BOTTOM_CENTER" spacing="4"><Label text="₱19k" styleClass="chart-bar-lbl"/><Region minHeight="50.0" maxHeight="50.0" minWidth="20.0" maxWidth="20.0" styleClass="chart-bar"/><Label text="Sun" styleClass="chart-lbl"/></VBox>
-                                            </children>
-                                        </HBox>
-                                    </children>
-                                </VBox>
-
-                                <!-- Weekly Summaries Stack Card -->
-                                <VBox prefWidth="300.0" spacing="10.0" styleClass="dashboard-card" alignment="CENTER">
-                                    <children>
-                                        <VBox spacing="1.0" style="-fx-border-color: #E2D3C0; -fx-border-width: 0 0 1 0; -fx-padding: 0 0 8 0;" maxWidth="Infinity">
-                                            <children>
-                                                <Label text="Total Weekly Sales" styleClass="card-title" />
-                                                <Label text="₱178,250.00" styleClass="card-metric-value" style="-fx-font-size: 18px;" />
-                                            </children>
-                                        </VBox>
-                                        <VBox spacing="1.0" style="-fx-border-color: #E2D3C0; -fx-border-width: 0 0 1 0; -fx-padding: 0 0 8 0;" maxWidth="Infinity">
-                                            <children>
-                                                <Label text="Weekly Orders Count" styleClass="card-title" />
-                                                <Label text="684" styleClass="card-metric-value" style="-fx-font-size: 18px;" />
-                                            </children>
-                                        </VBox>
-                                        <VBox spacing="1.0" maxWidth="Infinity">
-                                            <children>
-                                                <Label text="Avg Order Value" styleClass="card-title" />
-                                                <Label text="₱260.60" styleClass="card-metric-value" style="-fx-font-size: 18px;" />
-                                            </children>
-                                        </VBox>
-                                    </children>
-                                </VBox>
-                            </children>
-                        </HBox>
-
-                        <!-- ROW 3: MODERN TABLE VIEW (AUDIT LOGS) -->
-                        <VBox styleClass="dashboard-card" VBox.vgrow="ALWAYS">
-                            <children>
-                                <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 10 0;">
-                                    <children>
-                                        <VBox spacing="1.0">
-                                            <children>
-                                                <Label text="System Audit Logs &amp; Overrides" styleClass="section-title" />
-                                                <Label text="Real-time tracking of security events, cashier actions, and shift overrides" styleClass="section-subtitle" />
-                                            </children>
-                                        </VBox>
-                                    </children>
-                                </HBox>
-
-                                <!-- Modern Table View -->
-                                <TableView fx:id="auditTable" prefHeight="150.0" styleClass="modern-audit-table" VBox.vgrow="ALWAYS">
+                            <!-- ROW 2: AUDIT LOGS TABLE -->
+                            <VBox styleClass="dashboard-card" spacing="12.0">
+                                <Label text="System Audit Logs &amp; Overrides" styleClass="section-title" />
+                                <TableView fx:id="auditTable" prefHeight="320.0" styleClass="modern-audit-table">
                                     <columns>
-                                        <TableColumn fx:id="colTime" text="TIMESTAMP" prefWidth="120.0" />
-                                        <TableColumn fx:id="colUser" text="USER ACCOUNT" prefWidth="130.0" />
-                                        <TableColumn fx:id="colRole" text="ROLE" prefWidth="100.0" />
-                                        <TableColumn fx:id="colAction" text="ACTION PERFORMED" prefWidth="200.0" />
-                                        <TableColumn fx:id="colDetails" text="AUDIT DETAILS &amp; CONTEXT" prefWidth="400.0" />
+                                        <TableColumn fx:id="colTime" text="TIMESTAMP" prefWidth="130.0" />
+                                        <TableColumn fx:id="colUser" text="USER ACCOUNT" prefWidth="140.0" />
+                                        <TableColumn fx:id="colRole" text="ROLE" prefWidth="110.0" />
+                                        <TableColumn fx:id="colAction" text="ACTION PERFORMED" prefWidth="220.0" />
+                                        <TableColumn fx:id="colDetails" text="AUDIT DETAILS &amp; CONTEXT" prefWidth="380.0" />
                                     </columns>
                                     <columnResizePolicy>
                                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                     </columnResizePolicy>
                                 </TableView>
-                            </children>
-                        </VBox>
+                            </VBox>
+                        </children>
+                    </VBox>
+                </content>
+            </ScrollPane>
 
-                    </children>
-                </VBox>
-            </content>
-        </ScrollPane>
-    </center>
-</BorderPane>
+            <!-- VIEW 2: STAFF & USERS (Placeholder matching view pattern) -->
+            <VBox fx:id="staffView" spacing="15.0" style="-fx-padding: 25;" visible="false">
+                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Staff &amp; User Accounts" />
+                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Manage cashier accounts, permissions, and roles." />
+            </VBox>
+
+            <!-- VIEW 3: PRODUCTS -->
+            <VBox fx:id="productsView" spacing="15.0" style="-fx-padding: 25;" visible="false">
+                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Products Catalog" />
+                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Configure menu items, prices, and categories." />
+            </VBox>
+
+            <!-- VIEW 4: INVENTORY -->
+            <VBox fx:id="inventoryView" spacing="15.0" style="-fx-padding: 25;" visible="false">
+                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Inventory Stock" />
+                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Track raw ingredients, milk, cups, and supplies." />
+            </VBox>
+
+            <!-- VIEW 5: SALES REPORTS -->
+            <VBox fx:id="salesView" spacing="15.0" style="-fx-padding: 25;" visible="false">
+                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Sales Reports &amp; Analytics" />
+                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Detailed performance breakdown and exportable records." />
+            </VBox>
+
+        </StackPane>
+    </HBox>
+</StackPane>
