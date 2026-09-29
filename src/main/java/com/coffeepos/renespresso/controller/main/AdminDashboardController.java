@@ -11,11 +11,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 public class AdminDashboardController {
 
-    @FXML private Label activeShiftLabel;
-    @FXML private Label adminNameLabel;
-
+    @FXML private Label dateLabel;
     @FXML private Label lblTodaySales;
     @FXML private Label lblTotalTransactions;
     @FXML private Label lblTopSeller;
@@ -37,12 +38,20 @@ public class AdminDashboardController {
 
     @FXML
     public void initialize() {
+        setSystemDate();
         setupAuditTableColumns();
         loadSampleAuditData();
 
         // Navigation Actions
         btnStaff.setOnAction(this::handleStaffNavigation);
         btnLogout.setOnAction(this::handleLogout);
+    }
+
+    private void setSystemDate() {
+        if (dateLabel != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+            dateLabel.setText(LocalDate.now().format(formatter));
+        }
     }
 
     private void setupAuditTableColumns() {
@@ -63,7 +72,6 @@ public class AdminDashboardController {
     }
 
     private void handleStaffNavigation(ActionEvent event) {
-        // NavigateUtil hook to Staff/User Management view
         NavigateUtil.navigateTo(event, "UserManagementView.fxml", "Renespresso - User Management", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
     }
 
@@ -71,7 +79,6 @@ public class AdminDashboardController {
         NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso POS - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 
-    // Inner class representation for audit log entries
     public static class AuditLogEntry {
         private final String time;
         private final String user;

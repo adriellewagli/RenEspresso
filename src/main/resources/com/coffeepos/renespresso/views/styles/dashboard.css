@@ -1,0 +1,205 @@
+/* ==========================================================================
+   RENESPRESSO - MODERN DESIGN SYSTEM STYLESHEET
+   ========================================================================== */
+
+/* Global Font & Smooth Rendering Injection */
+.root {
+    -fx-font-family: "Segoe UI", "Inter", "Roboto", "Helvetica Neue", sans-serif;
+}
+
+/* Sidebar Icon Buttons */
+.sidebar-icon-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #FAF5EF;
+    -fx-font-size: 16px;
+    -fx-background-radius: 12px;
+    -fx-cursor: hand;
+}
+
+.sidebar-icon-btn:hover {
+    -fx-background-color: rgba(192, 133, 82, 0.25);
+}
+
+.sidebar-icon-btn-active {
+    -fx-background-color: #C08552;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 16px;
+    -fx-background-radius: 12px;
+    -fx-cursor: hand;
+}
+
+.sidebar-logout-btn {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: #FCA5A5;
+    -fx-font-size: 16px;
+    -fx-background-radius: 12px;
+    -fx-cursor: hand;
+}
+
+.sidebar-logout-btn:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Dashboard Metric Cards */
+.dashboard-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 14px;
+    -fx-padding: 18px;
+    -fx-border-color: #E2D3C0;
+    -fx-border-radius: 14px;
+    -fx-border-width: 1px;
+}
+
+.card-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #895737;
+}
+
+.card-icon-badge {
+    -fx-background-color: #FAF5EF;
+    -fx-background-radius: 10px;
+    -fx-padding: 6px 10px;
+    -fx-font-size: 12px;
+    -fx-text-fill: #5E3023;
+}
+
+.card-metric-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #5E3023;
+}
+
+.card-metric-value-red {
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #DC2626;
+}
+
+.card-subtext {
+    -fx-font-size: 11px;
+    -fx-text-fill: #895737;
+}
+
+.card-subtext-green {
+    -fx-font-size: 11px;
+    -fx-text-fill: #059669;
+    -fx-font-weight: bold;
+}
+
+.card-subtext-red {
+    -fx-font-size: 11px;
+    -fx-text-fill: #DC2626;
+}
+
+/* Section Headers */
+.section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #5E3023;
+}
+
+.section-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #895737;
+}
+
+/* Chart Mock Styles */
+.chart-bar {
+    -fx-background-color: #E2D3C0;
+    -fx-background-radius: 6px 6px 0 0;
+}
+
+.chart-bar-active {
+    -fx-background-color: #C08552;
+    -fx-background-radius: 6px 6px 0 0;
+}
+
+.chart-lbl {
+    -fx-font-size: 10px;
+    -fx-text-fill: #895737;
+    -fx-font-weight: bold;
+}
+
+.chart-lbl-active {
+    -fx-font-size: 10px;
+    -fx-text-fill: #5E3023;
+    -fx-font-weight: bold;
+}
+
+.chart-bar-lbl {
+    -fx-font-size: 9px;
+    -fx-text-fill: transparent;
+}
+
+.chart-bar-lbl-active {
+    -fx-font-size: 9px;
+    -fx-text-fill: #5E3023;
+    -fx-font-weight: bold;
+}
+
+/* ==========================================================================
+   MODERN WEB-STYLE TABLEVIEW (Tailwind SaaS Aesthetic)
+   ========================================================================== */
+
+.modern-audit-table {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2D3C0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 0;
+}
+
+/* Header Background */
+.modern-audit-table .column-header-background {
+    -fx-background-color: #FAF5EF;
+    -fx-background-radius: 12px 12px 0 0;
+    -fx-border-color: #E2D3C0;
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* Header Cells & Font Override */
+.modern-audit-table .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 40px;
+}
+
+.modern-audit-table .column-header .label {
+    -fx-font-family: "Segoe UI", "Inter", "Roboto", sans-serif;
+    -fx-text-fill: #895737;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER-LEFT;
+    -fx-padding: 0 0 0 16px;
+}
+
+/* Table Rows */
+.modern-audit-table .table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #FAF5EF transparent;
+    -fx-cell-size: 46px;
+}
+
+.modern-audit-table .table-row-cell:odd {
+    -fx-background-color: #FCFAF8;
+}
+
+.modern-audit-table .table-row-cell:hover {
+    -fx-background-color: #F4EBE1;
+    -fx-cursor: hand;
+}
+
+.modern-audit-table .table-row-cell:filled:selected {
+    -fx-background-color: #E2D3C0;
+}
+
+/* Table Cells & Font Override */
+.modern-audit-table .table-cell {
+    -fx-font-family: "Segoe UI", "Inter", "Roboto", sans-serif;
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 12px;
+    -fx-alignment: CENTER-LEFT;
+    -fx-padding: 0 0 0 16px;
+    -fx-border-color: transparent;
+}
