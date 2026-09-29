@@ -114,7 +114,7 @@ public class LoginController {
             if ("admin".equalsIgnoreCase(user.getRole()) || "manager".equalsIgnoreCase(user.getRole())) {
                 NavigateUtil.navigateTo(event, "main/AdminDashboardView.fxml", "Renespresso - Admin Dashboard", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
             } else {
-                NavigateUtil.navigateTo(event, "ClientView.fxml", "Renespresso POS Terminal", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
+                NavigateUtil.navigateTo(event, "main/UserView.fxml", "Renespresso POS Terminal", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
             }
         } else {
             AlertUtil.showError("Authentication Failed", "Invalid username or password, or account is inactive.");
