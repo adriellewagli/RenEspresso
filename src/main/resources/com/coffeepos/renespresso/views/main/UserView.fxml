@@ -3,196 +3,219 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane prefHeight="768.0" prefWidth="1280.0" style="-fx-background-color: #F3E9DC;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.main.UserViewController">
+<StackPane fx:id="rootPane" prefHeight="768.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.main.UserViewController">
 
-    <!-- MAIN APP LAYOUT -->
+    <!-- MAIN APP CONTAINER -->
     <HBox prefHeight="768.0" prefWidth="1280.0">
-        <!-- SIDEBAR -->
-        <VBox prefWidth="250.0" spacing="12.0" style="-fx-background-color: #5E3023; -fx-padding: 16 15 20 15;">
 
-            <!-- Logo Header -->
-            <HBox alignment="CENTER_LEFT" prefHeight="42.0" spacing="10.0" style="-fx-padding: 0 0 2 0;">
-                <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 24px; -fx-font-weight: bold;" text="☕ RenEspresso" />
+        <!-- MODERN SIDEBAR NAVIGATION -->
+        <VBox prefWidth="260.0" spacing="16.0" styleClass="sidebar">
+
+            <!-- Brand Logo Header -->
+            <HBox alignment="CENTER_LEFT" prefHeight="48.0" spacing="12.0">
+                <StackPane prefHeight="36.0" prefWidth="36.0" styleClass="brand-icon-box">
+                    <Label style="-fx-text-fill: #FFFFFF; -fx-font-size: 18px;" text="☕" />
+                </StackPane>
+                <VBox alignment="CENTER_LEFT" spacing="0">
+                    <Label styleClass="brand-title" text="RenEspresso" />
+                    <Label styleClass="brand-subtitle" text="POS SYSTEM" />
+                </VBox>
             </HBox>
 
-            <Separator style="-fx-opacity: 0.2;" />
+            <Separator styleClass="sidebar-separator" />
 
-            <!-- System Status & Cashier Info -->
-            <VBox spacing="4.0" style="-fx-background-color: rgba(243, 233, 220, 0.1); -fx-padding: 10; -fx-background-radius: 8;">
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <Region style="-fx-background-color: #2ECC71; -fx-min-width: 8; -fx-min-height: 8; -fx-max-width: 8; -fx-max-height: 8; -fx-background-radius: 4;" />
-                    <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 11px; -fx-font-weight: bold;" text="SYSTEM ONLINE" />
+            <!-- Cashier Session Information Box -->
+            <VBox spacing="6.0" styleClass="session-box">
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="status-dot" />
+                    <Label styleClass="status-text" text="SYSTEM ONLINE" />
                 </HBox>
-                <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 12px; -fx-font-weight: bold;" text="Cashier — Rina" />
-                <Label fx:id="lblClock" style="-fx-text-fill: #C08552; -fx-font-size: 11px;" text="01:14 PM" />
+                <Label styleClass="cashier-text" text="Cashier — Rina" />
+                <Label fx:id="lblClock" styleClass="clock-text" text="03:52 PM" />
             </VBox>
 
-            <!-- Navigation Buttons -->
-            <VBox spacing="8.0" VBox.vgrow="ALWAYS">
-                <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showHome" style="-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;" text="🏠  Home" />
-                <Button fx:id="btnMenu" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showMenu" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📋  Menu" />
-                <Button fx:id="btnTransactionHistory" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showTransactionHistory" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📜  Transaction History" />
-                <Button fx:id="btnAbout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showAbout" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="ℹ  About" />
-                <Button fx:id="btnSettings" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showSettings" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="⚙ Settings" />
+            <!-- Navigation Bar -->
+            <VBox spacing="6.0" VBox.vgrow="ALWAYS">
+                <Button fx:id="btnHome" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showHome" styleClass="nav-button-active" text="🏠  Home" />
+                <Button fx:id="btnMenu" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showMenu" styleClass="nav-button" text="📋  Menu" />
+                <Button fx:id="btnTransactionHistory" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showTransactionHistory" styleClass="nav-button" text="📜  Transaction History" />
+                <Button fx:id="btnAbout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showAbout" styleClass="nav-button" text="ℹ  About" />
+                <Button fx:id="btnSettings" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showSettings" styleClass="nav-button" text="⚙  Settings" />
             </VBox>
 
-            <Separator style="-fx-opacity: 0.2;" />
+            <Separator styleClass="sidebar-separator" />
 
             <!-- Logout Button -->
-            <Button fx:id="btnLogout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleLogout" style="-fx-background-color: #895737; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8; -fx-padding: 10 15;" text="🚪  Logout" />
+            <Button fx:id="btnLogout" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#handleLogout" styleClass="logout-button" text="🚪  Logout" />
         </VBox>
 
-        <!-- CONTENT AREA (Swappable Views) -->
+        <!-- CONTENT AREA VIEW STACK -->
         <StackPane HBox.hgrow="ALWAYS">
 
-            <!-- VIEW 1: HOME -->
-            <VBox fx:id="homeView" spacing="20.0" style="-fx-padding: 25;">
-                <VBox spacing="5.0">
-                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Welcome back, Cashier Rina!" />
-                    <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Here is your real-time performance summary for this shift." />
+            <!-- VIEW 1: HOME DASHBOARD -->
+            <VBox fx:id="homeView" spacing="24.0" styleClass="view-container">
+                <!-- Header -->
+                <VBox spacing="4.0">
+                    <Label styleClass="page-title" text="Welcome back, Cashier Rina 👋" />
+                    <Label styleClass="page-subtitle" text="Here is your real-time performance summary for this shift." />
                 </VBox>
 
-                <!-- Metric Cards -->
+                <!-- Metric Cards Grid -->
                 <HBox spacing="20.0">
-                    <VBox prefWidth="300.0" spacing="8.0" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 12;">
-                        <Label style="-fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold;" text="SESSION SALES" />
-                        <Label fx:id="lblDashSales" style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="₱0.00" />
-                        <Label style="-fx-text-fill: #895737; -fx-font-size: 11px;" text="Finalized orders total" />
+                    <VBox prefWidth="310.0" spacing="10.0" styleClass="dashboard-card">
+                        <Label styleClass="card-title" text="SESSION SALES" />
+                        <Label fx:id="lblDashSales" styleClass="card-metric-green" text="₱0.00" />
+                        <Label styleClass="card-subtext" text="Total from finalized orders" />
                     </VBox>
 
-                    <VBox prefWidth="300.0" spacing="8.0" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 12;">
-                        <Label style="-fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold;" text="ORDERS THIS SESSION" />
-                        <Label fx:id="lblDashOrders" style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="0" />
-                        <Label style="-fx-text-fill: #895737; -fx-font-size: 11px;" text="Total orders completed" />
+                    <VBox prefWidth="310.0" spacing="10.0" styleClass="dashboard-card">
+                        <Label styleClass="card-title" text="ORDERS THIS SESSION" />
+                        <Label fx:id="lblDashOrders" styleClass="card-metric-dark" text="0" />
+                        <Label styleClass="card-subtext" text="Completed transactions" />
                     </VBox>
 
-                    <VBox prefWidth="300.0" spacing="8.0" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 12;">
-                        <Label style="-fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold;" text="NEXT TICKET NUMBER" />
-                        <Label fx:id="lblDashNextTicket" style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="#042" />
-                        <Label style="-fx-text-fill: #895737; -fx-font-size: 11px;" text="Assigned upon finalization" />
+                    <VBox prefWidth="310.0" spacing="10.0" styleClass="dashboard-card">
+                        <Label styleClass="card-title" text="NEXT TICKET NUMBER" />
+                        <Label fx:id="lblDashNextTicket" styleClass="card-metric-accent" text="#042" />
+                        <Label styleClass="card-subtext" text="Assigned upon order setup" />
+                    </VBox>
+                </HBox>
+
+                <!-- Quick Actions & Shift Info Section -->
+                <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+                    <VBox prefWidth="400.0" spacing="16.0" styleClass="dashboard-card" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-text-fill: #2D1810; -fx-font-size: 16px; -fx-font-weight: bold;" text="Quick Actions" />
+                        <HBox spacing="12.0">
+                            <Button onAction="#showMenu" styleClass="btn-primary" text="➕  Create New Order" />
+                            <Button onAction="#showTransactionHistory" styleClass="btn-secondary" text="📜  View History" />
+                        </HBox>
+                        <Separator style="-fx-opacity: 0.4;" />
+                        <VBox spacing="8.0">
+                            <Label style="-fx-text-fill: #2D1810; -fx-font-weight: bold;" text="Active Shift Summary" />
+                            <Label styleClass="card-subtext" text="• Terminal ID: REG-01 (Counter 1)" />
+                            <Label styleClass="card-subtext" text="• Senior/PWD Discounts: Auto-calculated" />
+                            <Label styleClass="card-subtext" text="• Default Printer: Thermal Receipt POS-80" />
+                        </VBox>
                     </VBox>
                 </HBox>
             </VBox>
 
-            <!-- VIEW 2: MENU (POS SALES ENTRY) -->
+            <!-- VIEW 2: MENU (POS ORDER SCREEN) -->
             <HBox fx:id="menuView" visible="false">
-                <VBox spacing="15.0" style="-fx-padding: 20;" HBox.hgrow="ALWAYS">
-                    <HBox spacing="10.0">
-                        <Button onAction="#filterCategory" style="-fx-background-color: #5E3023; -fx-text-fill: #F3E9DC; -fx-background-radius: 20; -fx-padding: 8 16; -fx-cursor: hand;" text="All" />
-                        <Button onAction="#filterCategory" style="-fx-background-color: #FFFFFF; -fx-text-fill: #5E3023; -fx-background-radius: 20; -fx-padding: 8 16; -fx-border-color: #C08552; -fx-border-radius: 20; -fx-cursor: hand;" text="Hot Coffee" />
-                        <Button onAction="#filterCategory" style="-fx-background-color: #FFFFFF; -fx-text-fill: #5E3023; -fx-background-radius: 20; -fx-padding: 8 16; -fx-border-color: #C08552; -fx-border-radius: 20; -fx-cursor: hand;" text="Iced Coffee" />
-                        <Button onAction="#filterCategory" style="-fx-background-color: #FFFFFF; -fx-text-fill: #5E3023; -fx-background-radius: 20; -fx-padding: 8 16; -fx-border-color: #C08552; -fx-border-radius: 20; -fx-cursor: hand;" text="Milk Tea" />
-                        <Button onAction="#filterCategory" style="-fx-background-color: #FFFFFF; -fx-text-fill: #5E3023; -fx-background-radius: 20; -fx-padding: 8 16; -fx-border-color: #C08552; -fx-border-radius: 20; -fx-cursor: hand;" text="Pastries" />
+                <VBox spacing="18.0" style="-fx-padding: 24;" HBox.hgrow="ALWAYS">
+                    <HBox spacing="8.0">
+                        <Button onAction="#filterCategory" styleClass="category-btn-active" text="All" />
+                        <Button onAction="#filterCategory" styleClass="category-btn" text="Hot Coffee" />
+                        <Button onAction="#filterCategory" styleClass="category-btn" text="Iced Coffee" />
+                        <Button onAction="#filterCategory" styleClass="category-btn" text="Milk Tea" />
+                        <Button onAction="#filterCategory" styleClass="category-btn" text="Pastries" />
                     </HBox>
 
                     <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
-                        <GridPane fx:id="menuGrid" hgap="15.0" vgap="15.0" />
+                        <GridPane fx:id="menuGrid" hgap="16.0" vgap="16.0" />
                     </ScrollPane>
                 </VBox>
 
-                <!-- Right Section: Current Order Panel -->
-                <VBox prefWidth="380.0" spacing="12.0" style="-fx-background-color: #FFFFFF; -fx-padding: 20;">
+                <!-- Order Sidebar -->
+                <VBox prefWidth="380.0" spacing="14.0" style="-fx-background-color: #FFFFFF; -fx-padding: 24; -fx-border-color: #EFEBE4; -fx-border-width: 0 0 0 1;">
                     <HBox alignment="CENTER_LEFT">
-                        <Label style="-fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold;" text="Current order" />
+                        <VBox spacing="2">
+                            <Label style="-fx-text-fill: #2D1810; -fx-font-size: 18px; -fx-font-weight: bold;" text="Current Order" />
+                            <Label fx:id="lblCartTicket" style="-fx-text-fill: #A08C80; -fx-font-size: 12px;" text="will be ticket #042" />
+                        </VBox>
                         <Region HBox.hgrow="ALWAYS" />
-                        <Label fx:id="lblCartTicket" style="-fx-text-fill: #895737; -fx-font-size: 12px;" text="will be ticket #042" />
                     </HBox>
 
-                    <Separator />
-
+                    <Separator style="-fx-opacity: 0.5;" />
                     <ListView fx:id="cartListView" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS" />
+                    <Separator style="-fx-opacity: 0.5;" />
 
-                    <Separator />
-
-                    <HBox alignment="CENTER_LEFT" style="-fx-background-color: #F3E9DC; -fx-padding: 8 12; -fx-background-radius: 8;">
-                        <CheckBox fx:id="chkDiscount" onAction="#handleDiscountToggle" style="-fx-text-fill: #5E3023; -fx-font-weight: bold;" text="Senior / PWD discount" />
+                    <HBox alignment="CENTER_LEFT" style="-fx-background-color: #F8F5F0; -fx-padding: 10 14; -fx-background-radius: 8; -fx-border-color: #EFEBE4; -fx-border-radius: 8;">
+                        <CheckBox fx:id="chkDiscount" onAction="#handleDiscountToggle" style="-fx-text-fill: #2D1810; -fx-font-weight: bold; -fx-font-size: 12px;" text="Senior / PWD Discount" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Label style="-fx-text-fill: #895737; -fx-font-size: 10px;" text="20% + VAT Exempt" />
+                        <Label style="-fx-text-fill: #C08552; -fx-font-size: 10px; -fx-font-weight: bold;" text="-20% + VAT Exemption" />
                     </HBox>
 
-                    <VBox spacing="6.0">
+                    <VBox spacing="8.0" style="-fx-padding: 4 0;">
                         <HBox>
-                            <Label style="-fx-text-fill: #895737;" text="Subtotal" />
+                            <Label style="-fx-text-fill: #7D6B5D;" text="Subtotal" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Label fx:id="lblSubtotal" style="-fx-text-fill: #5E3023; -fx-font-weight: bold;" text="₱0.00" />
+                            <Label fx:id="lblSubtotal" style="-fx-text-fill: #2D1810; -fx-font-weight: bold;" text="₱0.00" />
                         </HBox>
                         <HBox>
-                            <Label style="-fx-text-fill: #895737;" text="VAT (12%)" />
+                            <Label style="-fx-text-fill: #7D6B5D;" text="VAT (12%)" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Label fx:id="lblVat" style="-fx-text-fill: #5E3023;" text="₱0.00" />
+                            <Label fx:id="lblVat" style="-fx-text-fill: #2D1810;" text="₱0.00" />
                         </HBox>
                         <HBox fx:id="rowDiscount" visible="false">
-                            <Label style="-fx-text-fill: #C08552;" text="Discount Exemption" />
+                            <Label style="-fx-text-fill: #C08552; -fx-font-weight: bold;" text="Discount Applied" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Label fx:id="lblDiscount" style="-fx-text-fill: #C08552;" text="-₱0.00" />
+                            <Label fx:id="lblDiscount" style="-fx-text-fill: #C08552; -fx-font-weight: bold;" text="-₱0.00" />
                         </HBox>
-                        <Separator />
+                        <Separator style="-fx-opacity: 0.5; -fx-padding: 4 0;" />
                         <HBox alignment="CENTER_LEFT">
-                            <Label style="-fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold;" text="Total" />
+                            <Label style="-fx-text-fill: #2D1810; -fx-font-size: 20px; -fx-font-weight: bold;" text="Total" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Label fx:id="lblTotal" style="-fx-text-fill: #5E3023; -fx-font-size: 22px; -fx-font-weight: bold;" text="₱0.00" />
+                            <Label fx:id="lblTotal" style="-fx-text-fill: #2D1810; -fx-font-size: 24px; -fx-font-weight: bold;" text="₱0.00" />
                         </HBox>
                     </VBox>
 
-                    <Button maxWidth="Infinity" onAction="#openConfirmationModal" style="-fx-background-color: #895737; -fx-text-fill: #F3E9DC; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;" text="Finalize order &amp; print receipt" />
+                    <Button maxWidth="Infinity" onAction="#openConfirmationModal" styleClass="btn-accent" text="Finalize Order &amp; Print Receipt" />
                 </VBox>
             </HBox>
 
             <!-- VIEW 3: TRANSACTION HISTORY -->
-            <VBox fx:id="historyView" spacing="15.0" style="-fx-padding: 25;" visible="false">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Transaction History" />
-                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Recent transactions for this active cashier session." />
-                <TableView fx:id="tblHistory" style="-fx-background-radius: 8;" VBox.vgrow="ALWAYS">
+            <VBox fx:id="historyView" spacing="16.0" styleClass="view-container" visible="false">
+                <VBox spacing="4.0">
+                    <Label styleClass="page-title" text="Transaction History" />
+                    <Label styleClass="page-subtitle" text="Recent transactions for this active cashier session." />
+                </VBox>
+                <TableView fx:id="tblHistory" styleClass="modern-audit-table" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn prefWidth="100.0" text="Ticket #" />
-                        <TableColumn prefWidth="120.0" text="Time" />
-                        <TableColumn prefWidth="300.0" text="Items" />
-                        <TableColumn prefWidth="150.0" text="Discount Applied" />
-                        <TableColumn prefWidth="120.0" text="Total Paid" />
+                        <TableColumn prefWidth="120.0" text="Ticket #" />
+                        <TableColumn prefWidth="130.0" text="Time" />
+                        <TableColumn prefWidth="320.0" text="Items" />
+                        <TableColumn prefWidth="160.0" text="Discount Applied" />
+                        <TableColumn prefWidth="130.0" text="Total Paid" />
                     </columns>
                 </TableView>
             </VBox>
 
             <!-- VIEW 4: ABOUT -->
-            <VBox fx:id="aboutView" spacing="15.0" style="-fx-padding: 25;" visible="false">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="About RenEspresso POS" />
-                <VBox spacing="10.0" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 10;">
-                    <Label style="-fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 16px;" text="RenEspresso Point of Sale System v1.0" />
-                    <Label style="-fx-text-fill: #895737;" text="Developed for coffee shop counter order management and receipt printing." />
-                    <Separator />
-                    <Label style="-fx-text-fill: #5E3023; -fx-font-weight: bold;" text="Features:" />
-                    <Label style="-fx-text-fill: #895737;" text="• Order entry with real-time size &amp; subtotal calculations" />
-                    <Label style="-fx-text-fill: #895737;" text="• Senior Citizen / PWD 20% discount &amp; 12% VAT exemption toggle" />
-                    <Label style="-fx-text-fill: #895737;" text="• Real-time ticket sequence tracking" />
+            <VBox fx:id="aboutView" spacing="16.0" styleClass="view-container" visible="false">
+                <Label styleClass="page-title" text="About RenEspresso POS" />
+                <VBox spacing="12.0" styleClass="dashboard-card">
+                    <Label style="-fx-text-fill: #2D1810; -fx-font-weight: bold; -fx-font-size: 16px;" text="RenEspresso Point of Sale System v1.0" />
+                    <Label styleClass="card-subtext" text="Developed for coffee shop counter order management and automated receipt generation." />
                 </VBox>
             </VBox>
 
             <!-- VIEW 5: SETTINGS -->
-            <VBox fx:id="settingsView" spacing="15.0" style="-fx-padding: 25;" visible="false">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Settings" />
-                <VBox spacing="15.0" style="-fx-background-color: #FFFFFF; -fx-padding: 20; -fx-background-radius: 10;">
-                    <Label style="-fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 16px;" text="POS Preferences" />
-                    <CheckBox selected="true" style="-fx-text-fill: #5E3023;" text="Auto-print receipt after order finalization" />
-                    <CheckBox selected="true" style="-fx-text-fill: #5E3023;" text="Play chime sound on item added to cart" />
+            <VBox fx:id="settingsView" spacing="16.0" styleClass="view-container" visible="false">
+                <Label styleClass="page-title" text="Settings" />
+                <VBox spacing="16.0" styleClass="dashboard-card">
+                    <Label style="-fx-text-fill: #2D1810; -fx-font-weight: bold; -fx-font-size: 16px;" text="POS System Preferences" />
+                    <CheckBox selected="true" style="-fx-text-fill: #2D1810;" text="Auto-print receipt after order finalization" />
+                    <CheckBox selected="true" style="-fx-text-fill: #2D1810;" text="Play chime sound on item added to cart" />
                 </VBox>
             </VBox>
 
         </StackPane>
     </HBox>
 
-    <!-- CONFIRMATION MODAL OVERLAY -->
-    <StackPane fx:id="modalOverlay" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false">
-        <VBox alignment="CENTER" fillWidth="false" maxWidth="400.0" spacing="15.0" style="-fx-background-color: #FFFFFF; -fx-padding: 25; -fx-background-radius: 12;">
-            <Label style="-fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold;" text="Confirm Order Finalization" />
-            <Label fx:id="lblModalTicket" style="-fx-text-fill: #C08552; -fx-font-weight: bold; -fx-font-size: 14px;" text="Ticket #042" />
-            <Label style="-fx-text-fill: #895737; -fx-text-alignment: center;" text="Are you sure you want to finalize this order and process the payment?" wrapText="true" />
-            <HBox spacing="10.0">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-weight: bold;" text="Total Amount Due:" />
-                <Label fx:id="lblModalTotal" style="-fx-text-fill: #5E3023; -fx-font-weight: bold;" text="₱0.00" />
+    <!-- MODERN MODAL OVERLAY -->
+    <StackPane fx:id="modalOverlay" styleClass="modal-overlay" visible="false">
+        <VBox alignment="CENTER" fillWidth="false" maxWidth="420.0" spacing="18.0" styleClass="modal-dialog">
+            <Label style="-fx-text-fill: #2D1810; -fx-font-size: 20px; -fx-font-weight: bold;" text="Confirm Order Finalization" />
+            <Label fx:id="lblModalTicket" style="-fx-text-fill: #C08552; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-color: #F8F5F0; -fx-padding: 6 12; -fx-background-radius: 12;" text="Ticket #042" />
+            <Label style="-fx-text-fill: #7D6B5D; -fx-text-alignment: center;" text="Are you sure you want to finalize this order and process the payment?" wrapText="true" />
+            <HBox spacing="8.0" style="-fx-background-color: #F8F5F0; -fx-padding: 10 16; -fx-background-radius: 8;">
+                <Label style="-fx-text-fill: #7D6B5D; -fx-font-weight: bold;" text="Total Amount Due:" />
+                <Label fx:id="lblModalTotal" style="-fx-text-fill: #2D1810; -fx-font-weight: bold;" text="₱0.00" />
             </HBox>
-            <HBox spacing="12.0" style="-fx-padding: 10 0 0 0;">
-                <Button onAction="#closeConfirmationModal" prefWidth="120.0" style="-fx-background-color: #F3E9DC; -fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-padding: 10; -fx-background-radius: 6; -fx-cursor: hand;" text="Cancel" />
-                <Button onAction="#confirmAndFinalizeOrder" prefWidth="150.0" style="-fx-background-color: #5E3023; -fx-text-fill: #F3E9DC; -fx-font-weight: bold; -fx-padding: 10; -fx-background-radius: 6; -fx-cursor: hand;" text="Confirm &amp; Print" />
+            <HBox spacing="12.0">
+                <Button onAction="#closeConfirmationModal" prefWidth="130.0" styleClass="btn-secondary" text="Cancel" />
+                <Button onAction="#confirmAndFinalizeOrder" prefWidth="160.0" styleClass="btn-primary" text="Confirm &amp; Print" />
             </HBox>
         </VBox>
     </StackPane>

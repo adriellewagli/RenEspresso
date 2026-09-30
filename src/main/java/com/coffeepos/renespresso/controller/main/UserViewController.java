@@ -7,8 +7,12 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -20,13 +24,15 @@ public class UserViewController {
         private final String name;
         private final String category;
         private final double priceS, priceM, priceL;
+        private final String imageName;
 
-        public MenuItem(String name, String category, double priceS, double priceM, double priceL) {
+        public MenuItem(String name, String category, double priceS, double priceM, double priceL, String imageName) {
             this.name = name;
             this.category = category;
             this.priceS = priceS;
             this.priceM = priceM;
             this.priceL = priceL;
+            this.imageName = imageName;
         }
 
         public String getName() { return name; }
@@ -34,6 +40,7 @@ public class UserViewController {
         public double getPriceS() { return priceS; }
         public double getPriceM() { return priceM; }
         public double getPriceL() { return priceL; }
+        public String getImageName() { return imageName; }
     }
 
     public static class CartItem {
@@ -75,28 +82,23 @@ public class UserViewController {
     }
 
     // --- FXML Bindings ---
-    // Views
+    @FXML private StackPane rootPane;
     @FXML private VBox homeView, historyView, aboutView, settingsView;
     @FXML private HBox menuView;
 
-    // Sidebar Controls
     @FXML private Button btnHome, btnMenu, btnTransactionHistory, btnAbout, btnSettings, btnLogout;
     @FXML private Label lblClock;
 
-    // Home Metrics
     @FXML private Label lblDashSales, lblDashOrders, lblDashNextTicket;
 
-    // Menu / POS Controls
     @FXML private GridPane menuGrid;
     @FXML private ListView<HBox> cartListView;
     @FXML private Label lblCartTicket, lblSubtotal, lblVat, lblDiscount, lblTotal;
     @FXML private CheckBox chkDiscount;
     @FXML private HBox rowDiscount;
 
-    // Transaction Table
     @FXML private TableView<TransactionRecord> tblHistory;
 
-    // Modal Overlay
     @FXML private StackPane modalOverlay;
     @FXML private Label lblModalTicket, lblModalTotal;
 
@@ -108,24 +110,32 @@ public class UserViewController {
     private final ObservableList<CartItem> cartItems = FXCollections.observableArrayList();
     private final ObservableList<TransactionRecord> transactionHistory = FXCollections.observableArrayList();
 
+    // Map exact image filenames here
     private final List<MenuItem> menuData = List.of(
-            new MenuItem("Fresh Brew / Americano", "Hot Coffee", 55.0, 75.0, 95.0),
-            new MenuItem("Classic Caffè Latte", "Hot Coffee", 65.0, 85.0, 105.0),
-            new MenuItem("Cappuccino", "Hot Coffee", 65.0, 85.0, 105.0),
-            new MenuItem("Cafè Mocha", "Hot Coffee", 75.0, 95.0, 115.0),
-            new MenuItem("Caramel Macchiato", "Hot Coffee", 80.0, 100.0, 120.0),
-            new MenuItem("Spanish Latte", "Hot Coffee", 75.0, 95.0, 115.0)
+            new MenuItem("Fresh Brew / Americano", "Hot Coffee", 55.0, 75.0, 95.0, "freshbrewamericano.jpg"),
+            new MenuItem("Classic Caffè Latte", "Hot Coffee", 65.0, 85.0, 105.0, "classiccafelate.jpg"),
+            new MenuItem("Cappuccino", "Hot Coffee", 65.0, 85.0, 105.0, "cappucino.jpg"),
+            new MenuItem("Cafè Mocha", "Hot Coffee", 75.0, 95.0, 115.0, "cafemocha.jpg"),
+            new MenuItem("Caramel Macchiato", "Hot Coffee", 80.0, 100.0, 120.0, "caramelmacchiato.jpg"),
+            new MenuItem("Spanish Latte", "Hot Coffee", 75.0, 95.0, 115.0, "spanishlatte.jpg")
     );
 
     @FXML
     public void initialize() {
-        // Set clock time
+        // --- Attach Stylesheet Programmatically ---
+        try {
+            URL cssUrl = getClass().getResource("/com/coffeepos/renespresso/views/styles/dashboard.css");
+            if (cssUrl != null) {
+                rootPane.getStylesheets().add(cssUrl.toExternalForm());
+            } else {
+                System.err.println("Could not find dashboard.css in resources!");
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading CSS: " + e.getMessage());
+        }
+
         lblClock.setText(new SimpleDateFormat("hh:mm a").format(new Date()));
-
-        // Table initialization
         setupTableColumns();
-
-        // Render default menu items and refresh cart
         renderMenu("All");
         updateTotals();
     }
@@ -150,40 +160,11 @@ public class UserViewController {
         button.setStyle("-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;");
     }
 
-    @FXML
-    public void showHome() {
-        hideAllViews();
-        homeView.setVisible(true);
-        highlightButton(btnHome);
-    }
-
-    @FXML
-    public void showMenu() {
-        hideAllViews();
-        menuView.setVisible(true);
-        highlightButton(btnMenu);
-    }
-
-    @FXML
-    public void showTransactionHistory() {
-        hideAllViews();
-        historyView.setVisible(true);
-        highlightButton(btnTransactionHistory);
-    }
-
-    @FXML
-    public void showAbout() {
-        hideAllViews();
-        aboutView.setVisible(true);
-        highlightButton(btnAbout);
-    }
-
-    @FXML
-    public void showSettings() {
-        hideAllViews();
-        settingsView.setVisible(true);
-        highlightButton(btnSettings);
-    }
+    @FXML public void showHome() { hideAllViews(); homeView.setVisible(true); highlightButton(btnHome); }
+    @FXML public void showMenu() { hideAllViews(); menuView.setVisible(true); highlightButton(btnMenu); }
+    @FXML public void showTransactionHistory() { hideAllViews(); historyView.setVisible(true); highlightButton(btnTransactionHistory); }
+    @FXML public void showAbout() { hideAllViews(); aboutView.setVisible(true); highlightButton(btnAbout); }
+    @FXML public void showSettings() { hideAllViews(); settingsView.setVisible(true); highlightButton(btnSettings); }
 
     @FXML
     public void handleLogout() {
@@ -196,7 +177,7 @@ public class UserViewController {
         });
     }
 
-    // --- MENU CARD GENERATION ---
+    // --- MENU CARD GENERATION WITH IMAGES ---
     private void renderMenu(String category) {
         menuGrid.getChildren().clear();
         int col = 0, row = 0;
@@ -204,24 +185,50 @@ public class UserViewController {
         for (MenuItem item : menuData) {
             if (!category.equals("All") && !item.getCategory().equalsIgnoreCase(category)) continue;
 
-            VBox card = new VBox(10);
+            VBox card = new VBox(8);
             card.setPrefWidth(220);
-            card.setStyle("-fx-background-color: #FFFFFF; -fx-padding: 15; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);");
+            card.setAlignment(Pos.TOP_CENTER);
+            card.setStyle("-fx-background-color: #FFFFFF; -fx-padding: 12; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);");
 
+            // Category Label
             Label cat = new Label(item.getCategory().toUpperCase());
             cat.setStyle("-fx-text-fill: #895737; -fx-font-size: 10px;");
 
-            Label title = new Label(item.getName());
-            title.setStyle("-fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 14px;");
+            // Image Container
+            ImageView imageView = new ImageView();
+            imageView.setFitWidth(130);
+            imageView.setFitHeight(100);
+            imageView.setPreserveRatio(true);
 
+            try {
+                InputStream is = getClass().getResourceAsStream("/com/coffeepos/renespresso/images/" + item.getImageName());
+                if (is != null) {
+                    imageView.setImage(new Image(is));
+                }
+            } catch (Exception e) {
+                System.err.println("Could not load image: " + item.getImageName());
+            }
+
+            // Title
+            Label title = new Label(item.getName());
+            title.setStyle("-fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 13px;");
+            title.setWrapText(true);
+
+            // Size Options
             HBox sizes = new HBox(6);
+            sizes.setAlignment(Pos.CENTER);
             sizes.getChildren().addAll(
                     createSizeChip("S 8oz", item.getPriceS(), item),
                     createSizeChip("M 12oz", item.getPriceM(), item),
                     createSizeChip("L 16oz", item.getPriceL(), item)
             );
 
-            card.getChildren().addAll(cat, title, sizes);
+            // Left-align text metadata while centering overall card
+            VBox infoBox = new VBox(2, cat, title);
+            infoBox.setAlignment(Pos.CENTER_LEFT);
+            infoBox.setMaxWidth(Double.MAX_VALUE);
+
+            card.getChildren().addAll(infoBox, imageView, sizes);
             menuGrid.add(card, col, row);
 
             col++;
@@ -321,6 +328,11 @@ public class UserViewController {
         colDiscount.setCellValueFactory(new PropertyValueFactory<>("discountApplied"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalPaid"));
 
+        // Force center alignment on both header titles and cell content
+        List.of(colTicket, colTime, colItems, colDiscount, colTotal).forEach(col ->
+                col.setStyle("-fx-alignment: CENTER;")
+        );
+
         tblHistory.setItems(transactionHistory);
     }
 
@@ -347,7 +359,6 @@ public class UserViewController {
     public void confirmAndFinalizeOrder() {
         double currentTotal = Double.parseDouble(lblTotal.getText().replace("₱", ""));
 
-        // Insert new order at top of history log
         String itemsSummary = cartItems.size() + " item(s) (" + cartItems.get(0).getName() + (cartItems.size() > 1 ? ", ..." : "") + ")";
         String timeNow = new SimpleDateFormat("hh:mm a").format(new Date());
         transactionHistory.add(0, new TransactionRecord(
@@ -358,23 +369,19 @@ public class UserViewController {
                 lblTotal.getText()
         ));
 
-        // Increment stats
         sessionSalesTotal += currentTotal;
         sessionOrdersCount++;
         ticketNumber++;
 
-        // Update dashboard values
         lblDashSales.setText("₱" + String.format("%.2f", sessionSalesTotal));
         lblDashOrders.setText(String.valueOf(sessionOrdersCount));
 
-        // Reset cart state
         cartItems.clear();
         chkDiscount.setSelected(false);
         refreshCartUI();
         updateTotals();
         closeConfirmationModal();
 
-        // Display completion alert
         Alert alert = new Alert(Alert.AlertType.INFORMATION, "Order finalized and sent to receipt printer!");
         alert.setHeaderText("Order Processed");
         alert.showAndWait();
