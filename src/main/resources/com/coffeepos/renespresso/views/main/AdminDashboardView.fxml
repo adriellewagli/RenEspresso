@@ -15,7 +15,7 @@
     <!-- MAIN APP LAYOUT -->
     <HBox prefHeight="768.0" prefWidth="1280.0">
         <!-- SIDEBAR NAVIGATION -->
-        <VBox prefWidth="250.0" spacing="12.0" style="-fx-background-color: #5E3023; -fx-padding: 16 15 20 15;">
+        <VBox prefWidth="250.0" spacing="10.0" style="-fx-background-color: #5E3023; -fx-padding: 16 15 20 15;">
 
             <!-- Logo Header -->
             <HBox alignment="CENTER_LEFT" prefHeight="42.0" spacing="10.0" style="-fx-padding: 0 0 2 0;">
@@ -34,14 +34,32 @@
                 <Label fx:id="dateLabel" style="-fx-text-fill: #C08552; -fx-font-size: 11px;" text="Monday, Sep 29, 2026" />
             </VBox>
 
-            <!-- Navigation Buttons -->
-            <VBox spacing="8.0" VBox.vgrow="ALWAYS">
-                <Button fx:id="btnDashboard" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showDashboard" style="-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;" text="📊  Dashboard" />
-                <Button fx:id="btnStaff" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showStaff" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="👥  Staff &amp; Users" />
-                <Button fx:id="btnProducts" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showProducts" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📋  Products Management" />
-                <Button fx:id="btnInventory" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showInventory" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📦  Inventory Stock" />
-                <Button fx:id="btnSales" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showSales" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;" text="📈  Sales Reports" />
-            </VBox>
+            <!-- Categorized Navigation Menu -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                <content>
+                    <VBox spacing="10.0" style="-fx-background-color: transparent;">
+
+                        <!-- CATEGORY 1: MAIN -->
+                        <Label style="-fx-text-fill: #C08552; -fx-font-size: 10px; -fx-font-weight: bold;" text="MAIN" />
+                        <Button fx:id="btnDashboard" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showDashboard" style="-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;" text="📊  Dashboard" />
+
+                        <!-- CATEGORY 2: OPERATIONS -->
+                        <Label style="-fx-text-fill: #C08552; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 6 0 0 0;" text="OPERATIONS &amp; CATALOG" />
+                        <Button fx:id="btnProducts" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showProducts" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 8;" text="📋  Products Catalog" />
+                        <Button fx:id="btnInventory" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showInventory" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 8;" text="📦  Inventory &amp; Supplies" />
+                        <Button fx:id="btnSales" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showSales" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 8;" text="📈  Sales Reports" />
+
+                        <!-- CATEGORY 3: GOVERNANCE -->
+                        <Label style="-fx-text-fill: #C08552; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 6 0 0 0;" text="GOVERNANCE" />
+                        <Button fx:id="btnStaff" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showStaff" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 8;" text="👥  Staff &amp; Permissions" />
+                        <Button fx:id="btnAudit" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showAuditLogs" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 8;" text="📝  Audit Logs" />
+
+                        <!-- CATEGORY 4: SYSTEM -->
+                        <Label style="-fx-text-fill: #C08552; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 6 0 0 0;" text="SYSTEM" />
+                        <Button fx:id="btnSettings" alignment="BASELINE_LEFT" maxWidth="Infinity" onAction="#showSettings" style="-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 8;" text="⚙️  Store Settings" />
+                    </VBox>
+                </content>
+            </ScrollPane>
 
             <Separator style="-fx-opacity: 0.2;" />
 
@@ -111,28 +129,88 @@
                 </content>
             </ScrollPane>
 
-            <!-- VIEW 2: STAFF & USERS -->
-            <VBox fx:id="staffView" spacing="15.0" style="-fx-padding: 25;" visible="false">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Staff &amp; User Accounts" />
-                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Manage cashier accounts, permissions, and roles." />
+            <!-- VIEW 2: PRODUCTS CATALOG -->
+            <VBox fx:id="productsView" spacing="20.0" style="-fx-padding: 25;" visible="false">
+                <VBox spacing="4.0">
+                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Products Catalog" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Configure menu items, prices, modifiers, and categories." />
+                </VBox>
+                <VBox styleClass="dashboard-card" spacing="15.0" VBox.vgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="Active Menu Items" styleClass="section-title" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <MFXButton style="-fx-background-color: #5E3023; -fx-text-fill: #F3E9DC; -fx-background-radius: 8; -fx-padding: 8 16; -fx-font-weight: bold;" text="+ Add New Product" />
+                    </HBox>
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px;" text="Product grid / table data integration placeholder." />
+                </VBox>
             </VBox>
 
-            <!-- VIEW 3: PRODUCTS -->
-            <VBox fx:id="productsView" spacing="15.0" style="-fx-padding: 25;" visible="false">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Products Catalog" />
-                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Configure menu items, prices, and categories." />
+            <!-- VIEW 3: INVENTORY & SUPPLIES -->
+            <VBox fx:id="inventoryView" spacing="20.0" style="-fx-padding: 25;" visible="false">
+                <VBox spacing="4.0">
+                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Inventory &amp; Raw Supplies" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Track raw ingredients, milk, espresso beans, cups, and syrups." />
+                </VBox>
+                <VBox styleClass="dashboard-card" spacing="15.0" VBox.vgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="Stock Levels" styleClass="section-title" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <MFXButton style="-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-background-radius: 8; -fx-padding: 8 16; -fx-font-weight: bold;" text="📦 Restock Ingredient" />
+                    </HBox>
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px;" text="Stock management table placeholder." />
+                </VBox>
             </VBox>
 
-            <!-- VIEW 4: INVENTORY -->
-            <VBox fx:id="inventoryView" spacing="15.0" style="-fx-padding: 25;" visible="false">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Inventory Stock" />
-                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Track raw ingredients, milk, cups, and supplies." />
+            <!-- VIEW 4: SALES REPORTS -->
+            <VBox fx:id="salesView" spacing="20.0" style="-fx-padding: 25;" visible="false">
+                <VBox spacing="4.0">
+                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Sales Reports &amp; Analytics" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Detailed store performance breakdown, revenue metrics, and exports." />
+                </VBox>
+                <VBox styleClass="dashboard-card" spacing="15.0" VBox.vgrow="ALWAYS">
+                    <Label text="Revenue Breakdown" styleClass="section-title" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px;" text="Sales chart and export reporting placeholder." />
+                </VBox>
             </VBox>
 
-            <!-- VIEW 5: SALES REPORTS -->
-            <VBox fx:id="salesView" spacing="15.0" style="-fx-padding: 25;" visible="false">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold;" text="Sales Reports &amp; Analytics" />
-                <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Detailed performance breakdown and exportable records." />
+            <!-- VIEW 5: STAFF & PERMISSIONS -->
+            <VBox fx:id="staffView" spacing="20.0" style="-fx-padding: 25;" visible="false">
+                <VBox spacing="4.0">
+                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Staff &amp; Permissions" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Manage cashier accounts, role credentials, and administrative access." />
+                </VBox>
+                <VBox styleClass="dashboard-card" spacing="15.0" VBox.vgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="System Accounts" styleClass="section-title" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <MFXButton style="-fx-background-color: #5E3023; -fx-text-fill: #F3E9DC; -fx-background-radius: 8; -fx-padding: 8 16; -fx-font-weight: bold;" text="+ Create Staff Account" />
+                    </HBox>
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px;" text="Staff account table placeholder." />
+                </VBox>
+            </VBox>
+
+            <!-- VIEW 6: DEDICATED AUDIT LOGS -->
+            <VBox fx:id="auditView" spacing="20.0" style="-fx-padding: 25;" visible="false">
+                <VBox spacing="4.0">
+                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Full Audit Logs &amp; Overrides" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Complete security audit history, manager overrides, and void records." />
+                </VBox>
+                <VBox styleClass="dashboard-card" spacing="15.0" VBox.vgrow="ALWAYS">
+                    <Label text="System Operations Trail" styleClass="section-title" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px;" text="Detailed audit trail search and history placeholder." />
+                </VBox>
+            </VBox>
+
+            <!-- VIEW 7: STORE SETTINGS -->
+            <VBox fx:id="settingsView" spacing="20.0" style="-fx-padding: 25;" visible="false">
+                <VBox spacing="4.0">
+                    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 26px; -fx-font-weight: bold;" text="Store &amp; System Settings" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 14px;" text="Receipt headers, printer settings, tax rates, and local database backup." />
+                </VBox>
+                <VBox styleClass="dashboard-card" spacing="15.0" VBox.vgrow="ALWAYS">
+                    <Label text="POS Hardware &amp; Store Configuration" styleClass="section-title" />
+                    <Label style="-fx-text-fill: #895737; -fx-font-size: 13px;" text="System configuration settings placeholder." />
+                </VBox>
             </VBox>
 
         </StackPane>

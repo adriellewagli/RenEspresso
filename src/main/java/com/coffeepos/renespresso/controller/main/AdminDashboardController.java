@@ -17,10 +17,10 @@ public class AdminDashboardController {
 
     // Views
     @FXML private ScrollPane dashboardView;
-    @FXML private VBox staffView, productsView, inventoryView, salesView;
+    @FXML private VBox staffView, productsView, inventoryView, salesView, auditView, settingsView;
 
     // Sidebar Buttons
-    @FXML private Button btnDashboard, btnStaff, btnProducts, btnInventory, btnSales, btnLogout;
+    @FXML private Button btnDashboard, btnProducts, btnInventory, btnSales, btnStaff, btnAudit, btnSettings, btnLogout;
 
     // Dashboard Metric Labels
     @FXML private Label dateLabel;
@@ -73,21 +73,27 @@ public class AdminDashboardController {
     // --- SIDEBAR NAVIGATION & VIEW SWITCHING ---
     private void hideAllViews() {
         dashboardView.setVisible(false);
-        staffView.setVisible(false);
         productsView.setVisible(false);
         inventoryView.setVisible(false);
         salesView.setVisible(false);
+        staffView.setVisible(false);
+        if (auditView != null) auditView.setVisible(false);
+        if (settingsView != null) settingsView.setVisible(false);
 
-        String defaultStyle = "-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-radius: 8;";
+        String defaultStyle = "-fx-background-color: transparent; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 8;";
         btnDashboard.setStyle(defaultStyle);
-        btnStaff.setStyle(defaultStyle);
         btnProducts.setStyle(defaultStyle);
         btnInventory.setStyle(defaultStyle);
         btnSales.setStyle(defaultStyle);
+        btnStaff.setStyle(defaultStyle);
+        if (btnAudit != null) btnAudit.setStyle(defaultStyle);
+        if (btnSettings != null) btnSettings.setStyle(defaultStyle);
     }
 
     private void highlightButton(Button button) {
-        button.setStyle("-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;");
+        if (button != null) {
+            button.setStyle("-fx-background-color: #C08552; -fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 8;");
+        }
     }
 
     @FXML
@@ -95,13 +101,6 @@ public class AdminDashboardController {
         hideAllViews();
         dashboardView.setVisible(true);
         highlightButton(btnDashboard);
-    }
-
-    @FXML
-    public void showStaff() {
-        hideAllViews();
-        staffView.setVisible(true);
-        highlightButton(btnStaff);
     }
 
     @FXML
@@ -126,12 +125,41 @@ public class AdminDashboardController {
     }
 
     @FXML
+    public void showStaff() {
+        hideAllViews();
+        staffView.setVisible(true);
+        highlightButton(btnStaff);
+    }
+
+    @FXML
+    public void showAuditLogs() {
+        hideAllViews();
+        if (auditView != null) auditView.setVisible(true);
+        highlightButton(btnAudit);
+    }
+
+    @FXML
+    public void showSettings() {
+        hideAllViews();
+        if (settingsView != null) settingsView.setVisible(true);
+        highlightButton(btnSettings);
+    }
+
+    @FXML
     public void handleLogout(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to log out?", ButtonType.YES, ButtonType.NO);
-        alert.setHeaderText("Log Out Confirmation");
+        alert.setTitle("Log Out Confirmation");
+        alert.setHeaderText("Logging out of RenEspresso Admin Portal");
+        alert.setContentText("Any unsaved changes will be lost.");
+
+        // Apply custom styling to confirmation dialog buttons if needed
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
-                NavigateUtil.navigateTo(event, "LoginView.fxml", "Renespresso POS - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+                // Perform session/user cleanup here if you have a SessionManager
+                // e.g., SessionManager.clearSession();
+
+                // Cleanly route back to the Login screen
+                NavigateUtil.navigateTo(event, "id/LoginView.fxml", "RenEspresso POS - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
             }
         });
     }
