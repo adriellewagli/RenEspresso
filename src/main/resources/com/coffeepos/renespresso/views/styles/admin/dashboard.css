@@ -1,0 +1,35 @@
+/* Replace these classes in your dashboard.css */
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #EBDCCD;
+    -fx-font-size: 18px; /* Increased for larger icons and text */
+    -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-padding: 14 18;  /* Increased padding */
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: #FFFFFF;
+}
+
+.nav-button-active {
+    -fx-background-color: #C89360;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 18px; /* Increased for larger icons and text */
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-padding: 14 18;
+}
+
+.logout-button {
+    -fx-background-color: #895737;
+    -fx-text-fill: #F3E9DC;
+    -fx-font-size: 18px; /* Increased */
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-padding: 14 18;
+}

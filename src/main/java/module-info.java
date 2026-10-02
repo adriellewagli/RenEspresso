@@ -11,6 +11,7 @@ module com.coffeepos.renespresso {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires jbcrypt;
+    requires MaterialFX;
 
     exports com.coffeepos.renespresso;
     opens com.coffeepos.renespresso to javafx.fxml;
@@ -20,8 +21,10 @@ module com.coffeepos.renespresso {
     opens com.coffeepos.renespresso.controller.id to javafx.fxml;
     exports com.coffeepos.renespresso.controller.util;
     opens com.coffeepos.renespresso.controller.util to javafx.fxml;
-    exports com.coffeepos.renespresso.controller.main;
-    opens com.coffeepos.renespresso.controller.main to javafx.fxml;
     opens com.coffeepos.renespresso.util to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.admin;
+    opens com.coffeepos.renespresso.controller.main.admin to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.user;
+    opens com.coffeepos.renespresso.controller.main.user to javafx.fxml;
 
 }

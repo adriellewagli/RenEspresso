@@ -15,8 +15,9 @@ public class UserDAO {
 
     // AUTHENTICATE USER LOGIN WITH JBCRYPT
     public static User authenticate(String username, String plainPassword) {
-        String query = "SELECT user_id, username, password_hash, full_name, role, status FROM users "
-                + "WHERE LOWER(username) = LOWER(?) AND status = 'active'";
+        // Updated column names: password, is_active
+        String query = "SELECT user_id, username, password, full_name, role, is_active FROM users "
+                + "WHERE LOWER(username) = LOWER(?) AND is_active = 1";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -25,7 +26,7 @@ public class UserDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String storedHash = rs.getString("password_hash");
+                    String storedHash = rs.getString("password");
 
                     System.out.println("[DEBUG] User found in DB: " + rs.getString("username"));
                     System.out.println("[DEBUG] Stored Hash: " + storedHash);
@@ -39,7 +40,7 @@ public class UserDAO {
                                 rs.getString("username"),
                                 rs.getString("full_name"),
                                 rs.getString("role"),
-                                rs.getString("status")
+                                rs.getBoolean("is_active") // Matches new User constructor
                         );
                     }
                 } else {
@@ -55,8 +56,9 @@ public class UserDAO {
 
     // ADMIN/SUPERVISOR/MANAGER VALIDATION FOR AUTHORIZATION MODAL WITH JBCRYPT
     public static boolean validateAdminCredentials(String username, String plainPassword) {
-        String query = "SELECT password_hash, role FROM users WHERE username = ? "
-                + "AND LOWER(role) IN ('admin', 'manager', 'supervisor', 'superadmin') AND status = 'active'";
+        // Updated columns and ENUM values (removed invalid 'superadmin')
+        String query = "SELECT password, role FROM users WHERE username = ? "
+                + "AND role IN ('ADMIN', 'MANAGER', 'SUPERVISOR') AND is_active = 1";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -65,7 +67,7 @@ public class UserDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String storedHash = rs.getString("password_hash");
+                    String storedHash = rs.getString("password");
                     return PasswordUtil.checkPassword(plainPassword, storedHash);
                 }
             }
@@ -80,7 +82,7 @@ public class UserDAO {
      * Registers a new user account by hashing the plain password using jBCrypt.
      */
     public static boolean registerUser(User user, String plainPassword) {
-        String query = "INSERT INTO users (username, password_hash, full_name, role, status) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO users (username, password, full_name, role, is_active) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -91,8 +93,10 @@ public class UserDAO {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, hashedPassword);
             stmt.setString(3, user.getFullName());
-            stmt.setString(4, user.getRole() != null ? user.getRole().toLowerCase() : "cashier");
-            stmt.setString(5, user.getStatus() != null ? user.getStatus().toLowerCase() : "active");
+            // Enforce uppercase to match database ENUM
+            stmt.setString(4, user.getRole() != null ? user.getRole().toUpperCase() : "CASHIER");
+            // Set 1 for active (true), 0 for inactive (false)
+            stmt.setInt(5, user.isActive() ? 1 : 0);
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -104,14 +108,15 @@ public class UserDAO {
 
     // Overloaded registerUser for direct parameter registration.
     public static boolean registerUser(String username, String plainPassword, String fullName, String role) {
-        User user = new User(0, username, fullName, role, "active");
+        // Use true for active status boolean instead of "active" string
+        User user = new User(0, username, fullName, role, true);
         return registerUser(user, plainPassword);
     }
 
     // FETCH ALL USERS FOR TABLE VIEWS
     public static ObservableList<User> getAllUsers() {
         ObservableList<User> userList = FXCollections.observableArrayList();
-        String query = "SELECT user_id, username, full_name, role, status, created_at, updated_at FROM users ORDER BY user_id DESC";
+        String query = "SELECT user_id, username, full_name, role, is_active, created_at, updated_at FROM users ORDER BY user_id DESC";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -124,7 +129,7 @@ public class UserDAO {
                         "",
                         rs.getString("full_name"),
                         rs.getString("role"),
-                        rs.getString("status"),
+                        rs.getBoolean("is_active"),
                         rs.getTimestamp("created_at"),
                         rs.getTimestamp("updated_at")
                 );

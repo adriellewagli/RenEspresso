@@ -1,4 +1,4 @@
-package com.coffeepos.renespresso.controller.main;
+package com.coffeepos.renespresso.controller.main.user;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -124,7 +124,7 @@ public class UserViewController {
     public void initialize() {
         // --- Attach Stylesheet Programmatically ---
         try {
-            URL cssUrl = getClass().getResource("/com/coffeepos/renespresso/views/styles/dashboard.css");
+            URL cssUrl = getClass().getResource("/com/coffeepos/renespresso/views/styles/admin/dashboard.css");
             if (cssUrl != null) {
                 rootPane.getStylesheets().add(cssUrl.toExternalForm());
             } else {
