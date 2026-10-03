@@ -1,0 +1,3 @@
+.menu-container { -fx-padding: 30; }
+.menu-title     { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
+.menu-subtitle  { -fx-text-fill: #895737; -fx-font-size: 15px; }

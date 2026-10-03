@@ -1,0 +1,3 @@
+.transact-container { -fx-padding: 30; }
+.transact-title     { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
+.transact-subtitle  { -fx-text-fill: #895737; -fx-font-size: 15px; }

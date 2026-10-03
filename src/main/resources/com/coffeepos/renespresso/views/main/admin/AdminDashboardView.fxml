@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import io.github.palexdev.materialfx.controls.*?>
@@ -14,11 +12,9 @@
            fx:controller="com.coffeepos.renespresso.controller.main.admin.AdminDashboardController">
 
     <HBox prefHeight="768.0" prefWidth="1280.0">
-        <!-- SIDEBAR NAVIGATION -->
-        <!-- Update this specific VBox tag and Logo HBox in your FXML -->
 
-        <!-- SIDEBAR NAVIGATION (Starts Minimized at 85px) -->
-        <VBox fx:id="sidebar" prefWidth="85.0" spacing="12.0" style="-fx-background-color: #5E3023; -fx-padding: 20 10 20 10; -fx-transition: width 0.2s;">
+        <!-- SIDEBAR NAVIGATION (starts minimized at 85px) -->
+        <VBox fx:id="sidebar" prefWidth="85.0" spacing="12.0" style="-fx-background-color: #5E3023; -fx-padding: 20 10 20 10;">
 
             <!-- Clickable Logo Header -->
             <HBox alignment="CENTER_LEFT" prefHeight="42.0" spacing="10.0" onMouseClicked="#toggleSidebar" style="-fx-cursor: hand; -fx-padding: 0 5 0 5;">
@@ -42,7 +38,6 @@
             <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
                 <content>
                     <VBox spacing="8.0" style="-fx-background-color: transparent;">
-                        <!-- Using styleClass instead of inline styles -->
                         <Button fx:id="btnHome" styleClass="nav-button" alignment="CENTER" maxWidth="Infinity" onAction="#showHome" text="🏠">
                             <tooltip><Tooltip text="Home" /></tooltip>
                         </Button>
@@ -73,20 +68,19 @@
             </MFXButton>
         </VBox>
 
-        <!-- CONTENT AREA -->
+        <!-- CONTENT AREA: each section lives in its own FXML -->
         <StackPane HBox.hgrow="ALWAYS">
-            <!-- (Your existing ScrollPane/VBox Views go here completely unchanged) -->
-            <ScrollPane fx:id="homeView" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" visible="true">
-                <content>
-                    <VBox spacing="20.0" style="-fx-padding: 30;">
-                        <VBox spacing="4.0">
-                            <Label style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="Home Dashboard" />
-                            <Label style="-fx-text-fill: #895737; -fx-font-size: 15px;" text="Overview of store sales health and operational diagnostics" />
-                        </VBox>
-                    </VBox>
-                </content>
-            </ScrollPane>
-            <!-- (Add the remaining menuView, salesView, etc. just like you had them) -->
+            <fx:include fx:id="homeView"        source="home/HomeView.fxml" />
+            <fx:include fx:id="menuView"        source="menu/MenuView.fxml"               visible="false" managed="false" />
+            <fx:include fx:id="salesView"       source="sales/SalesView.fxml"             visible="false" managed="false" />
+            <fx:include fx:id="transactionView" source="transact/TransactionView.fxml"    visible="false" managed="false" />
+            <fx:include fx:id="accountsView"    source="account/AccountView.fxml"         visible="false" managed="false" />
+
+            <!-- Settings placeholder (move to its own folder when you build it) -->
+            <VBox fx:id="settingsView" visible="false" managed="false" spacing="20.0" style="-fx-padding: 30;">
+                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="Settings" />
+                <Label style="-fx-text-fill: #895737; -fx-font-size: 15px;" text="Application preferences and configuration" />
+            </VBox>
         </StackPane>
     </HBox>
 </StackPane>

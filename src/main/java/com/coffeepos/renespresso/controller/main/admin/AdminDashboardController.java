@@ -1,13 +1,17 @@
 package com.coffeepos.renespresso.controller.main.admin;
 
 import com.coffeepos.renespresso.util.NavigateUtil;
+import io.github.palexdev.materialfx.controls.MFXButton;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import io.github.palexdev.materialfx.controls.MFXButton;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,8 +24,7 @@ public class AdminDashboardController {
     @FXML private Label lblBrandText;
     @FXML private VBox userInfoBox;
 
-    @FXML private ScrollPane homeView;
-    @FXML private VBox menuView, salesView, transactionView, accountsView, settingsView;
+    @FXML private Node homeView, menuView, salesView, transactionView, accountsView, settingsView;
 
     @FXML private Button btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings;
     @FXML private MFXButton btnLogout;
@@ -32,7 +35,7 @@ public class AdminDashboardController {
     public void initialize() {
         setSystemDate();
         applySidebarState();
-        highlightButton(btnHome); // Set Home as active on load
+        showHome(); // Home active on load
     }
 
     private void setSystemDate() {
@@ -48,11 +51,8 @@ public class AdminDashboardController {
         applySidebarState();
     }
 
-    // Update ONLY this method in your existing AdminDashboardController.java
-
     private void applySidebarState() {
         if (isExpanded) {
-            // Increased from 260.0 to 310.0 to prevent text truncation
             sidebar.setPrefWidth(310.0);
             lblBrandText.setVisible(true);
             lblBrandText.setManaged(true);
@@ -69,7 +69,6 @@ public class AdminDashboardController {
 
             setButtonAlignment(Pos.BASELINE_LEFT);
         } else {
-            // Increased from 75.0 to 85.0 to give big icons breathing room
             sidebar.setPrefWidth(85.0);
             lblBrandText.setVisible(false);
             lblBrandText.setManaged(false);
@@ -96,16 +95,19 @@ public class AdminDashboardController {
         btnLogout.setAlignment(position);
     }
 
-    // --- CSS CLASS TOGGLING FIX ---
-    private void hideAllViews() {
-        homeView.setVisible(false);
-        menuView.setVisible(false);
-        salesView.setVisible(false);
-        transactionView.setVisible(false);
-        accountsView.setVisible(false);
-        settingsView.setVisible(false);
+    private void setShown(Node node, boolean shown) {
+        node.setVisible(shown);
+        node.setManaged(shown);
+    }
 
-        // Reset all buttons to default nav-button class
+    private void hideAllViews() {
+        setShown(homeView, false);
+        setShown(menuView, false);
+        setShown(salesView, false);
+        setShown(transactionView, false);
+        setShown(accountsView, false);
+        setShown(settingsView, false);
+
         Button[] navButtons = {btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings};
         for (Button btn : navButtons) {
             btn.getStyleClass().remove("nav-button-active");
@@ -124,12 +126,18 @@ public class AdminDashboardController {
         }
     }
 
-    @FXML public void showHome() { hideAllViews(); homeView.setVisible(true); highlightButton(btnHome); }
-    @FXML public void showMenu() { hideAllViews(); menuView.setVisible(true); highlightButton(btnMenu); }
-    @FXML public void showSales() { hideAllViews(); salesView.setVisible(true); highlightButton(btnSales); }
-    @FXML public void showTransactions() { hideAllViews(); transactionView.setVisible(true); highlightButton(btnTransactions); }
-    @FXML public void showAccounts() { hideAllViews(); accountsView.setVisible(true); highlightButton(btnAccounts); }
-    @FXML public void showSettings() { hideAllViews(); settingsView.setVisible(true); highlightButton(btnSettings); }
+    private void show(Node view, Button button) {
+        hideAllViews();
+        setShown(view, true);
+        highlightButton(button);
+    }
+
+    @FXML public void showHome()         { show(homeView, btnHome); }
+    @FXML public void showMenu()         { show(menuView, btnMenu); }
+    @FXML public void showSales()        { show(salesView, btnSales); }
+    @FXML public void showTransactions() { show(transactionView, btnTransactions); }
+    @FXML public void showAccounts()     { show(accountsView, btnAccounts); }
+    @FXML public void showSettings()     { show(settingsView, btnSettings); }
 
     @FXML
     public void handleLogout(ActionEvent event) {

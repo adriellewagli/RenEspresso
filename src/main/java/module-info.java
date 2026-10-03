@@ -17,14 +17,26 @@ module com.coffeepos.renespresso {
     opens com.coffeepos.renespresso to javafx.fxml;
 
     exports com.coffeepos.renespresso.util;
+    opens com.coffeepos.renespresso.util to javafx.fxml;
+
     exports com.coffeepos.renespresso.controller.id;
     opens com.coffeepos.renespresso.controller.id to javafx.fxml;
     exports com.coffeepos.renespresso.controller.util;
     opens com.coffeepos.renespresso.controller.util to javafx.fxml;
-    opens com.coffeepos.renespresso.util to javafx.fxml;
+
     exports com.coffeepos.renespresso.controller.main.admin;
     opens com.coffeepos.renespresso.controller.main.admin to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.admin.home;
+    opens com.coffeepos.renespresso.controller.main.admin.home to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.admin.menu;
+    opens com.coffeepos.renespresso.controller.main.admin.menu to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.admin.sales;
+    opens com.coffeepos.renespresso.controller.main.admin.sales to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.admin.transact;
+    opens com.coffeepos.renespresso.controller.main.admin.transact to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.admin.account;
+    opens com.coffeepos.renespresso.controller.main.admin.account to javafx.fxml;
+
     exports com.coffeepos.renespresso.controller.main.user;
     opens com.coffeepos.renespresso.controller.main.user to javafx.fxml;
-
 }

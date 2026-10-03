@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20.0" styleClass="transact-container"
+      stylesheets="@../../../styles/admin/transact/transact.css"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coffeepos.renespresso.controller.main.admin.transact.TransactionController">
+
+    <VBox spacing="4.0">
+        <Label styleClass="transact-title" text="Transaction History" />
+        <Label styleClass="transact-subtitle" text="Review past orders and payments" />
+    </VBox>
+
+</VBox>

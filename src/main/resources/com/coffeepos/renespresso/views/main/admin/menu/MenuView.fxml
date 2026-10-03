@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20.0" styleClass="menu-container"
+      stylesheets="@../../../styles/admin/menu/menu.css"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coffeepos.renespresso.controller.main.admin.menu.MenuController">
+
+    <VBox spacing="4.0">
+        <Label styleClass="menu-title" text="Menu Management" />
+        <Label styleClass="menu-subtitle" text="Add, edit and organize drinks and food items" />
+    </VBox>
+
+</VBox>

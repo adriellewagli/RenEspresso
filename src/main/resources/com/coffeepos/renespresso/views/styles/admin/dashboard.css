@@ -1,12 +1,12 @@
-/* Replace these classes in your dashboard.css */
+/* Sidebar / navigation styles only. Screen-specific styles live in their own folders. */
 
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: #EBDCCD;
-    -fx-font-size: 18px; /* Increased for larger icons and text */
+    -fx-font-size: 18px;
     -fx-cursor: hand;
     -fx-background-radius: 8px;
-    -fx-padding: 14 18;  /* Increased padding */
+    -fx-padding: 14 18;
 }
 
 .nav-button:hover {
@@ -17,7 +17,7 @@
 .nav-button-active {
     -fx-background-color: #C89360;
     -fx-text-fill: #FFFFFF;
-    -fx-font-size: 18px; /* Increased for larger icons and text */
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
     -fx-background-radius: 8px;
@@ -27,7 +27,7 @@
 .logout-button {
     -fx-background-color: #895737;
     -fx-text-fill: #F3E9DC;
-    -fx-font-size: 18px; /* Increased */
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
     -fx-background-radius: 8px;
