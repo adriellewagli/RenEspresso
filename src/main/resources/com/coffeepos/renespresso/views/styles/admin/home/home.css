@@ -1,3 +1,108 @@
-.menu-container { -fx-padding: 30; }
-.menu-title     { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
-.menu-subtitle  { -fx-text-fill: #895737; -fx-font-size: 15px; }
+.home-root { -fx-padding: 24; }
+
+.page-title    { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
+.page-subtitle { -fx-text-fill: #895737; -fx-font-size: 14px; }
+.date-label    { -fx-text-fill: #5E3023; -fx-font-size: 13px; -fx-font-weight: bold; }
+.updated-label { -fx-text-fill: #9A8878; -fx-font-size: 11px; }
+
+.refresh-button {
+    -fx-background-color: #F6E7D5;
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 9 16;
+    -fx-cursor: hand;
+}
+.refresh-button:hover { -fx-background-color: #EFD6BB; }
+
+.error-banner {
+    -fx-background-color: #FBE0DE;
+    -fx-text-fill: #C53030;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14;
+    -fx-font-size: 12px;
+}
+
+/* ===== Cards ===== */
+.card {
+    -fx-background-color: #FFFDFA;
+    -fx-background-radius: 16;
+    -fx-border-color: #EFE5D6;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
+}
+.kpi-card   { -fx-padding: 18 20; -fx-spacing: 6; }
+.panel-card { -fx-padding: 18 20; -fx-spacing: 4; }
+
+.kpi-title { -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; }
+.kpi-value { -fx-text-fill: #2F2118; -fx-font-size: 28px; -fx-font-weight: bold; }
+.kpi-sub   { -fx-text-fill: #7A6757; -fx-font-size: 12px; }
+.delta-up   { -fx-text-fill: #2F6F52; -fx-font-weight: bold; }
+.delta-down { -fx-text-fill: #C53030; -fx-font-weight: bold; }
+.delta-flat { -fx-text-fill: #7A6757; }
+
+.card-title    { -fx-text-fill: #5E3023; -fx-font-size: 16px; -fx-font-weight: bold; }
+.card-subtitle { -fx-text-fill: #9A8878; -fx-font-size: 12px; }
+.list-box      { -fx-padding: 12 0 0 0; }
+.empty-note    { -fx-text-fill: #9A8878; -fx-font-size: 12px; }
+
+/* ===== Chart ===== */
+.sales-chart { -fx-background-color: transparent; -fx-padding: 8 0 0 0; }
+.sales-chart .chart-plot-background { -fx-background-color: transparent; }
+.sales-chart .chart-horizontal-grid-lines { -fx-stroke: #EFE5D6; }
+.sales-chart .chart-vertical-grid-lines { -fx-stroke: transparent; }
+.sales-chart .axis { -fx-tick-label-fill: #7A6757; -fx-font-size: 11px; }
+.sales-chart .chart-bar { -fx-bar-fill: #895737; -fx-background-radius: 6 6 0 0; }
+.sales-chart .chart-bar:hover { -fx-bar-fill: #5E3023; }
+
+/* ===== Top sellers / staff rows ===== */
+.top-name { -fx-text-fill: #2F2118; -fx-font-size: 13px; -fx-font-weight: bold; }
+.top-qty  { -fx-text-fill: #7A6757; -fx-font-size: 12px; }
+.top-bar { -fx-pref-height: 8; -fx-min-height: 8; -fx-max-height: 8; }
+.top-bar .track { -fx-background-color: #F1E8DA; -fx-background-radius: 4; -fx-background-insets: 0; }
+.top-bar .bar   { -fx-background-color: #895737; -fx-background-radius: 4; -fx-background-insets: 0; -fx-padding: 4; }
+
+/* ===== Recent transactions table ===== */
+.recent-table {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.recent-table .column-header-background {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #E7DCCB transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.recent-table .column-header,
+.recent-table .filler { -fx-background-color: transparent; -fx-border-color: transparent; -fx-size: 40; }
+.recent-table .column-header .label {
+    -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; -fx-alignment: CENTER-LEFT;
+}
+.recent-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #EFE6D8 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cell-size: 38;
+}
+.recent-table .table-row-cell:hover { -fx-background-color: #FBF6EE; }
+.recent-table .table-row-cell:empty { -fx-background-color: transparent; -fx-border-color: transparent; }
+.recent-table .table-cell {
+    -fx-border-color: transparent; -fx-padding: 0 8; -fx-alignment: CENTER-LEFT;
+    -fx-text-fill: #6B5444; -fx-font-size: 12px;
+}
+.recent-table .table-cell.name-cell  { -fx-text-fill: #2F2118; -fx-font-weight: bold; }
+.recent-table .table-cell.muted-cell { -fx-text-fill: #7A6757; }
+
+/* ===== Pills ===== */
+.pill { -fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 10px; -fx-font-weight: bold; }
+.role-admin      { -fx-background-color: #E1ECF7; -fx-text-fill: #2B6CB0; }
+.role-manager    { -fx-background-color: #EDE4F7; -fx-text-fill: #6B3FA0; }
+.role-supervisor { -fx-background-color: #FBF0D0; -fx-text-fill: #B7791F; }
+.role-cashier    { -fx-background-color: #EEEAE4; -fx-text-fill: #5A5148; }
+
+.status-completed { -fx-background-color: #DCEBE3; -fx-text-fill: #2F6F52; }
+.status-voided    { -fx-background-color: #FBE0DE; -fx-text-fill: #C53030; }
+.status-pending   { -fx-background-color: #FCEBDD; -fx-text-fill: #D9731F; }

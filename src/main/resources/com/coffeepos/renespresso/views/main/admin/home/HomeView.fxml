@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -10,11 +11,90 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.coffeepos.renespresso.controller.main.admin.home.HomeController">
     <content>
-        <VBox spacing="20.0" style="-fx-padding: 30;">
-            <VBox spacing="4.0">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="Home Dashboard" />
-                <Label style="-fx-text-fill: #895737; -fx-font-size: 15px;" text="Overview of store sales health and operational diagnostics" />
-            </VBox>
+        <VBox spacing="18.0" styleClass="home-root">
+
+            <!-- HEADER -->
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <Label styleClass="page-title" text="Home Dashboard" />
+                    <Label styleClass="page-subtitle" text="Overview of store sales health and operational diagnostics" />
+                </VBox>
+                <VBox alignment="CENTER_RIGHT" spacing="2.0">
+                    <Label fx:id="dateLabel" styleClass="date-label" />
+                    <Label fx:id="updatedLabel" styleClass="updated-label" />
+                </VBox>
+                <Button fx:id="refreshBtn" onAction="#refresh" styleClass="refresh-button" text="Refresh" />
+            </HBox>
+
+            <Label fx:id="errorBanner" managed="false" visible="false" wrapText="true" maxWidth="Infinity" styleClass="error-banner" />
+
+            <!-- KPI CARDS -->
+            <HBox spacing="16.0">
+                <VBox styleClass="card, kpi-card" prefWidth="200.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="TODAY'S SALES" />
+                    <Label fx:id="salesTodayLabel" styleClass="kpi-value" text="—" />
+                    <Label fx:id="salesDeltaLabel" styleClass="kpi-sub" text=" " />
+                </VBox>
+                <VBox styleClass="card, kpi-card" prefWidth="200.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="TRANSACTIONS TODAY" />
+                    <Label fx:id="ordersTodayLabel" styleClass="kpi-value" text="—" />
+                    <Label fx:id="avgOrderLabel" styleClass="kpi-sub" text=" " />
+                </VBox>
+                <VBox styleClass="card, kpi-card" prefWidth="200.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="ITEMS SOLD TODAY" />
+                    <Label fx:id="itemsSoldLabel" styleClass="kpi-value" text="—" />
+                    <Label styleClass="kpi-sub" text="Completed orders only" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" prefWidth="200.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="ACTIVE STAFF" />
+                    <Label fx:id="activeStaffLabel" styleClass="kpi-value" text="—" />
+                    <Label fx:id="totalStaffLabel" styleClass="kpi-sub" text=" " />
+                </VBox>
+            </HBox>
+
+            <!-- CHART + TOP PRODUCTS -->
+            <HBox spacing="16.0">
+                <VBox styleClass="card, panel-card" prefWidth="560.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="card-title" text="Sales — Last 7 Days" />
+                    <Label styleClass="card-subtitle" text="Completed transactions per day" />
+                    <BarChart fx:id="salesChart" legendVisible="false" prefHeight="270.0"
+                              styleClass="sales-chart" verticalGridLinesVisible="false">
+                        <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
+                        <yAxis><NumberAxis side="LEFT" /></yAxis>
+                    </BarChart>
+                </VBox>
+
+                <VBox styleClass="card, panel-card" minWidth="300.0" prefWidth="340.0">
+                    <Label styleClass="card-title" text="Top Sellers" />
+                    <Label styleClass="card-subtitle" text="Best-selling items this week" />
+                    <VBox fx:id="topProductsBox" spacing="14.0" styleClass="list-box" />
+                </VBox>
+            </HBox>
+
+            <!-- RECENT TRANSACTIONS + STAFF -->
+            <HBox spacing="16.0">
+                <VBox styleClass="card, panel-card" prefWidth="560.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="card-title" text="Recent Transactions" />
+                    <TableView fx:id="recentTable" prefHeight="340.0" styleClass="recent-table">
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                        </columnResizePolicy>
+                        <columns>
+                            <TableColumn fx:id="colId" text="ID" />
+                            <TableColumn fx:id="colCashier" text="CASHIER" />
+                            <TableColumn fx:id="colTotal" text="TOTAL" />
+                            <TableColumn fx:id="colStatus" text="STATUS" />
+                            <TableColumn fx:id="colTime" text="TIME" />
+                        </columns>
+                    </TableView>
+                </VBox>
+
+                <VBox styleClass="card, panel-card" minWidth="300.0" prefWidth="340.0">
+                    <Label styleClass="card-title" text="Staff Overview" />
+                    <Label styleClass="card-subtitle" text="Accounts by role" />
+                    <VBox fx:id="staffBox" spacing="12.0" styleClass="list-box" />
+                </VBox>
+            </HBox>
         </VBox>
     </content>
 </ScrollPane>
