@@ -113,6 +113,11 @@ public class AlertUtil {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initStyle(StageStyle.TRANSPARENT);
 
+        javafx.stage.Window.getWindows().stream()
+                .filter(javafx.stage.Window::isFocused)
+                .findFirst()
+                .ifPresent(stage::initOwner);
+
         Scene scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
 

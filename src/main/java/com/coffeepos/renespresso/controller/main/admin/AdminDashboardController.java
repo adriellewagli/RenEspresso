@@ -1,18 +1,23 @@
 package com.coffeepos.renespresso.controller.main.admin;
 
+import com.coffeepos.renespresso.controller.main.admin.account.AccountController;
+import com.coffeepos.renespresso.controller.main.admin.home.HomeController;
+import com.coffeepos.renespresso.controller.main.admin.menu.MenuController;
+import com.coffeepos.renespresso.model.User;
+import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
+import com.coffeepos.renespresso.util.SessionManager;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.ContentDisplay;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -25,6 +30,11 @@ public class AdminDashboardController {
     @FXML private VBox userInfoBox;
 
     @FXML private Node homeView, menuView, salesView, transactionView, accountsView, settingsView;
+
+    // Injected automatically by JavaFX for <fx:include fx:id="homeView" .../> (fx:id + "Controller")
+    @FXML private HomeController homeViewController;
+    @FXML private MenuController menuViewController;
+    @FXML private AccountController accountsViewController;
 
     @FXML private Button btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings;
     @FXML private MFXButton btnLogout;
@@ -51,6 +61,7 @@ public class AdminDashboardController {
         setupIconButton(btnLogout, "🚪");
 
         setSystemDate();
+        populateUserInfo();
         applySidebarState();
         showHome();
     }
@@ -70,12 +81,26 @@ public class AdminDashboardController {
         btn.setAlignment(Pos.CENTER_LEFT);
     }
 
-
     private void setSystemDate() {
         if (dateLabel != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
             dateLabel.setText(LocalDate.now().format(formatter));
         }
+    }
+
+    /** Shows the logged-in user's name and role in the sidebar's user box. */
+    private void populateUserInfo() {
+        User me = SessionManager.getCurrentUser();
+        if (me == null || userInfoBox == null) return;
+
+        Label name = new Label(me.getFullName());
+        name.getStyleClass().add("user-name");
+
+        String r = me.getRole() == null || me.getRole().isEmpty() ? "" : me.getRole();
+        Label role = new Label(r.isEmpty() ? "" : r.charAt(0) + r.substring(1).toLowerCase());
+        role.getStyleClass().add("user-role");
+
+        userInfoBox.getChildren().setAll(name, role);
     }
 
     @FXML
@@ -101,14 +126,6 @@ public class AdminDashboardController {
         btnLogout.setText(isExpanded ? "LOGOUT" : "");
     }
 
-    private void setButtonAlignment(Pos position) {
-        Button[] navButtons = {btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings};
-        for (Button btn : navButtons) {
-            btn.setAlignment(position);
-        }
-        btnLogout.setAlignment(position);
-    }
-
     private void setShown(Node node, boolean shown) {
         node.setVisible(shown);
         node.setManaged(shown);
@@ -122,7 +139,6 @@ public class AdminDashboardController {
         setShown(accountsView, false);
         setShown(settingsView, false);
 
-        Button[] navButtons = {btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings};
         for (Button btn : navButtons) {
             btn.getStyleClass().remove("nav-button-active");
             if (!btn.getStyleClass().contains("nav-button")) {
@@ -146,23 +162,32 @@ public class AdminDashboardController {
         highlightButton(button);
     }
 
-    @FXML public void showHome()         { show(homeView, btnHome); }
-    @FXML public void showMenu()         { show(menuView, btnMenu); }
+    @FXML public void showHome() {
+        show(homeView, btnHome);
+        if (homeViewController != null) homeViewController.refresh();
+    }
+
+    @FXML public void showMenu() {
+        show(menuView, btnMenu);
+        if (menuViewController != null) menuViewController.loadData();
+    }
+
     @FXML public void showSales()        { show(salesView, btnSales); }
     @FXML public void showTransactions() { show(transactionView, btnTransactions); }
-    @FXML public void showAccounts()     { show(accountsView, btnAccounts); }
+
+    @FXML public void showAccounts() {
+        show(accountsView, btnAccounts);
+        if (accountsViewController != null) accountsViewController.loadAccounts();
+    }
+
     @FXML public void showSettings()     { show(settingsView, btnSettings); }
 
     @FXML
     public void handleLogout(ActionEvent event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to log out?", ButtonType.YES, ButtonType.NO);
-        alert.setTitle("Log Out Confirmation");
-        alert.setHeaderText("Logging out of RenEspresso");
+        if (!AlertUtil.showYesNo("Log Out", "Are you sure you want to log out of RenEspresso?")) return;
 
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                NavigateUtil.navigateTo(event, "id/LoginView.fxml", "RenEspresso POS - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
-            }
-        });
+        SessionManager.logout();
+        NavigateUtil.navigateTo(event, "id/LoginView.fxml", "RenEspresso POS - Login",
+                NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 }

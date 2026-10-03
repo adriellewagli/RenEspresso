@@ -4,6 +4,7 @@ import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
+import com.coffeepos.renespresso.util.SessionManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -108,6 +109,8 @@ public class LoginController {
         User user = UserDAO.authenticate(username, password);
 
         if (user != null) {
+            SessionManager.login(user);     // remember who is logged in (used by Account screen, sidebar, etc.)
+
             AlertUtil.showSuccess("Welcome", "Login successful! Logging in as " + user.getFullName());
 
             // Route user depending on role
@@ -130,9 +133,5 @@ public class LoginController {
     @FXML
     private void handleForgotPasswordNavigation(ActionEvent event) {
         NavigateUtil.navigateTo(event, "id/ForgotPasswordView.fxml", "Renespresso - Reset Password", NavigateUtil.WindowMode.AUTH_DIALOG);
-    }
-
-    private boolean authenticateUser(String username, String password) {
-        return UserDAO.authenticate(username, password) != null;
     }
 }

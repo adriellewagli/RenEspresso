@@ -16,7 +16,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
-
+import com.coffeepos.renespresso.util.AlertUtil;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -95,7 +95,7 @@ public class MenuController {
         task.setOnFailed(e -> {
             loading = false;
             task.getException().printStackTrace();
-            alert(Alert.AlertType.ERROR, "Could not load menu", task.getException().getMessage());
+            AlertUtil.showError("Could not load menu", task.getException().getMessage());
         });
 
         Thread t = new Thread(task, "menu-loader");
@@ -264,35 +264,32 @@ public class MenuController {
             render();
         } catch (SQLException e) {
             e.printStackTrace();
-            alert(Alert.AlertType.ERROR, "Update failed", e.getMessage());
+            AlertUtil.showError("Update failed", e.getMessage());
         }
     }
 
     private void handleDelete(Product p) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Delete \"" + p.name() + "\" from the menu? This cannot be undone.",
-                ButtonType.YES, ButtonType.NO);
-        confirm.setHeaderText("Delete Dish");
-        confirm.showAndWait().ifPresent(r -> {
-            if (r != ButtonType.YES) return;
-            try {
-                MenuDAO.deleteProduct(p.id());
-                ImageStore.delete(p.imagePath());
-                allProducts.remove(p);
-                render();
-            } catch (SQLIntegrityConstraintViolationException e) {
-                alert(Alert.AlertType.WARNING, "Can't delete this dish",
-                        "\"" + p.name() + "\" appears in past transactions. "
-                                + "Mark it as unavailable instead so your sales history stays intact.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-                alert(Alert.AlertType.ERROR, "Delete failed", e.getMessage());
-            }
-        });
+        if (!AlertUtil.showYesNo("Delete Dish",
+                "Delete \"" + p.name() + "\" from the menu? This cannot be undone.")) return;
+
+        try {
+            MenuDAO.deleteProduct(p.id());
+            ImageStore.delete(p.imagePath());
+            allProducts.remove(p);
+            render();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            AlertUtil.showWarning("Can't delete this dish",
+                    "\"" + p.name() + "\" appears in past transactions. "
+                            + "Mark it as unavailable instead so your sales history stays intact.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            AlertUtil.showError("Delete failed", e.getMessage());
+        }
     }
 
     // ------------------------------------------------------------------ ADD / EDIT DIALOG
 
+    /** existing == null -> add mode. Saves to the DB when OK is pressed and valid. */
     /** existing == null -> add mode. Saves to the DB when OK is pressed and valid. */
     private void showDishDialog(Product existing) {
         boolean edit = existing != null;
@@ -372,11 +369,6 @@ public class MenuController {
         Button addCatBtn = new Button("+");
         addCatBtn.setTooltip(new Tooltip("New category"));
 
-        Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: #C53030;");
-        errorLabel.setWrapText(true);
-        errorLabel.setMaxWidth(420);
-
         addCatBtn.setOnAction(e -> {
             TextInputDialog d = new TextInputDialog();
             d.setTitle("New Category");
@@ -394,7 +386,7 @@ public class MenuController {
                     categoryBox.setValue(c);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                    errorLabel.setText("Could not create category: " + ex.getMessage());
+                    AlertUtil.showError("Could not create category", ex.getMessage());
                 }
             });
         });
@@ -409,7 +401,6 @@ public class MenuController {
         grid.addRow(3, new Label("Price (\u20B1)"), priceField);
         grid.addRow(4, new Label("Description"), descField);
         grid.add(availableBox, 1, 5);
-        grid.add(errorLabel, 0, 6, 2, 1);
         nameField.setPrefWidth(260);
         dialog.getDialogPane().setContent(grid);
 
@@ -420,47 +411,47 @@ public class MenuController {
             BigDecimal price = parsePrice(priceField.getText());
             String pathText = pathField.getText().trim();
 
-            String err = null;
-            if (name.isEmpty()) err = "Dish name is required.";
-            else if (name.length() > 100) err = "Dish name is too long (max 100 characters).";
-            else if (cat == null) err = "Please choose or create a category.";
-            else if (price == null) err = "Enter a valid price greater than 0 (e.g. 150.00).";
+            String warning = null;
+            if (name.isEmpty()) warning = "Dish name is required.";
+            else if (name.length() > 100) warning = "Dish name is too long (max 100 characters).";
+            else if (cat == null) warning = "Please choose or create a category.";
+            else if (price == null) warning = "Enter a valid price greater than 0 (e.g. 150.00).";
             else if (!pathText.isEmpty() && !new File(pathText).isFile())
-                err = "Image file not found. Check the path or click Browse.";
+                warning = "Image file not found. Check the path or click Browse.";
             else if (!pathText.isEmpty() && !ImageStore.isSupported(new File(pathText)))
-                err = "Unsupported image type. Use PNG, JPG, GIF or BMP.";
+                warning = "Unsupported image type. Use PNG, JPG, GIF or BMP.";
 
-            if (err == null) {
-                String oldImage = edit ? existing.imagePath() : null;
-                String newImage = oldImage;
-                boolean copied = false;
-                try {
-                    if (pathText.isEmpty()) newImage = null;                          // cleared
-                    else if (ImageStore.isStored(pathText)) newImage = ImageStore.fileNameOf(pathText); // unchanged
-                    else { newImage = ImageStore.save(new File(pathText)); copied = true; }  // new file
-
-                    String desc = descField.getText().trim();
-                    String descOrNull = desc.isEmpty() ? null : desc;
-
-                    if (edit) MenuDAO.updateProduct(existing.id(), name, cat.id(), price, descOrNull,
-                            newImage, availableBox.isSelected());
-                    else MenuDAO.addProduct(name, cat.id(), price, descOrNull,
-                            newImage, availableBox.isSelected());
-
-                    if (oldImage != null && !Objects.equals(oldImage, newImage)) ImageStore.delete(oldImage);
-                } catch (SQLException | IOException ex) {
-                    ex.printStackTrace();
-                    if (copied) ImageStore.delete(newImage);       // don't leave an orphan file behind
-                    err = "Could not save: " + ex.getMessage();
-                }
+            if (warning != null) {
+                AlertUtil.showWarning("Check your input", warning);
+                ev.consume();                           // keep the dialog open
+                return;
             }
 
-            if (err != null) {
-                errorLabel.setText(err);
-                ev.consume();               // keep the dialog open
-            } else {
-                loadData();
+            String oldImage = edit ? existing.imagePath() : null;
+            String newImage = oldImage;
+            boolean copied = false;
+            try {
+                if (pathText.isEmpty()) newImage = null;                                  // cleared
+                else if (ImageStore.isStored(pathText)) newImage = ImageStore.fileNameOf(pathText); // unchanged
+                else { newImage = ImageStore.save(new File(pathText)); copied = true; }   // new file
+
+                String desc = descField.getText().trim();
+                String descOrNull = desc.isEmpty() ? null : desc;
+
+                if (edit) MenuDAO.updateProduct(existing.id(), name, cat.id(), price, descOrNull,
+                        newImage, availableBox.isSelected());
+                else MenuDAO.addProduct(name, cat.id(), price, descOrNull,
+                        newImage, availableBox.isSelected());
+
+                if (oldImage != null && !Objects.equals(oldImage, newImage)) ImageStore.delete(oldImage);
+            } catch (SQLException | IOException ex) {
+                ex.printStackTrace();
+                if (copied) ImageStore.delete(newImage);        // don't leave an orphan file behind
+                AlertUtil.showError("Could not save dish", ex.getMessage());
+                ev.consume();
+                return;
             }
+            loadData();
         });
 
         dialog.showAndWait();

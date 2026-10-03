@@ -18,7 +18,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-
+import com.coffeepos.renespresso.util.AlertUtil;
+import javafx.application.Platform;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDate;
@@ -72,12 +73,12 @@ public class AccountController {
 
     // ------------------------------------------------------------------ DATA
 
-    private void loadAccounts() {
+    public void loadAccounts() {
         try {
             accounts.setAll(UserDAO.getAllAccounts());
         } catch (SQLException e) {
             e.printStackTrace();
-            error("Could not load accounts", e.getMessage());
+            Platform.runLater(() -> AlertUtil.showError("Could not load accounts", e.getMessage()));
         }
     }
 
@@ -270,43 +271,38 @@ public class AccountController {
 
     private void handleDelete(AccountRow row) {
         if (row.id() == currentUserId) {
-            warn("Not allowed", "You can't delete the account you're currently logged in with.");
+            AlertUtil.showWarning("Not allowed", "You can't delete the account you're currently logged in with.");
             return;
         }
         try {
             if (row.role().equals("Admin") && row.status().equals("Active")
                     && UserDAO.countOtherActiveAdmins(row.id()) == 0) {
-                warn("Not allowed", "This is the only active admin. Create another admin first.");
+                AlertUtil.showWarning("Not allowed", "This is the only active admin. Create another admin first.");
                 return;
             }
         } catch (SQLException e) {
-            error("Database error", e.getMessage());
+            AlertUtil.showError("Database error", e.getMessage());
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                "Delete the account for " + row.name() + "? This cannot be undone.",
-                ButtonType.YES, ButtonType.NO);
-        alert.setHeaderText("Delete Account");
-        alert.showAndWait().ifPresent(response -> {
-            if (response != ButtonType.YES) return;
-            try {
-                UserDAO.deleteAccount(row.id());
-                accounts.remove(row);
-            } catch (SQLIntegrityConstraintViolationException e) {
-                warn("Can't delete this account",
-                        row.name() + " is linked to existing transactions. "
-                                + "Edit the account and set it to inactive instead.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-                error("Delete failed", e.getMessage());
-            }
-        });
+        if (!AlertUtil.showYesNo("Delete Account",
+                "Delete the account for " + row.name() + "? This cannot be undone.")) return;
+
+        try {
+            UserDAO.deleteAccount(row.id());
+            accounts.remove(row);
+        } catch (SQLIntegrityConstraintViolationException e) {
+            AlertUtil.showWarning("Can't delete this account",
+                    row.name() + " is linked to existing transactions. "
+                            + "Edit the account and set it to inactive instead.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            AlertUtil.showError("Delete failed", e.getMessage());
+        }
     }
 
     // ------------------------------------------------------------------ ADD / EDIT DIALOG
 
-    /** existing == null -> add mode, otherwise edit mode. Saves to the DB when OK is pressed and valid. */
     private void showAccountDialog(AccountRow existing) {
         boolean edit = existing != null;
 
@@ -331,10 +327,6 @@ public class AccountController {
         passField.setPromptText(edit ? "Leave blank to keep current" : "At least 6 characters");
         confirmField.setPromptText("Re-enter password");
 
-        Label errorLabel = new Label();
-        errorLabel.setTextFill(Color.web("#dc2626"));
-        errorLabel.setWrapText(true);
-
         GridPane grid = new GridPane();
         grid.setHgap(12);
         grid.setVgap(10);
@@ -345,7 +337,6 @@ public class AccountController {
         grid.addRow(3, new Label("Confirm"), confirmField);
         grid.addRow(4, new Label("Role"), roleBox);
         grid.add(activeBox, 1, 5);
-        grid.add(errorLabel, 0, 6, 2, 1);
         nameField.setPrefWidth(260);
         roleBox.setPrefWidth(260);
         dialog.getDialogPane().setContent(grid);
@@ -358,33 +349,37 @@ public class AccountController {
             String role = roleBox.getValue();
             boolean active = activeBox.isSelected();
 
-            String err = validate(existing, name, username, pw, confirmField.getText(), role, active);
-            if (err == null) {
-                try {
-                    if (edit) {
-                        UserDAO.updateAccount(existing.id(), name, username, role, active, pw);
-                    } else if (!UserDAO.registerUser(
-                            new com.coffeepos.renespresso.model.User(0, username, name, role, active), pw)) {
-                        err = "Could not create the account.";
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    err = "Database error: " + ex.getMessage();
+            try {
+                String warning = validate(existing, name, username, pw, confirmField.getText(), role, active);
+                if (warning != null) {
+                    AlertUtil.showWarning("Check your input", warning);
+                    ev.consume();                       // keep the dialog open
+                    return;
                 }
+
+                if (edit) {
+                    UserDAO.updateAccount(existing.id(), name, username, role, active, pw);
+                } else if (!UserDAO.registerUser(
+                        new com.coffeepos.renespresso.model.User(0, username, name, role, active), pw)) {
+                    AlertUtil.showError("Could not create account", "The account could not be created.");
+                    ev.consume();
+                    return;
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                AlertUtil.showError("Database error", ex.getMessage());
+                ev.consume();
+                return;
             }
-            if (err != null) {
-                errorLabel.setText(err);
-                ev.consume();          // keep the dialog open
-            } else {
-                loadAccounts();
-            }
+            loadAccounts();
         });
 
         dialog.showAndWait();
     }
 
+    /** Returns a warning message if the input is invalid, otherwise null. */
     private String validate(AccountRow existing, String name, String username, String pw,
-                            String confirm, String role, boolean active) {
+                            String confirm, String role, boolean active) throws SQLException {
         boolean edit = existing != null;
 
         if (name.isEmpty()) return "Full name is required.";
@@ -397,20 +392,16 @@ public class AccountController {
             if (!pw.equals(confirm)) return "Passwords do not match.";
         }
 
-        try {
-            if (UserDAO.usernameExists(username, edit ? existing.id() : 0))
-                return "That username is already taken.";
+        if (UserDAO.usernameExists(username, edit ? existing.id() : 0))
+            return "That username is already taken.";
 
-            if (edit) {
-                if (existing.id() == currentUserId && !active)
-                    return "You can't deactivate the account you're logged in with.";
-                boolean wasActiveAdmin = existing.role().equals("Admin") && existing.status().equals("Active");
-                boolean stillActiveAdmin = role.equals("Admin") && active;
-                if (wasActiveAdmin && !stillActiveAdmin && UserDAO.countOtherActiveAdmins(existing.id()) == 0)
-                    return "This is the only active admin. Create another admin first.";
-            }
-        } catch (SQLException e) {
-            return "Database error: " + e.getMessage();
+        if (edit) {
+            if (existing.id() == currentUserId && !active)
+                return "You can't deactivate the account you're logged in with.";
+            boolean wasActiveAdmin = existing.role().equals("Admin") && existing.status().equals("Active");
+            boolean stillActiveAdmin = role.equals("Admin") && active;
+            if (wasActiveAdmin && !stillActiveAdmin && UserDAO.countOtherActiveAdmins(existing.id()) == 0)
+                return "This is the only active admin. Create another admin first.";
         }
         return null;
     }
