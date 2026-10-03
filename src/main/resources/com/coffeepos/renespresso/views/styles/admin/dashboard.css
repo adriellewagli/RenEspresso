@@ -1,12 +1,11 @@
-/* Sidebar / navigation styles only. Screen-specific styles live in their own folders. */
-
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: #EBDCCD;
-    -fx-font-size: 18px;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
     -fx-cursor: hand;
     -fx-background-radius: 8px;
-    -fx-padding: 14 18;
+    -fx-padding: 14 14;
 }
 
 .nav-button:hover {
@@ -17,19 +16,28 @@
 .nav-button-active {
     -fx-background-color: #C89360;
     -fx-text-fill: #FFFFFF;
-    -fx-font-size: 18px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
     -fx-background-radius: 8px;
-    -fx-padding: 14 18;
+    -fx-padding: 14 14;
 }
 
 .logout-button {
     -fx-background-color: #895737;
     -fx-text-fill: #F3E9DC;
-    -fx-font-size: 18px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
     -fx-background-radius: 8px;
-    -fx-padding: 14 18;
+    -fx-padding: 14 14;
 }
+
+.nav-icon {
+    -fx-font-size: 20px;
+    -fx-font-weight: normal;
+}
+.nav-button .nav-icon        { -fx-text-fill: #EBDCCD; }
+.nav-button:hover .nav-icon  { -fx-text-fill: #FFFFFF; }
+.nav-button-active .nav-icon { -fx-text-fill: #FFFFFF; }
+.logout-button .nav-icon     { -fx-text-fill: #F3E9DC; }

@@ -12,7 +12,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-
+import javafx.scene.control.ContentDisplay;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -31,12 +31,45 @@ public class AdminDashboardController {
 
     @FXML private Label dateLabel;
 
+    private static final double COLLAPSED_WIDTH = 85.0;
+    private static final double EXPANDED_WIDTH = 310.0;
+    private static final double ICON_BOX = 37.0;
+
+    private Button[] navButtons;
+    private String[] navIcons;
+    private String[] navLabels;
+
     @FXML
     public void initialize() {
+        navButtons = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings};
+        navIcons   = new String[]{"🏠", "📋", "📈", "🕒", "👥", "\uD83D\uDD27"};
+        navLabels  = new String[]{"HOME", "MENU MANAGEMENT", "SALES", "TRANSACTION HISTORY", "ACCOUNT MANAGEMENT", "SETTINGS"};
+
+        for (int i = 0; i < navButtons.length; i++) {
+            setupIconButton(navButtons[i], navIcons[i]);
+        }
+        setupIconButton(btnLogout, "🚪");
+
         setSystemDate();
         applySidebarState();
-        showHome(); // Home active on load
+        showHome();
     }
+
+    /** Icon lives in a fixed-width graphic so it never moves when the text appears/disappears. */
+    private void setupIconButton(Button btn, String icon) {
+        Label iconLabel = new Label(icon);
+        iconLabel.getStyleClass().add("nav-icon");
+        iconLabel.setMinWidth(ICON_BOX);
+        iconLabel.setPrefWidth(ICON_BOX);
+        iconLabel.setMaxWidth(ICON_BOX);
+        iconLabel.setAlignment(Pos.CENTER);
+
+        btn.setGraphic(iconLabel);
+        btn.setContentDisplay(ContentDisplay.LEFT);
+        btn.setGraphicTextGap(12);
+        btn.setAlignment(Pos.CENTER_LEFT);
+    }
+
 
     private void setSystemDate() {
         if (dateLabel != null) {
@@ -52,39 +85,20 @@ public class AdminDashboardController {
     }
 
     private void applySidebarState() {
-        if (isExpanded) {
-            sidebar.setPrefWidth(310.0);
-            lblBrandText.setVisible(true);
-            lblBrandText.setManaged(true);
-            userInfoBox.setVisible(true);
-            userInfoBox.setManaged(true);
+        double width = isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH;
+        sidebar.setMinWidth(width);
+        sidebar.setPrefWidth(width);
+        sidebar.setMaxWidth(width);
 
-            btnHome.setText("🏠  HOME");
-            btnMenu.setText("📋  MENU MANAGEMENT");
-            btnSales.setText("📈  SALES");
-            btnTransactions.setText("🕒  TRANSACTION HISTORY");
-            btnAccounts.setText("👥  ACCOUNT MANAGEMENT");
-            btnSettings.setText("⚙️  SETTINGS");
-            btnLogout.setText("🚪  LOGOUT");
+        lblBrandText.setVisible(isExpanded);
+        lblBrandText.setManaged(isExpanded);
+        userInfoBox.setVisible(isExpanded);
+        userInfoBox.setManaged(isExpanded);
 
-            setButtonAlignment(Pos.BASELINE_LEFT);
-        } else {
-            sidebar.setPrefWidth(85.0);
-            lblBrandText.setVisible(false);
-            lblBrandText.setManaged(false);
-            userInfoBox.setVisible(false);
-            userInfoBox.setManaged(false);
-
-            btnHome.setText("🏠");
-            btnMenu.setText("📋");
-            btnSales.setText("📈");
-            btnTransactions.setText("🕒");
-            btnAccounts.setText("👥");
-            btnSettings.setText("⚙️");
-            btnLogout.setText("🚪");
-
-            setButtonAlignment(Pos.CENTER);
+        for (int i = 0; i < navButtons.length; i++) {
+            navButtons[i].setText(isExpanded ? navLabels[i] : "");
         }
+        btnLogout.setText(isExpanded ? "LOGOUT" : "");
     }
 
     private void setButtonAlignment(Pos position) {

@@ -10,10 +10,10 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.coffeepos.renespresso.controller.main.admin.home.HomeController">
     <content>
-        <VBox spacing="20.0" styleClass="home-container">
+        <VBox spacing="20.0" style="-fx-padding: 30;">
             <VBox spacing="4.0">
-                <Label styleClass="home-title" text="Home Dashboard" />
-                <Label styleClass="home-subtitle" text="Overview of store sales health and operational diagnostics" />
+                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="Home Dashboard" />
+                <Label style="-fx-text-fill: #895737; -fx-font-size: 15px;" text="Overview of store sales health and operational diagnostics" />
             </VBox>
         </VBox>
     </content>
