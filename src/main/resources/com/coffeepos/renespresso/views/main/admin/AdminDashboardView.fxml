@@ -36,7 +36,8 @@
             <!-- Navigation Menu -->
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="NEVER"
                         style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;"
-                        VBox.vgrow="ALWAYS">                <content>
+                        VBox.vgrow="ALWAYS">
+                <content>
                     <VBox spacing="8.0" style="-fx-background-color: transparent;">
                         <Button fx:id="btnHome" styleClass="nav-button" alignment="CENTER" maxWidth="Infinity" onAction="#showHome" text="🏠">
                             <tooltip><Tooltip text="Home" /></tooltip>
@@ -71,15 +72,25 @@
         <!-- CONTENT AREA: each section lives in its own FXML -->
         <StackPane HBox.hgrow="ALWAYS">
             <fx:include fx:id="homeView"        source="home/HomeView.fxml" />
-            <fx:include fx:id="menuView"        source="menu/MenuView.fxml"               visible="false" managed="false" />
-            <fx:include fx:id="salesView"       source="sales/SalesView.fxml"             visible="false" managed="false" />
-            <fx:include fx:id="transactionView" source="transact/TransactionView.fxml"    visible="false" managed="false" />
-            <fx:include fx:id="accountsView"    source="account/AccountView.fxml"         visible="false" managed="false" />
+            <fx:include fx:id="menuView"        source="menu/MenuView.fxml" />
+            <fx:include fx:id="salesView"       source="sales/SalesView.fxml" />
+            <fx:include fx:id="transactionView" source="transact/TransactionView.fxml" />
+            <fx:include fx:id="accountsView"    source="account/AccountView.fxml" />
 
             <!-- Settings placeholder (move to its own folder when you build it) -->
             <VBox fx:id="settingsView" visible="false" managed="false" spacing="20.0" style="-fx-padding: 30;">
                 <Label style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="Settings" />
                 <Label style="-fx-text-fill: #895737; -fx-font-size: 15px;" text="Application preferences and configuration" />
+
+                <VBox alignment="CENTER_LEFT" maxWidth="640" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+                    <Label text="Store information coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
+                </VBox>
+                <VBox alignment="CENTER_LEFT" maxWidth="640" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+                    <Label text="Receipt settings coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
+                </VBox>
+                <VBox alignment="CENTER_LEFT" maxWidth="640" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+                    <Label text="Security settings coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
+                </VBox>
             </VBox>
         </StackPane>
     </HBox>

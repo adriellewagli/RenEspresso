@@ -40,7 +40,7 @@ public class HomeDAO {
         }
     }
 
-    /** returns {sum, count} of completed transactions in [from, to) */
+    /** returns {sum, count} of completed transactions in [from, too) */
     private static double[] totals(Connection c, LocalDate from, LocalDate to) throws SQLException {
         String sql = "SELECT COALESCE(SUM(total_amount), 0), COUNT(*) FROM transactions "
                 + "WHERE status = 'COMPLETED' AND created_at >= ? AND created_at < ?";
@@ -106,7 +106,7 @@ public class HomeDAO {
     private static List<RecentOrder> recentOrders(Connection c) throws SQLException {
         String sql = "SELECT t.transaction_id, COALESCE(u.full_name, '-') AS cashier, "
                 + "t.total_amount, t.status, t.created_at "
-                + "FROM transactions t LEFT JOIN users u ON u.user_id = t.user_id "
+                + "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id "
                 + "ORDER BY t.created_at DESC LIMIT 8";
         List<RecentOrder> out = new ArrayList<>();
         try (PreparedStatement ps = c.prepareStatement(sql);

@@ -14,4 +14,24 @@
         <Label styleClass="sales-subtitle" text="Track revenue and sales performance" />
     </VBox>
 
+    <HBox spacing="16">
+        <VBox HBox.hgrow="ALWAYS" spacing="6" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+            <Label text="TODAY'S SALES" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #895737;" />
+            <Label text="—" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #5E3023;" />
+        </VBox>
+        <VBox HBox.hgrow="ALWAYS" spacing="6" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+            <Label text="THIS WEEK" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #895737;" />
+            <Label text="—" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #5E3023;" />
+        </VBox>
+        <VBox HBox.hgrow="ALWAYS" spacing="6" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+            <Label text="THIS MONTH" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #895737;" />
+            <Label text="—" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #5E3023;" />
+        </VBox>
+    </HBox>
+
+    <VBox alignment="CENTER" prefHeight="320" VBox.vgrow="ALWAYS"
+          style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+        <Label text="Sales chart coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
+    </VBox>
+
 </VBox>

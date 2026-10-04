@@ -14,4 +14,9 @@
         <Label styleClass="transact-subtitle" text="Review past orders and payments" />
     </VBox>
 
+    <VBox alignment="CENTER" prefHeight="400" VBox.vgrow="ALWAYS"
+          style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
+        <Label text="Transaction list coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
+    </VBox>
+
 </VBox>
