@@ -9,14 +9,14 @@
     <HBox prefHeight="768.0" prefWidth="1280.0">
 
         <!-- MODERN SIDEBAR NAVIGATION -->
-        <VBox prefWidth="260.0" spacing="16.0" styleClass="sidebar">
+        <VBox fx:id="sidebar" prefWidth="260.0" spacing="16.0" styleClass="sidebar">
 
-            <!-- Brand Logo Header -->
-            <HBox alignment="CENTER_LEFT" prefHeight="48.0" spacing="12.0">
+            <!-- Brand Logo Header (click to collapse/expand) -->
+            <HBox fx:id="brandBox" alignment="CENTER_LEFT" onMouseClicked="#toggleSidebar" prefHeight="48.0" spacing="12.0" style="-fx-cursor: hand;">
                 <StackPane prefHeight="36.0" prefWidth="36.0" styleClass="brand-icon-box">
                     <Label styleClass="brand-icon-text" text="☕" />
                 </StackPane>
-                <VBox alignment="CENTER_LEFT" spacing="1">
+                <VBox fx:id="brandTextBox" alignment="CENTER_LEFT" spacing="1">
                     <Label styleClass="brand-title" text="RenEspresso" />
                     <Label styleClass="brand-subtitle" text="POS SYSTEM" />
                 </VBox>
@@ -25,13 +25,14 @@
             <Separator styleClass="sidebar-separator" />
 
             <!-- Cashier Session Information Box -->
-            <VBox spacing="6.0" styleClass="session-box">
+            <VBox fx:id="sessionBox" spacing="6.0" styleClass="session-box">
                 <HBox alignment="CENTER_LEFT" spacing="8">
                     <Region styleClass="status-dot" />
                     <Label styleClass="status-text" text="SYSTEM ONLINE" />
                 </HBox>
-                <Label styleClass="cashier-text" text="Cashier — Rina" />
+                <Label fx:id="lblCashierName" styleClass="cashier-text" text="Cashier — Rina" />
                 <Label fx:id="lblClock" styleClass="clock-text" text="03:52 PM" />
+                <Label fx:id="lblDate" styleClass="clock-text" text="Monday, Sep 29, 2026" />
             </VBox>
 
             <!-- Navigation Bar -->
@@ -56,7 +57,7 @@
             <VBox fx:id="homeView" spacing="24.0" styleClass="view-container">
                 <!-- Header -->
                 <VBox spacing="4.0">
-                    <Label styleClass="page-title" text="Welcome back, Cashier Rina 👋" />
+                    <Label fx:id="lblWelcome" styleClass="page-title" text="Welcome back, Cashier Rina 👋" />
                     <Label styleClass="page-subtitle" text="Here is your real-time performance summary for this shift." />
                 </VBox>
 
@@ -97,18 +98,51 @@
                             <Label styleClass="card-subtext" text="• Default Printer: Thermal Receipt POS-80" />
                         </VBox>
                     </VBox>
+
+                    <!-- NEW: Shift Highlights + Recent Orders -->
+                    <VBox prefWidth="340.0" spacing="12.0" styleClass="dashboard-card">
+                        <Label styleClass="section-header-title" text="Shift Highlights" />
+                        <VBox spacing="8.0">
+                            <HBox>
+                                <Label styleClass="card-subtext" text="Average order value:" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="lblDashAvg" styleClass="about-item-bold" text="₱0.00" />
+                            </HBox>
+                            <HBox>
+                                <Label styleClass="card-subtext" text="Items sold:" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="lblDashItems" styleClass="about-item-bold" text="0" />
+                            </HBox>
+                            <HBox>
+                                <Label styleClass="card-subtext" text="Senior/PWD orders:" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="lblDashDiscounted" styleClass="about-item-bold" text="0" />
+                            </HBox>
+                            <HBox>
+                                <Label styleClass="card-subtext" text="Last order at:" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="lblDashLast" styleClass="about-item-bold" text="—" />
+                            </HBox>
+                        </VBox>
+                        <Separator styleClass="light-separator" />
+                        <Label styleClass="section-subheader-title" text="Recent Orders" />
+                        <VBox fx:id="recentOrdersBox" spacing="6.0" />
+                    </VBox>
                 </HBox>
             </VBox>
 
             <!-- VIEW 2: MENU (POS ORDER SCREEN) -->
             <HBox fx:id="menuView" visible="false">
                 <VBox spacing="18.0" styleClass="menu-container" HBox.hgrow="ALWAYS">
-                    <HBox spacing="8.0">
+                    <HBox fx:id="categoryBar" alignment="CENTER_LEFT" spacing="8.0">
                         <Button onAction="#filterCategory" styleClass="category-btn-active" text="All" />
                         <Button onAction="#filterCategory" styleClass="category-btn" text="Hot Coffee" />
                         <Button onAction="#filterCategory" styleClass="category-btn" text="Iced Coffee" />
                         <Button onAction="#filterCategory" styleClass="category-btn" text="Milk Tea" />
                         <Button onAction="#filterCategory" styleClass="category-btn" text="Pastries" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="txtMenuSearch" prefWidth="220.0" promptText="🔍 Search menu..."
+                                   style="-fx-background-color: #FFFFFF; -fx-background-radius: 8; -fx-text-fill: #5E3023; -fx-prompt-text-fill: #895737; -fx-padding: 8 12 8 12;" />
                     </HBox>
 
                     <ScrollPane fitToWidth="true" styleClass="transparent-scrollpane" VBox.vgrow="ALWAYS">
@@ -124,6 +158,7 @@
                             <Label fx:id="lblCartTicket" styleClass="cart-ticket-subtext" text="will be ticket #042" />
                         </VBox>
                         <Region HBox.hgrow="ALWAYS" />
+                        <Button onAction="#handleClearCart" styleClass="btn-secondary" style="-fx-font-size: 11px; -fx-padding: 4 10 4 10;" text="🗑  Clear" />
                     </HBox>
 
                     <Separator styleClass="light-separator" />
@@ -172,7 +207,14 @@
                 </VBox>
 
                 <!-- Outer Card Wrapper to match Admin Dashboard layout -->
-                <VBox styleClass="dashboard-card" VBox.vgrow="ALWAYS" style="-fx-padding: 20px;">
+                <VBox spacing="12.0" styleClass="dashboard-card" VBox.vgrow="ALWAYS" style="-fx-padding: 20px;">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <TextField fx:id="txtHistorySearch" prefWidth="300.0" promptText="🔍 Search ticket, item, payment..."
+                                   style="-fx-background-color: #F3E9DC; -fx-background-radius: 8; -fx-text-fill: #5E3023; -fx-prompt-text-fill: #895737; -fx-padding: 8 12 8 12;" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button onAction="#handleReprintReceipt" styleClass="btn-secondary" text="🧾 View Receipt" />
+                        <Button onAction="#handleExportHistory" styleClass="btn-secondary" text="📤 Export CSV" />
+                    </HBox>
                     <TableView fx:id="tblHistory" styleClass="modern-audit-table" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn prefWidth="140.0" text="TICKET #" />
@@ -180,11 +222,13 @@
                             <TableColumn prefWidth="320.0" text="ITEMS" />
                             <TableColumn prefWidth="180.0" text="DISCOUNT APPLIED" />
                             <TableColumn prefWidth="160.0" text="TOTAL PAID" />
+                            <TableColumn prefWidth="120.0" text="PAYMENT" />
                         </columns>
                         <columnResizePolicy>
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                         </columnResizePolicy>
                     </TableView>
+                    <Label fx:id="lblHistorySummary" styleClass="card-subtext" text="No transactions yet" />
                 </VBox>
             </VBox>
 
@@ -264,7 +308,7 @@
                             <Label styleClass="about-copyright-text" text="© 2026 RenEspresso POS System. All Rights Reserved." />
                         </VBox>
                         <Region HBox.hgrow="ALWAYS" />
-                        <Button styleClass="btn-secondary" text="📞 Contact System Administrator" />
+                        <Button onAction="#handleContactAdmin" styleClass="btn-secondary" text="📞 Contact System Administrator" />
                     </HBox>
                 </VBox>
             </VBox>
@@ -293,20 +337,20 @@
 
                                 <!-- Active Printer Selection -->
                                 <Label styleClass="card-subtext" text="Target Printer:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                <ComboBox maxWidth="300.0" promptText="Select Thermal Printer..." styleClass="btn-secondary" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                <ComboBox fx:id="cmbPrinter" maxWidth="300.0" promptText="Select Thermal Printer..." styleClass="btn-secondary" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                                 <!-- Receipt Paper Size -->
                                 <Label styleClass="card-subtext" text="Paper Roll Width:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <HBox spacing="12.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <RadioButton selected="true" styleClass="settings-checkbox" text="80mm Thermal Paper (Standard)" />
-                                    <RadioButton styleClass="settings-checkbox" text="58mm Small Roll" />
+                                    <RadioButton fx:id="rbPaper80" selected="true" styleClass="settings-checkbox" text="80mm Thermal Paper (Standard)" />
+                                    <RadioButton fx:id="rbPaper58" styleClass="settings-checkbox" text="58mm Small Roll" />
                                 </HBox>
 
                                 <!-- Checkbox Controls -->
                                 <VBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                    <CheckBox selected="true" styleClass="settings-checkbox" text="Auto-print receipt immediately after order finalization" />
-                                    <CheckBox selected="true" styleClass="settings-checkbox" text="Pop open cash drawer electronically upon payment" />
-                                    <CheckBox styleClass="settings-checkbox" text="Print dual receipt copies (Customer + Merchant Copy)" />
+                                    <CheckBox fx:id="chkAutoPrint" selected="true" styleClass="settings-checkbox" text="Auto-print receipt immediately after order finalization" />
+                                    <CheckBox fx:id="chkCashDrawer" selected="true" styleClass="settings-checkbox" text="Pop open cash drawer electronically upon payment" />
+                                    <CheckBox fx:id="chkDualReceipt" styleClass="settings-checkbox" text="Print dual receipt copies (Customer + Merchant Copy)" />
                                 </VBox>
                             </GridPane>
                         </VBox>
@@ -317,13 +361,13 @@
                             <Separator styleClass="light-separator" />
 
                             <VBox spacing="12.0">
-                                <CheckBox selected="true" styleClass="settings-checkbox" text="Play audio chime when items are added/removed from cart" />
-                                <CheckBox selected="true" styleClass="settings-checkbox" text="Require confirmation dialog before finalizing orders" />
-                                <CheckBox selected="true" styleClass="settings-checkbox" text="Automatically clear Senior/PWD discount state for next order" />
+                                <CheckBox fx:id="chkChime" selected="true" styleClass="settings-checkbox" text="Play audio chime when items are added/removed from cart" />
+                                <CheckBox fx:id="chkRequireConfirm" selected="true" styleClass="settings-checkbox" text="Require confirmation dialog before finalizing orders" />
+                                <CheckBox fx:id="chkAutoClearDiscount" selected="true" styleClass="settings-checkbox" text="Automatically clear Senior/PWD discount state for next order" />
 
                                 <HBox alignment="CENTER_LEFT" spacing="16.0" style="-fx-padding: 6 0 0 0;">
                                     <Label styleClass="card-subtext" text="Default Payment Method:" />
-                                    <ComboBox maxWidth="200.0" promptText="Cash" styleClass="btn-secondary" />
+                                    <ComboBox fx:id="cmbDefaultPayment" maxWidth="200.0" promptText="Cash" styleClass="btn-secondary" />
                                 </HBox>
                             </VBox>
                         </VBox>
@@ -338,7 +382,7 @@
                                     <Label styleClass="section-subheader-title" text="Backup POS Database" />
                                     <Label styleClass="card-subtext" text="Generate a local SQL/SQLite backup file containing sales history and product catalog." />
                                 </VBox>
-                                <Button styleClass="btn-secondary" text="📦 Backup Database Now" />
+                                <Button onAction="#handleBackupDatabase" styleClass="btn-secondary" text="📦 Backup Database Now" />
                             </HBox>
 
                             <Separator styleClass="light-separator" />
@@ -348,14 +392,14 @@
                                     <Label styleClass="section-subheader-title" text="Reset Ticket Sequence" />
                                     <Label styleClass="card-subtext" text="Reset order queue counter back to #001 for a new operational shift day." />
                                 </VBox>
-                                <Button styleClass="btn-secondary" text="🔄 Reset Queue Counter" />
+                                <Button onAction="#handleResetQueue" styleClass="btn-secondary" text="🔄 Reset Queue Counter" />
                             </HBox>
                         </VBox>
 
                         <!-- Save Settings Bar -->
                         <HBox alignment="CENTER_RIGHT" spacing="12.0">
-                            <Button styleClass="btn-secondary" text="Reset Defaults" />
-                            <Button styleClass="btn-primary" text="💾 Save Preference Changes" />
+                            <Button onAction="#handleResetSettings" styleClass="btn-secondary" text="Reset Defaults" />
+                            <Button onAction="#handleSaveSettings" styleClass="btn-primary" text="💾 Save Preference Changes" />
                         </HBox>
 
                     </VBox>
@@ -375,9 +419,33 @@
                 <Label styleClass="modal-amount-label" text="Total Amount Due:" />
                 <Label fx:id="lblModalTotal" styleClass="modal-amount-value" text="₱0.00" />
             </HBox>
+
+            <!-- NEW: Payment details -->
+            <VBox alignment="CENTER_LEFT" spacing="8.0">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="modal-body-text" text="Payment Method:" />
+                    <ComboBox fx:id="cmbPaymentMethod" prefWidth="160.0" styleClass="btn-secondary" />
+                </HBox>
+                <HBox fx:id="rowCash" alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="modal-body-text" text="Cash Received:" />
+                    <TextField fx:id="txtCashReceived" prefWidth="160.0" promptText="₱0.00" />
+                </HBox>
+                <HBox fx:id="quickCashBar" spacing="6.0">
+                    <Button onAction="#handleQuickCash" style="-fx-font-size: 11px; -fx-padding: 4 10 4 10;" styleClass="btn-secondary" text="Exact" />
+                    <Button onAction="#handleQuickCash" style="-fx-font-size: 11px; -fx-padding: 4 10 4 10;" styleClass="btn-secondary" text="₱100" />
+                    <Button onAction="#handleQuickCash" style="-fx-font-size: 11px; -fx-padding: 4 10 4 10;" styleClass="btn-secondary" text="₱200" />
+                    <Button onAction="#handleQuickCash" style="-fx-font-size: 11px; -fx-padding: 4 10 4 10;" styleClass="btn-secondary" text="₱500" />
+                    <Button onAction="#handleQuickCash" style="-fx-font-size: 11px; -fx-padding: 4 10 4 10;" styleClass="btn-secondary" text="₱1000" />
+                </HBox>
+                <HBox fx:id="rowChange" alignment="CENTER_LEFT" spacing="8.0">
+                    <Label styleClass="modal-amount-label" text="Change Due:" />
+                    <Label fx:id="lblChange" styleClass="modal-amount-value" text="₱0.00" />
+                </HBox>
+            </VBox>
+
             <HBox spacing="12.0">
                 <Button onAction="#closeConfirmationModal" prefWidth="130.0" styleClass="btn-secondary" text="Cancel" />
-                <Button onAction="#confirmAndFinalizeOrder" prefWidth="160.0" styleClass="btn-primary" text="Confirm &amp; Print" />
+                <Button fx:id="btnConfirmOrder" onAction="#confirmAndFinalizeOrder" prefWidth="160.0" styleClass="btn-primary" text="Confirm &amp; Print" />
             </HBox>
         </VBox>
     </StackPane>
