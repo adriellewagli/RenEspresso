@@ -1,0 +1,8 @@
+/* ===== About view ===== */
+
+.about-hero-title { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.about-hero-version { -fx-text-fill: #C08552; -fx-font-size: 12px; -fx-font-weight: bold; }
+.about-copyright-text { -fx-text-fill: #895737; -fx-font-size: 11px; }
+
+.brand-icon-box { -fx-background-color: #5E3023; -fx-background-radius: 10; }
+.brand-icon-text { -fx-text-fill: #F3E9DC; -fx-font-size: 20px; }

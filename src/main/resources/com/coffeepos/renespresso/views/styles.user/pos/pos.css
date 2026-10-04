@@ -1,0 +1,81 @@
+/* ===== POS view (menu grid, order sidebar, payment modal) ===== */
+
+.menu-container { -fx-padding: 24; }
+
+.category-btn, .category-btn-active {
+    -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;
+    -fx-background-radius: 20; -fx-padding: 8 18 8 18;
+}
+.category-btn { -fx-background-color: white; -fx-text-fill: #5E3023; }
+.category-btn:hover { -fx-background-color: #EBDCCD; }
+.category-btn-active { -fx-background-color: #5E3023; -fx-text-fill: #F3E9DC; }
+
+/* Menu cards */
+.menu-card {
+    -fx-background-color: #FFFFFF; -fx-padding: 12; -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+.menu-card-category { -fx-text-fill: #895737; -fx-font-size: 10px; }
+.menu-card-title { -fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 13px; }
+.menu-card-placeholder { -fx-font-size: 48px; }
+.size-chip {
+    -fx-background-color: #F3E9DC; -fx-text-fill: #5E3023; -fx-font-size: 10px;
+    -fx-background-radius: 6; -fx-cursor: hand; -fx-text-alignment: center;
+}
+.size-chip:hover { -fx-background-color: #EBDCCD; }
+
+/* Order sidebar */
+.order-sidebar {
+    -fx-background-color: white; -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(94,48,35,0.10), 10, 0, -2, 0);
+}
+.cart-header-title { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.cart-ticket-subtext { -fx-text-fill: #C08552; -fx-font-size: 12px; -fx-font-weight: bold; }
+
+.transparent-listview, .transparent-listview .list-cell {
+    -fx-background-color: transparent; -fx-background: transparent; -fx-padding: 2 0 2 0;
+}
+.transparent-listview .list-cell:filled:hover { -fx-background-color: transparent; }
+.transparent-listview .list-cell:filled:selected { -fx-background-color: transparent; }
+
+.cart-item-title { -fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 12px; }
+.cart-item-price { -fx-text-fill: #895737; -fx-font-size: 11px; }
+.qty-btn {
+    -fx-background-color: #F3E9DC; -fx-text-fill: #5E3023; -fx-cursor: hand;
+    -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 2 8 2 8;
+}
+.qty-btn:hover { -fx-background-color: #EBDCCD; }
+.remove-btn { -fx-background-color: transparent; -fx-text-fill: #5E3023; -fx-cursor: hand; -fx-font-weight: bold; }
+.remove-btn:hover { -fx-text-fill: #C0392B; }
+
+.discount-banner { -fx-background-color: #F3E9DC; -fx-background-radius: 8; -fx-padding: 10 12 10 12; }
+.discount-checkbox { -fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 12px; }
+.discount-checkbox:selected .box { -fx-background-color: #5E3023; }
+.discount-checkbox:selected .mark { -fx-background-color: white; }
+.discount-tag { -fx-text-fill: #C08552; -fx-font-size: 11px; -fx-font-weight: bold; }
+
+.totals-box { -fx-padding: 4 0 0 0; }
+.totals-separator .line { -fx-border-color: rgba(94,48,35,0.2); -fx-border-width: 1 0 0 0; }
+.total-label-muted { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.total-value-dark { -fx-text-fill: #5E3023; -fx-font-size: 13px; }
+.total-value-dark-bold { -fx-text-fill: #5E3023; -fx-font-size: 13px; -fx-font-weight: bold; }
+.total-label-accent, .total-value-accent { -fx-text-fill: #C08552; -fx-font-size: 13px; -fx-font-weight: bold; }
+.total-grand-label { -fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold; }
+.total-grand-value { -fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold; }
+
+/* Payment modal */
+.modal-overlay { -fx-background-color: rgba(94,48,35,0.55); }
+.modal-dialog {
+    -fx-background-color: white; -fx-background-radius: 16; -fx-padding: 28;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 24, 0, 0, 6);
+}
+.modal-title { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.modal-ticket-badge {
+    -fx-background-color: #C08552; -fx-text-fill: white; -fx-font-weight: bold;
+    -fx-font-size: 12px; -fx-background-radius: 12; -fx-padding: 3 12 3 12;
+}
+.modal-body-text { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.modal-amount-box { -fx-background-color: #F3E9DC; -fx-background-radius: 10; -fx-padding: 10 16 10 16; -fx-alignment: CENTER; }
+.modal-amount-label { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.modal-amount-value { -fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold; }
+.modal-dialog .text-field { -fx-background-color: #F3E9DC; -fx-background-radius: 8; -fx-text-fill: #5E3023; -fx-padding: 8 12 8 12; }

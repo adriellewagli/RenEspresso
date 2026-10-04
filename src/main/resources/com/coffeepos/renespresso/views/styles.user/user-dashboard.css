@@ -1,0 +1,118 @@
+/* ===== RenEspresso USER dashboard (matches admin look) =====
+   Load AFTER dashboard.css. Palette:
+   #5E3023 dark brown | #895737 mid brown | #C08552 / #C89360 accent | #F3E9DC cream */
+
+.view-container { -fx-padding: 30; -fx-background-color: #F3E9DC; }
+.page-title { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
+.page-subtitle { -fx-text-fill: #895737; -fx-font-size: 15px; }
+
+.dashboard-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(three-pass-box, rgba(94,48,35,0.08), 8, 0, 0, 2);
+}
+.card-title { -fx-text-fill: #895737; -fx-font-size: 12px; -fx-font-weight: bold; }
+.card-metric-green  { -fx-text-fill: #2E9E5B; -fx-font-size: 32px; -fx-font-weight: bold; }
+.card-metric-dark   { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
+.card-metric-accent { -fx-text-fill: #C08552; -fx-font-size: 32px; -fx-font-weight: bold; }
+.card-subtext { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.section-header-title { -fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold; }
+.section-subheader-title { -fx-text-fill: #5E3023; -fx-font-size: 14px; -fx-font-weight: bold; }
+.about-item-bold { -fx-text-fill: #5E3023; -fx-font-size: 13px; -fx-font-weight: bold; }
+.about-hero-title { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.about-hero-version { -fx-text-fill: #C08552; -fx-font-size: 12px; -fx-font-weight: bold; }
+.about-copyright-text { -fx-text-fill: #895737; -fx-font-size: 11px; }
+
+.brand-icon-box { -fx-background-color: #5E3023; -fx-background-radius: 10; }
+.brand-icon-text { -fx-text-fill: #F3E9DC; -fx-font-size: 20px; }
+
+.light-separator .line { -fx-border-color: rgba(94,48,35,0.12); -fx-border-width: 1 0 0 0; }
+.totals-separator .line { -fx-border-color: rgba(94,48,35,0.2); -fx-border-width: 1 0 0 0; }
+
+/* Buttons */
+.btn-primary, .btn-secondary, .btn-accent {
+    -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;
+    -fx-background-radius: 8; -fx-padding: 10 18 10 18;
+}
+.btn-primary { -fx-background-color: #5E3023; -fx-text-fill: #F3E9DC; }
+.btn-primary:hover { -fx-background-color: #895737; }
+.btn-secondary { -fx-background-color: #F3E9DC; -fx-text-fill: #5E3023; }
+.btn-secondary:hover { -fx-background-color: #EBDCCD; }
+.btn-accent { -fx-background-color: #C08552; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 14 18 14 18; }
+.btn-accent:hover { -fx-background-color: #C89360; }
+.btn-primary:disabled, .btn-accent:disabled { -fx-opacity: 0.45; }
+
+/* Menu screen */
+.menu-container { -fx-padding: 24; }
+.category-btn, .category-btn-active {
+    -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;
+    -fx-background-radius: 20; -fx-padding: 8 18 8 18;
+}
+.category-btn { -fx-background-color: white; -fx-text-fill: #5E3023; }
+.category-btn:hover { -fx-background-color: #EBDCCD; }
+.category-btn-active { -fx-background-color: #5E3023; -fx-text-fill: #F3E9DC; }
+
+.transparent-scrollpane, .transparent-scrollpane > .viewport {
+    -fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;
+}
+.transparent-scrollpane .scroll-bar:vertical { -fx-pref-width: 8; }
+
+/* Order sidebar */
+.order-sidebar { -fx-background-color: white; -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(94,48,35,0.10), 10, 0, -2, 0); }
+.cart-header-title { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.cart-ticket-subtext { -fx-text-fill: #C08552; -fx-font-size: 12px; -fx-font-weight: bold; }
+
+.transparent-listview, .transparent-listview .list-cell {
+    -fx-background-color: transparent; -fx-background: transparent; -fx-padding: 2 0 2 0;
+}
+.transparent-listview .list-cell:filled:hover { -fx-background-color: transparent; }
+.transparent-listview .list-cell:filled:selected { -fx-background-color: transparent; }
+
+.discount-banner { -fx-background-color: #F3E9DC; -fx-background-radius: 8; -fx-padding: 10 12 10 12; }
+.discount-checkbox { -fx-text-fill: #5E3023; -fx-font-weight: bold; -fx-font-size: 12px; }
+.discount-checkbox:selected .mark { -fx-background-color: white; }
+.discount-checkbox:selected .box { -fx-background-color: #5E3023; }
+.discount-tag { -fx-text-fill: #C08552; -fx-font-size: 11px; -fx-font-weight: bold; }
+
+.totals-box { -fx-padding: 4 0 0 0; }
+.total-label-muted { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.total-value-dark { -fx-text-fill: #5E3023; -fx-font-size: 13px; }
+.total-value-dark-bold { -fx-text-fill: #5E3023; -fx-font-size: 13px; -fx-font-weight: bold; }
+.total-label-accent { -fx-text-fill: #C08552; -fx-font-size: 13px; -fx-font-weight: bold; }
+.total-value-accent { -fx-text-fill: #C08552; -fx-font-size: 13px; -fx-font-weight: bold; }
+.total-grand-label { -fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold; }
+.total-grand-value { -fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold; }
+
+/* History table */
+.modern-audit-table { -fx-background-color: transparent; -fx-background-radius: 10; }
+.modern-audit-table .column-header-background { -fx-background-color: #5E3023; -fx-background-radius: 10 10 0 0; }
+.modern-audit-table .column-header, .modern-audit-table .filler { -fx-background-color: transparent; -fx-size: 40; }
+.modern-audit-table .column-header .label { -fx-text-fill: #F3E9DC; -fx-font-weight: bold; -fx-font-size: 12px; }
+.modern-audit-table .table-row-cell { -fx-background-color: white; -fx-border-color: transparent transparent rgba(94,48,35,0.08) transparent; }
+.modern-audit-table .table-row-cell:odd { -fx-background-color: #FBF7F1; }
+.modern-audit-table .table-row-cell:hover { -fx-background-color: #F3E9DC; }
+.modern-audit-table .table-row-cell:selected { -fx-background-color: #C89360; }
+.modern-audit-table .table-cell { -fx-text-fill: #5E3023; -fx-font-size: 13px; }
+.modern-audit-table .table-row-cell:selected .table-cell { -fx-text-fill: white; }
+
+/* Settings */
+.settings-checkbox { -fx-text-fill: #5E3023; -fx-font-size: 13px; }
+.settings-checkbox:selected .box { -fx-background-color: #5E3023; }
+.settings-checkbox:selected .mark { -fx-background-color: white; }
+.radio-button.settings-checkbox:selected .dot { -fx-background-color: #5E3023; }
+
+/* Modal */
+.modal-overlay { -fx-background-color: rgba(94,48,35,0.55); }
+.modal-dialog { -fx-background-color: white; -fx-background-radius: 16; -fx-padding: 28;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 24, 0, 0, 6); }
+.modal-title { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.modal-ticket-badge { -fx-background-color: #C08552; -fx-text-fill: white; -fx-font-weight: bold;
+    -fx-font-size: 12px; -fx-background-radius: 12; -fx-padding: 3 12 3 12; }
+.modal-body-text { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.modal-amount-box { -fx-background-color: #F3E9DC; -fx-background-radius: 10; -fx-padding: 10 16 10 16; -fx-alignment: CENTER; }
+.modal-amount-label { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.modal-amount-value { -fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold; }
+.modal-dialog .text-field { -fx-background-color: #F3E9DC; -fx-background-radius: 8; -fx-text-fill: #5E3023; -fx-padding: 8 12 8 12; }
+.combo-box.btn-secondary { -fx-background-radius: 8; }

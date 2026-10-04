@@ -38,5 +38,11 @@ module com.coffeepos.renespresso {
     opens com.coffeepos.renespresso.controller.main.admin.account to javafx.fxml;
 
     exports com.coffeepos.renespresso.controller.main.user;
-    opens com.coffeepos.renespresso.controller.main.user to javafx.fxml;
+    opens com.coffeepos.renespresso.controller.main.user to javafx.fxml, javafx.base;
+    exports com.coffeepos.renespresso.controller.main.user.pos;
+    opens com.coffeepos.renespresso.controller.main.user.pos to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.user.om;
+    opens com.coffeepos.renespresso.controller.main.user.om to javafx.fxml;
+    exports com.coffeepos.renespresso.controller.main.user.About;
+    opens com.coffeepos.renespresso.controller.main.user.About to javafx.fxml;
 }

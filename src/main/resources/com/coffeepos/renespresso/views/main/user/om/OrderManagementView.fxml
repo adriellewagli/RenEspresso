@@ -1,14 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.coffeepos.renespresso.controller.main.user.om.OrderManagementController"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox fx:id="orderRoot" spacing="16.0" styleClass="view-container"
+      stylesheets="@../../../styles.user/om/ordermanagement.css"
 
-</AnchorPane>
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coffeepos.renespresso.controller.main.user.om.OrderManagementController">
+
+    <VBox spacing="4.0">
+        <Label styleClass="page-title" text="Transaction History" />
+        <Label styleClass="page-subtitle" text="Recent transactions for this active cashier session." />
+    </VBox>
+
+    <VBox spacing="12.0" styleClass="dashboard-card, history-card" VBox.vgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <TextField fx:id="txtHistorySearch" prefWidth="300.0" promptText="🔍 Search ticket, item, payment..." styleClass="search-field-cream" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button onAction="#handleReprintReceipt" styleClass="btn-secondary" text="🧾 View Receipt" />
+            <Button onAction="#handleExportHistory" styleClass="btn-secondary" text="📤 Export CSV" />
+        </HBox>
+        <TableView fx:id="tblHistory" styleClass="modern-audit-table" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn prefWidth="140.0" text="TICKET #" />
+                <TableColumn prefWidth="140.0" text="TIME" />
+                <TableColumn prefWidth="320.0" text="ITEMS" />
+                <TableColumn prefWidth="180.0" text="DISCOUNT APPLIED" />
+                <TableColumn prefWidth="160.0" text="TOTAL PAID" />
+                <TableColumn prefWidth="120.0" text="PAYMENT" />
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+        <Label fx:id="lblHistorySummary" styleClass="card-subtext" text="No transactions yet" />
+    </VBox>
+</VBox>

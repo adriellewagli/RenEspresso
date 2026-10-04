@@ -1,14 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.coffeepos.renespresso.controller.main.user.About.AboutController"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox fx:id="aboutRoot" spacing="20.0" styleClass="view-container"
+      stylesheets="@../../../styles.user/about/about.css"
 
-</AnchorPane>
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coffeepos.renespresso.controller.main.user.About.AboutController">
+
+    <VBox spacing="4.0">
+        <Label styleClass="page-title" text="About RenEspresso POS" />
+        <Label styleClass="page-subtitle" text="System information, version details, and developer documentation." />
+    </VBox>
+
+    <VBox spacing="10.0" styleClass="dashboard-card">
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <StackPane prefHeight="40.0" prefWidth="40.0" minWidth="40.0" maxWidth="40.0" maxHeight="40.0" styleClass="brand-icon-box">
+                <Label styleClass="brand-icon-text" text="☕" />
+            </StackPane>
+            <VBox spacing="2">
+                <Label styleClass="about-hero-title" text="RenEspresso Point of Sale System" />
+                <Label styleClass="about-hero-version" text="Version 1.0.0 (Build 2026.09)" />
+            </VBox>
+        </HBox>
+        <Separator styleClass="light-separator" />
+        <Label styleClass="card-subtext" text="A specialized JavaFX counter management solution designed for coffee shop order processing, real-time ticket queueing, and receipt printing." wrapText="true" />
+    </VBox>
+
+    <HBox spacing="20.0">
+        <VBox prefWidth="450.0" spacing="12.0" styleClass="dashboard-card" HBox.hgrow="ALWAYS">
+            <Label styleClass="section-header-title" text="💻 System Environment" />
+            <Separator styleClass="light-separator" />
+            <VBox spacing="8.0">
+                <HBox>
+                    <Label styleClass="card-subtext" text="Framework:" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="about-item-bold" text="JavaFX 21 (JDK 21)" />
+                </HBox>
+                <HBox>
+                    <Label styleClass="card-subtext" text="Database:" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="about-item-bold" text="SQLite 3.42 (Local Embedded)" />
+                </HBox>
+                <HBox>
+                    <Label styleClass="card-subtext" text="Terminal Assigned:" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="about-item-bold" text="Counter #1 (REG-01)" />
+                </HBox>
+                <HBox>
+                    <Label styleClass="card-subtext" text="Default Printer:" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="about-item-bold" text="Thermal Receipt POS-80" />
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <VBox prefWidth="450.0" spacing="12.0" styleClass="dashboard-card" HBox.hgrow="ALWAYS">
+            <Label styleClass="section-header-title" text="⚡ Key Features" />
+            <Separator styleClass="light-separator" />
+            <VBox spacing="6.0">
+                <Label styleClass="card-subtext" text="• Dynamic menu navigation &amp; categorized product filtering" />
+                <Label styleClass="card-subtext" text="• Automated Senior Citizen / PWD 20% discount &amp; VAT exemption" />
+                <Label styleClass="card-subtext" text="• Real-time ticket numbering sequence and order auditing" />
+                <Label styleClass="card-subtext" text="• Cashier shift session tracking and historical transaction table" />
+            </VBox>
+        </VBox>
+    </HBox>
+
+    <VBox spacing="10.0" styleClass="dashboard-card">
+        <Label styleClass="section-header-title" text="👥 Credits &amp; System Support" />
+        <Separator styleClass="light-separator" />
+        <HBox alignment="CENTER_LEFT">
+            <VBox spacing="4.0">
+                <Label styleClass="card-subtext" text="Developed for RenEspresso Coffee Shop Operations." />
+                <Label styleClass="about-copyright-text" text="© 2026 RenEspresso POS System. All Rights Reserved." />
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button onAction="#handleContactAdmin" styleClass="btn-secondary" text="📞 Contact System Administrator" />
+        </HBox>
+    </VBox>
+</VBox>
