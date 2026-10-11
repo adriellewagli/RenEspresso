@@ -1,7 +1,13 @@
-CREATE DATABASE coffee;
+-- ==========================================
+-- 1. DATABASE CREATION
+-- ==========================================
+CREATE DATABASE IF NOT EXISTS coffee;
 USE coffee;
 
--- 1. USERS
+-- ==========================================
+-- 2. TABLE CREATION
+-- ==========================================
+-- USERS
 CREATE TABLE users (
     user_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -14,26 +20,34 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 );
 
--- 2. CATEGORIES (Must be created before products)
+-- CATEGORIES
 CREATE TABLE categories (
     category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL UNIQUE,
     sort_order INT NOT NULL DEFAULT 0
 );
 
--- 3. PRODUCTS
+-- PRODUCTS
 CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     category_id INT NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
     description VARCHAR(255),
     image_path TEXT,
     available BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (category_id) REFERENCES categories(category_id)
 );
 
--- 4. TRANSACTIONS
+-- PRODUCT VARIANTS (Handles sizes and prices)
+CREATE TABLE product_variants (
+    variant_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    size_name VARCHAR(50) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+-- TRANSACTIONS
 CREATE TABLE transactions (
     transaction_id INT AUTO_INCREMENT PRIMARY KEY,
     cashier_id INT,
@@ -43,13 +57,131 @@ CREATE TABLE transactions (
     FOREIGN KEY (cashier_id) REFERENCES users(user_id)
 );
 
--- 5. TRANSACTION ITEMS
+-- TRANSACTION ITEMS
 CREATE TABLE transaction_items (
     transaction_id INT NOT NULL,
-    product_id INT NOT NULL,
+    variant_id INT NOT NULL,
     quantity INT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
-    PRIMARY KEY (transaction_id, product_id),
+    PRIMARY KEY (transaction_id, variant_id),
     FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id),
-    FOREIGN KEY (product_id) REFERENCES products(id) -- FIXED: Changed (id) to (product_id)
+    FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id)
 );
+
+-- ==========================================
+-- 3. DATA INSERTION
+-- ==========================================
+-- Insert Categories
+INSERT INTO categories (category_id, name, sort_order) VALUES
+(1, 'Milk Tea', 1),
+(2, 'Hot Coffee', 2),
+(3, 'Iced Coffee', 3),
+(4, 'Shakes', 4),
+(5, 'Fruit Juice', 5),
+(6, 'Bread & Pastries', 6);
+
+-- Insert Products (Accented characters replaced to prevent warnings)
+INSERT INTO products (id, name, category_id) VALUES
+-- Milk Teas
+(1, 'Classic Pearl Milk Tea', 1), (2, 'Wintermelon Milk Tea', 1), (3, 'Okinawa Brown Sugar', 1),
+(4, 'Taro Milk Tea', 1), (5, 'Thai Milk Tea', 1), (6, 'Matcha Green Tea', 1),
+(7, 'Chocolate Milk Tea', 1), (8, 'Salted Caramel Cream', 1), (9, 'Mango Coconut Tea', 1),
+(10, 'Hazelnut Milk Tea', 1),
+-- Hot Coffees
+(11, 'Fresh Brew / Americano', 2), (12, 'Classic Caffe Latte', 2), (13, 'Cappuccino', 2),
+(14, 'Cafe Mocha', 2), (15, 'Caramel Macchiato', 2), (16, 'Spanish Latte', 2),
+(17, 'Vanilla Bean Latte', 2), (18, 'Hazelnut Cappuccino', 2), (19, 'White Chocolate Mocha', 2),
+(20, 'Cinnamon Oat Latte', 2),
+-- Iced Coffees
+(21, 'Iced Americano', 3), (22, 'Iced Latte', 3), (23, 'Iced Caramel Macchiato', 3),
+(24, 'Iced Spanish Latte', 3), (25, 'Iced Mocha', 3), (26, 'Vanilla Sweet Cream Cold Brew', 3),
+(27, 'Salted Caramel Cold Brew', 3), (28, 'Iced Matchpresso', 3), (29, 'Iced Hazelnut Oat Latte', 3),
+(30, 'Iced Brown Sugar Latte', 3),
+-- Shakes
+(31, 'Classic Chocolate Shake', 4), (32, 'Vanilla Bean Shake', 4), (33, 'Strawberry Cream Shake', 4),
+(34, 'Cookies & Cream (Oreo)', 4), (35, 'Mango Graham Float Shake', 4), (36, 'Nutella Hazelnut Shake', 4),
+(37, 'Salted Caramel Pretzel', 4), (38, 'Avocado Cream Shake', 4), (39, 'Strawberry Cheesecake', 4),
+(40, 'Taro Cheesecake Shake', 4),
+-- Fruit Juices
+(41, 'Classic Lemonade', 5), (42, 'Cucumber Mint Lemonade', 5), (43, 'Fresh Watermelon Juice', 5),
+(44, 'Orange Mango Juice', 5), (45, 'Pineapple Cucumber Juice', 5), (46, 'Strawberry Lemonade', 5),
+(47, 'Green Detox Juice', 5), (48, 'Citrus Ginger Glow', 5), (49, 'Passion Fruit Cooler', 5),
+(50, 'Calamansi Honey Juice', 5),
+-- Bread & Pastries
+(51, 'Garlic Butter Baguette', 6), (52, 'Classic Cheese Ensaymada', 6), (53, 'Milk Bread Roll / Bun', 6),
+(54, 'Butter Croissant', 6), (55, 'Chocolate Bun / Pan de Cacao', 6), (56, 'Cinnamon Roll', 6),
+(57, 'Banana Walnut Slice', 6), (58, 'Ube Cheese Pandesal', 6), (59, 'Cream Cheese Brioche', 6),
+(60, 'Garlic Bread Slice', 6);
+
+-- Insert Product Variants (Sizes & Prices)
+INSERT INTO product_variants (product_id, size_name, price) VALUES
+-- Milk Teas
+(1, 'Small', 65.00), (1, 'Medium', 85.00), (1, 'Large', 105.00),
+(2, 'Small', 65.00), (2, 'Medium', 85.00), (2, 'Large', 105.00),
+(3, 'Small', 75.00), (3, 'Medium', 95.00), (3, 'Large', 115.00),
+(4, 'Small', 70.00), (4, 'Medium', 90.00), (4, 'Large', 110.00),
+(5, 'Small', 70.00), (5, 'Medium', 90.00), (5, 'Large', 110.00),
+(6, 'Small', 75.00), (6, 'Medium', 95.00), (6, 'Large', 115.00),
+(7, 'Small', 70.00), (7, 'Medium', 90.00), (7, 'Large', 110.00),
+(8, 'Small', 80.00), (8, 'Medium', 100.00), (8, 'Large', 120.00),
+(9, 'Small', 75.00), (9, 'Medium', 95.00), (9, 'Large', 115.00),
+(10, 'Small', 70.00), (10, 'Medium', 90.00), (10, 'Large', 110.00),
+-- Hot Coffees
+(11, 'Small', 55.00), (11, 'Medium', 75.00), (11, 'Large', 95.00),
+(12, 'Small', 65.00), (12, 'Medium', 85.00), (12, 'Large', 105.00),
+(13, 'Small', 65.00), (13, 'Medium', 85.00), (13, 'Large', 105.00),
+(14, 'Small', 75.00), (14, 'Medium', 95.00), (14, 'Large', 115.00),
+(15, 'Small', 80.00), (15, 'Medium', 100.00), (15, 'Large', 120.00),
+(16, 'Small', 75.00), (16, 'Medium', 95.00), (16, 'Large', 115.00),
+(17, 'Small', 70.00), (17, 'Medium', 90.00), (17, 'Large', 110.00),
+(18, 'Small', 75.00), (18, 'Medium', 95.00), (18, 'Large', 115.00),
+(19, 'Small', 80.00), (19, 'Medium', 100.00), (19, 'Large', 120.00),
+(20, 'Small', 85.00), (20, 'Medium', 105.00), (20, 'Large', 125.00),
+-- Iced Coffees
+(21, 'Small', 65.00), (21, 'Medium', 85.00), (21, 'Large', 105.00),
+(22, 'Small', 75.00), (22, 'Medium', 95.00), (22, 'Large', 115.00),
+(23, 'Small', 90.00), (23, 'Medium', 110.00), (23, 'Large', 130.00),
+(24, 'Small', 85.00), (24, 'Medium', 105.00), (24, 'Large', 125.00),
+(25, 'Small', 85.00), (25, 'Medium', 105.00), (25, 'Large', 125.00),
+(26, 'Small', 90.00), (26, 'Medium', 110.00), (26, 'Large', 130.00),
+(27, 'Small', 95.00), (27, 'Medium', 115.00), (27, 'Large', 135.00),
+(28, 'Small', 95.00), (28, 'Medium', 115.00), (28, 'Large', 135.00),
+(29, 'Small', 95.00), (29, 'Medium', 115.00), (29, 'Large', 135.00),
+(30, 'Small', 85.00), (30, 'Medium', 105.00), (30, 'Large', 125.00),
+-- Shakes
+(31, 'Small', 70.00), (31, 'Medium', 90.00), (31, 'Large', 110.00),
+(32, 'Small', 70.00), (32, 'Medium', 90.00), (32, 'Large', 110.00),
+(33, 'Small', 80.00), (33, 'Medium', 100.00), (33, 'Large', 120.00),
+(34, 'Small', 80.00), (34, 'Medium', 100.00), (34, 'Large', 120.00),
+(35, 'Small', 85.00), (35, 'Medium', 105.00), (35, 'Large', 125.00),
+(36, 'Small', 90.00), (36, 'Medium', 110.00), (36, 'Large', 130.00),
+(37, 'Small', 85.00), (37, 'Medium', 105.00), (37, 'Large', 125.00),
+(38, 'Small', 90.00), (38, 'Medium', 110.00), (38, 'Large', 130.00),
+(39, 'Small', 95.00), (39, 'Medium', 115.00), (39, 'Large', 135.00),
+(40, 'Small', 90.00), (40, 'Medium', 110.00), (40, 'Large', 130.00),
+-- Fruit Juices
+(41, 'Small', 50.00), (41, 'Medium', 70.00), (41, 'Large', 90.00),
+(42, 'Small', 60.00), (42, 'Medium', 80.00), (42, 'Large', 100.00),
+(43, 'Small', 60.00), (43, 'Medium', 80.00), (43, 'Large', 100.00),
+(44, 'Small', 65.00), (44, 'Medium', 85.00), (44, 'Large', 105.00),
+(45, 'Small', 65.00), (45, 'Medium', 85.00), (45, 'Large', 105.00),
+(46, 'Small', 65.00), (46, 'Medium', 85.00), (46, 'Large', 105.00),
+(47, 'Small', 75.00), (47, 'Medium', 95.00), (47, 'Large', 115.00),
+(48, 'Small', 70.00), (48, 'Medium', 90.00), (48, 'Large', 110.00),
+(49, 'Small', 70.00), (49, 'Medium', 90.00), (49, 'Large', 110.00),
+(50, 'Small', 55.00), (50, 'Medium', 75.00), (50, 'Large', 95.00),
+-- Bread & Pastries
+(51, '1 pc', 55.00), (52, '1 pc', 50.00), (53, '1 pc', 30.00),
+(54, '1 pc', 75.00), (55, '1 pc', 45.00), (56, '1 pc', 80.00),
+(57, '1 pc', 65.00), (58, '1 pc', 25.00), (59, '1 pc', 85.00),
+(60, '1 pc', 30.00);
+
+-- ==========================================
+-- 4. VERIFICATION QUERY
+-- ==========================================
+SELECT p.name AS Product, c.name AS Category, pv.size_name AS Size, pv.price AS Price
+FROM products p
+JOIN categories c ON p.category_id = c.category_id
+JOIN product_variants pv ON p.id = pv.product_id
+ORDER BY c.sort_order, p.id
+LIMIT 20;
