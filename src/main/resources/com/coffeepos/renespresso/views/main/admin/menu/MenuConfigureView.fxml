@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="16.0"
+      stylesheets="@../../../styles/admin/menu/menu.css"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coffeepos.renespresso.controller.main.admin.menu.MenuConfigureController">
+
+    <!-- HEADER -->
+    <VBox spacing="4.0">
+        <Label styleClass="menu-title" text="Menu Management" />
+        <Label styleClass="menu-subtitle" text="Configure your dishes, pricing tiers, and categorizations" />
+    </VBox>
+
+    <!-- BODY -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="menu-scroll" VBox.vgrow="ALWAYS">
+        <content>
+            <HBox alignment="TOP_LEFT" spacing="22.0">
+
+                <!-- LEFT CARD: Add / Edit item -->
+                <VBox maxWidth="Infinity" spacing="18.0" styleClass="card, form-card" HBox.hgrow="ALWAYS">
+                    <Label fx:id="formTitle" styleClass="form-card-title" text="Add Menu Item" />
+                    <Separator />
+
+                    <HBox spacing="28.0">
+                        <VBox spacing="8.0">
+                            <Label styleClass="field-label" text="Menu Item Picture" />
+                            <VBox fx:id="uploadBox" alignment="CENTER" onMouseClicked="#handleUpload"
+                                  spacing="8.0" styleClass="upload-box">
+                                <Region styleClass="icon-image" />
+                                <Label styleClass="upload-text" text="Upload Photo" />
+                            </VBox>
+                            <Hyperlink onAction="#handleRemovePhoto" styleClass="link-remove" text="Remove photo" />
+                        </VBox>
+                        <VBox spacing="8.0">
+                            <Label styleClass="field-label" text="Live Catalog Preview" />
+                            <StackPane fx:id="preview" styleClass="preview-box" />
+                        </VBox>
+                    </HBox>
+
+                    <VBox spacing="8.0">
+                        <HBox>
+                            <Label styleClass="field-label" text="Menu Item Name" />
+                            <Label styleClass="field-required" text=" *" />
+                        </HBox>
+                        <TextField fx:id="nameField" promptText="e.g. Caramel Macchiato" styleClass="form-input" />
+                    </VBox>
+
+                    <GridPane hgap="18.0">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="50.0" />
+                            <ColumnConstraints percentWidth="50.0" />
+                        </columnConstraints>
+                        <VBox spacing="8.0" GridPane.columnIndex="0">
+                            <HBox>
+                                <Label styleClass="field-label" text="Category" />
+                                <Label styleClass="field-required" text=" *" />
+                            </HBox>
+                            <ComboBox fx:id="categoryBox" maxWidth="Infinity" promptText="Select category"
+                                      styleClass="form-combo" />
+                        </VBox>
+                        <VBox spacing="8.0" GridPane.columnIndex="1">
+                            <HBox>
+                                <Label styleClass="field-label" text="Selling Price (PHP)" />
+                                <Label styleClass="field-required" text=" *" />
+                            </HBox>
+                            <HBox>
+                                <Label maxHeight="Infinity" styleClass="input-prefix" text="₱" />
+                                <TextField fx:id="priceField" promptText="0.00" styleClass="price-field"
+                                           HBox.hgrow="ALWAYS" />
+                            </HBox>
+                        </VBox>
+                    </GridPane>
+
+                    <VBox spacing="8.0">
+                        <Label styleClass="field-label" text="Description" />
+                        <TextArea fx:id="descField" prefRowCount="4" styleClass="form-area" wrapText="true"
+                                  promptText="Short description shown to staff and customers (max 255 characters)" />
+                    </VBox>
+
+                    <VBox spacing="8.0">
+                        <HBox>
+                            <Label styleClass="field-label" text="Status" />
+                            <Label styleClass="field-required" text=" *" />
+                        </HBox>
+                        <HBox spacing="12.0">
+                            <ToggleButton fx:id="availableBtn" maxWidth="Infinity" selected="true"
+                                          styleClass="status-toggle" text="Available" HBox.hgrow="ALWAYS">
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="statusGroup" />
+                                </toggleGroup>
+                            </ToggleButton>
+                            <ToggleButton fx:id="unavailableBtn" maxWidth="Infinity" styleClass="status-toggle"
+                                          text="Unavailable" toggleGroup="$statusGroup" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- RIGHT CARD: Dish Category Creator -->
+                <VBox maxWidth="340.0" minWidth="340.0" prefWidth="340.0" spacing="16.0" styleClass="card, form-card">
+                    <Label styleClass="form-card-title" text="Dish Category Creator" />
+                    <Label styleClass="form-help" wrapText="true"
+                           text="Create the categories used to group dishes on your menu. New categories appear in the Category dropdown right away." />
+                    <Separator />
+
+                    <VBox spacing="8.0">
+                        <Label styleClass="field-label" text="New Category Name" />
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <TextField fx:id="newCatField" onAction="#handleAddCategory" promptText="e.g. Hot Coffee"
+                                       styleClass="form-input" HBox.hgrow="ALWAYS" />
+                            <Button onAction="#handleAddCategory" styleClass="btn-primary" text="+  Add" />
+                        </HBox>
+                    </VBox>
+                    <Separator />
+
+                    <HBox alignment="CENTER_LEFT">
+                        <Label styleClass="field-label" text="Existing Categories" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="countBadge" styleClass="count-badge" />
+                    </HBox>
+                    <VBox fx:id="categoryList" spacing="10.0" />
+                </VBox>
+            </HBox>
+        </content>
+    </ScrollPane>
+
+    <!-- FOOTER -->
+    <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="form-footer">
+        <Button onAction="#handleCancel" styleClass="btn-secondary" text="Cancel" />
+        <Button fx:id="saveBtn" defaultButton="true" onAction="#handleSave" styleClass="btn-primary"
+                text="Save Menu Item" />
+    </HBox>
+</VBox>

@@ -6,13 +6,17 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import java.io.IOException;
 import java.net.URL;
 
 public class NavigateUtil {
 
-    // Point to the root views folder instead of just the 'id' subfolder
     private static final String VIEWS_PATH = "/com/coffeepos/renespresso/views/";
 
     public enum WindowMode {
@@ -71,4 +75,31 @@ public class NavigateUtil {
             AlertUtil.showError("Navigation Error", "Could not load view: " + fullPath);
         }
     }
+
+    //PAG RIGHT SIDE LANG NG PANEL PAPALITAN
+
+    public static <T> Runnable loadInto(Pane container, String fxmlPath, Consumer<T> controllerInit) {
+        String fullPath = VIEWS_PATH + fxmlPath;
+        try {
+            URL xmlUrl = NavigateUtil.class.getResource(fullPath);
+            if (xmlUrl == null) {
+                throw new IllegalStateException("Cannot find FXML file: " + fullPath);
+            }
+
+            FXMLLoader loader = new FXMLLoader(xmlUrl);
+            Node view = loader.load();
+            if (controllerInit != null) controllerInit.accept(loader.<T>getController());
+
+            List<Node> previous = new ArrayList<>(container.getChildren());
+            if (container instanceof VBox) VBox.setVgrow(view, Priority.ALWAYS);
+            container.getChildren().setAll(view);
+
+            return () -> container.getChildren().setAll(previous);
+        } catch (IOException | IllegalStateException e) {
+            e.printStackTrace();
+            AlertUtil.showError("Navigation Error", "Could not load view: " + fullPath);
+            return null;
+        }
+    }
+
 }

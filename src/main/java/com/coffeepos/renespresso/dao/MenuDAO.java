@@ -113,4 +113,13 @@ public class MenuDAO {
             ps.executeUpdate();
         }
     }
+
+    public static void deleteCategory(int id) throws SQLException {
+        try (Connection c = DatabaseManager.getConnection();
+             PreparedStatement ps = c.prepareStatement("DELETE FROM categories WHERE category_id = ?")) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+    }
+
 }

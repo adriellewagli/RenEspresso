@@ -4,9 +4,9 @@ import com.coffeepos.renespresso.dao.MenuDAO;
 import com.coffeepos.renespresso.model.Category;
 import com.coffeepos.renespresso.model.Product;
 import com.coffeepos.renespresso.util.ImageStore;
+import com.coffeepos.renespresso.util.NavigateUtil;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,10 +15,7 @@ import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
-import javafx.stage.FileChooser;
 import com.coffeepos.renespresso.util.AlertUtil;
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
@@ -28,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 
 public class MenuController {
 
@@ -164,7 +162,6 @@ public class MenuController {
     // ------------------------------------------------------------------ DISH CARD
 
     private StackPane buildCard(Product p) {
-        // photo with ring
         StackPane photo = new StackPane();
         photo.getStyleClass().add("dish-photo");
         ImageView iv = ImageStore.circleView(p.imagePath(), PHOTO);
@@ -247,10 +244,7 @@ public class MenuController {
         return b;
     }
 
-    // ------------------------------------------------------------------ ACTIONS
-
-    @FXML
-    public void handleAddDish() {
+    @FXML public void handleAddDish() {
         showDishDialog(null);
     }
 
@@ -286,175 +280,14 @@ public class MenuController {
         }
     }
 
-    // ------------------------------------------------------------------ ADD / EDIT DIALOG
-
-    /** existing == null -> add mode. Saves to the DB when OK is pressed and valid. */
-    /** existing == null -> add mode. Saves to the DB when OK is pressed and valid. */
     private void showDishDialog(Product existing) {
-        boolean edit = existing != null;
-
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle(edit ? "Edit Dish" : "Add New Dish");
-        dialog.setHeaderText(edit ? "Edit " + existing.name() : "Add a dish to your menu");
-        if (root.getScene() != null) dialog.initOwner(root.getScene().getWindow());
-        dialog.getDialogPane().getStylesheets().addAll(root.getStylesheets());
-        dialog.getDialogPane().getStyleClass().add("dish-dialog");
-
-        ButtonType saveType = new ButtonType(edit ? "Save Changes" : "Add Dish", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveType, ButtonType.CANCEL);
-
-        // --- image file path + live preview
-        StackPane preview = new StackPane();
-        preview.getStyleClass().add("dish-photo");
-
-        TextField pathField = new TextField(edit ? ImageStore.pathOf(existing.imagePath()) : "");
-        pathField.setPromptText("Paste an image file path or click Browse");
-        pathField.setPrefWidth(250);
-
-        Runnable refreshPreview = () -> {
-            preview.getChildren().clear();
-            ImageView iv = null;
-            String text = pathField.getText().trim();
-            if (!text.isEmpty()) {
-                File f = new File(text);
-                if (f.isFile() && ImageStore.isSupported(f)) iv = ImageStore.circleView(f, 72);
-            }
-            if (iv != null) {
-                preview.getChildren().add(iv);
-            } else {
-                Label ph = new Label("\uD83C\uDF7D");
-                ph.getStyleClass().add("dish-placeholder-small");
-                preview.getChildren().add(ph);
-            }
-        };
-        pathField.textProperty().addListener((o, a, b) -> refreshPreview.run());
-        refreshPreview.run();
-
-        Button browseBtn = new Button("Browse\u2026");
-        browseBtn.setOnAction(e -> {
-            FileChooser fc = new FileChooser();
-            fc.setTitle("Choose dish photo");
-            fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"));
-            File f = fc.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
-            if (f != null) pathField.setText(f.getAbsolutePath());
-        });
-        Button clearBtn = new Button("Clear");
-        clearBtn.setOnAction(e -> pathField.clear());
-
-        Label pathLabel = new Label("Image file path");
-        pathLabel.setStyle("-fx-font-weight: bold;");
-        HBox photoRow = new HBox(14, preview,
-                new VBox(6, pathLabel, new HBox(6, pathField, browseBtn, clearBtn)));
-        photoRow.setAlignment(Pos.CENTER_LEFT);
-
-        // --- fields
-        TextField nameField = new TextField(edit ? existing.name() : "");
-        nameField.setPromptText("e.g. Caffe Latte");
-        TextField priceField = new TextField(edit ? String.format("%.2f", existing.price()) : "");
-        priceField.setPromptText("0.00");
-
-        TextArea descField = new TextArea(edit && existing.description() != null ? existing.description() : "");
-        descField.setPromptText("Short description (ingredients, size, notes) - max 255 characters");
-        descField.setWrapText(true);
-        descField.setPrefRowCount(3);
-        descField.setTextFormatter(new TextFormatter<String>(c -> c.getControlNewText().length() <= 255 ? c : null));
-
-        CheckBox availableBox = new CheckBox("Available for sale");
-        availableBox.setSelected(!edit || existing.available());
-
-        ComboBox<Category> categoryBox = new ComboBox<>(FXCollections.observableArrayList(categories));
-        categoryBox.setPrefWidth(200);
-        if (edit) categories.stream().filter(c -> c.id() == existing.categoryId()).findFirst().ifPresent(categoryBox::setValue);
-        Button addCatBtn = new Button("+");
-        addCatBtn.setTooltip(new Tooltip("New category"));
-
-        addCatBtn.setOnAction(e -> {
-            TextInputDialog d = new TextInputDialog();
-            d.setTitle("New Category");
-            d.setHeaderText("Create a category");
-            d.setContentText("Name:");
-            d.initOwner(dialog.getDialogPane().getScene().getWindow());
-            d.showAndWait().map(String::trim).filter(s -> !s.isEmpty()).ifPresent(catName -> {
-                Optional<Category> same = categories.stream()
-                        .filter(c -> c.name().equalsIgnoreCase(catName)).findFirst();
-                if (same.isPresent()) { categoryBox.setValue(same.get()); return; }
-                try {
-                    Category c = MenuDAO.addCategory(catName);
-                    categories.add(c);
-                    categoryBox.getItems().add(c);
-                    categoryBox.setValue(c);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    AlertUtil.showError("Could not create category", ex.getMessage());
-                }
-            });
-        });
-
-        GridPane grid = new GridPane();
-        grid.setHgap(12);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(10, 10, 0, 10));
-        grid.add(photoRow, 0, 0, 2, 1);
-        grid.addRow(1, new Label("Name"), nameField);
-        grid.addRow(2, new Label("Category"), new HBox(6, categoryBox, addCatBtn));
-        grid.addRow(3, new Label("Price (\u20B1)"), priceField);
-        grid.addRow(4, new Label("Description"), descField);
-        grid.add(availableBox, 1, 5);
-        nameField.setPrefWidth(260);
-        dialog.getDialogPane().setContent(grid);
-
-        Button saveBtn = (Button) dialog.getDialogPane().lookupButton(saveType);
-        saveBtn.addEventFilter(ActionEvent.ACTION, ev -> {
-            String name = nameField.getText().trim();
-            Category cat = categoryBox.getValue();
-            BigDecimal price = parsePrice(priceField.getText());
-            String pathText = pathField.getText().trim();
-
-            String warning = null;
-            if (name.isEmpty()) warning = "Dish name is required.";
-            else if (name.length() > 100) warning = "Dish name is too long (max 100 characters).";
-            else if (cat == null) warning = "Please choose or create a category.";
-            else if (price == null) warning = "Enter a valid price greater than 0 (e.g. 150.00).";
-            else if (!pathText.isEmpty() && !new File(pathText).isFile())
-                warning = "Image file not found. Check the path or click Browse.";
-            else if (!pathText.isEmpty() && !ImageStore.isSupported(new File(pathText)))
-                warning = "Unsupported image type. Use PNG, JPG, GIF or BMP.";
-
-            if (warning != null) {
-                AlertUtil.showWarning("Check your input", warning);
-                ev.consume();                           // keep the dialog open
-                return;
-            }
-
-            String oldImage = edit ? existing.imagePath() : null;
-            String newImage = oldImage;
-            boolean copied = false;
-            try {
-                if (pathText.isEmpty()) newImage = null;                                  // cleared
-                else if (ImageStore.isStored(pathText)) newImage = ImageStore.fileNameOf(pathText); // unchanged
-                else { newImage = ImageStore.save(new File(pathText)); copied = true; }   // new file
-
-                String desc = descField.getText().trim();
-                String descOrNull = desc.isEmpty() ? null : desc;
-
-                if (edit) MenuDAO.updateProduct(existing.id(), name, cat.id(), price, descOrNull,
-                        newImage, availableBox.isSelected());
-                else MenuDAO.addProduct(name, cat.id(), price, descOrNull,
-                        newImage, availableBox.isSelected());
-
-                if (oldImage != null && !Objects.equals(oldImage, newImage)) ImageStore.delete(oldImage);
-            } catch (SQLException | IOException ex) {
-                ex.printStackTrace();
-                if (copied) ImageStore.delete(newImage);        // don't leave an orphan file behind
-                AlertUtil.showError("Could not save dish", ex.getMessage());
-                ev.consume();
-                return;
-            }
-            loadData();
-        });
-
-        dialog.showAndWait();
-        loadData();                         // pick up any categories created inside the dialog
+        Runnable[] back = new Runnable[1];
+        back[0] = NavigateUtil.<MenuConfigureController>loadInto(
+                root, "main/admin/menu/MenuConfigureView.fxml",
+                c -> c.init(existing, categories, () -> {
+                    if (back[0] != null) back[0].run();
+                    loadData();
+                }));
     }
 
     private BigDecimal parsePrice(String text) {
