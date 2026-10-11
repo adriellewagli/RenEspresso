@@ -1,14 +1,16 @@
-.menu-container { -fx-padding: 30; }
-.menu-title     { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
+/* ===== Page layout (scale matches Account Management) ===== */
+.menu-container { -fx-padding: 28; }
+.menu-title     { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
 .menu-subtitle  { -fx-text-fill: #895737; -fx-font-size: 15px; }
+.page-header    { -fx-padding: 0 4 4 4; }
 
 .add-dish-button {
     -fx-background-color: #5E3023;
     -fx-text-fill: #F3E9DC;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-background-radius: 10;
-    -fx-padding: 10 18;
+    -fx-background-radius: 12;
+    -fx-padding: 13 24;
     -fx-cursor: hand;
 }
 .add-dish-button:hover   { -fx-background-color: #7A4130; }
@@ -22,16 +24,16 @@
     -fx-border-radius: 16;
     -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
 }
-.toolbar-card { -fx-padding: 14 18; }
+.toolbar-card { -fx-padding: 18 22; }
 
 .search-box {
     -fx-background-color: #F8F2E8;
-    -fx-background-radius: 8;
+    -fx-background-radius: 10;
     -fx-border-color: #E7DCCB;
-    -fx-border-radius: 8;
-    -fx-padding: 0 12;
-    -fx-min-height: 36;
-    -fx-pref-height: 36;
+    -fx-border-radius: 10;
+    -fx-padding: 0 14;
+    -fx-min-height: 44;
+    -fx-pref-height: 44;
 }
 .search-field,
 .search-field:focused {
@@ -40,25 +42,25 @@
     -fx-padding: 0;
     -fx-text-fill: #3B2A20;
     -fx-prompt-text-fill: #9A8878;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
 }
 .icon-search {
     -fx-background-color: #6B5444;
-    -fx-min-width: 14; -fx-min-height: 14;
-    -fx-pref-width: 14; -fx-pref-height: 14;
-    -fx-max-width: 14; -fx-max-height: 14;
+    -fx-min-width: 17; -fx-min-height: 17;
+    -fx-pref-width: 17; -fx-pref-height: 17;
+    -fx-max-width: 17; -fx-max-height: 17;
     -fx-shape: "M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z";
 }
 
 .filter-combo {
     -fx-background-color: #FFFFFF;
-    -fx-background-radius: 8;
+    -fx-background-radius: 10;
     -fx-border-color: #E7DCCB;
-    -fx-border-radius: 8;
-    -fx-min-height: 36;
-    -fx-pref-height: 36;
+    -fx-border-radius: 10;
+    -fx-min-height: 44;
+    -fx-pref-height: 44;
     -fx-cursor: hand;
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
@@ -66,7 +68,7 @@
 .filter-combo:hover { -fx-background-color: #FBF6EE; }
 .filter-combo .arrow-button { -fx-background-color: transparent; }
 .filter-combo .arrow { -fx-background-color: #6B5444; }
-.filter-combo .list-cell { -fx-background-color: transparent; -fx-text-fill: #3B2A20; -fx-font-size: 12px; }
+.filter-combo .list-cell { -fx-background-color: transparent; -fx-text-fill: #3B2A20; -fx-font-size: 13px; }
 
 /* ===== Category chips ===== */
 .chip {
@@ -136,6 +138,7 @@
 
 .dish-category { -fx-text-fill: #A98667; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 6 0 0 0; }
 .dish-name     { -fx-text-fill: #2F2118; -fx-font-size: 14px; -fx-font-weight: bold; }
+.dish-desc     { -fx-text-fill: #7A6757; -fx-font-size: 11px; }
 .dish-price    { -fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold; }
 
 .avail-pill {
@@ -318,7 +321,7 @@
 .btn-secondary:hover { -fx-background-color: #F3E9DC; }
 .form-footer { -fx-padding: 14 0 0 0; -fx-border-color: #E7DCCB; -fx-border-width: 1 0 0 0; }
 
-/* ===== New Variant Pills and Qty ===== */
+/* ===== Variant pills and qty ===== */
 .variant-pill {
     -fx-background-color: #F8F2E8;
     -fx-border-color: #E7DCCB;

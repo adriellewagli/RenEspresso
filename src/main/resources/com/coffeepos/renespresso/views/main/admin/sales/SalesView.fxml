@@ -9,29 +9,27 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.sales.SalesController">
 
-    <VBox spacing="4.0">
+    <VBox spacing="4.0" styleClass="page-header">
         <Label styleClass="sales-title" text="Sales" />
         <Label styleClass="sales-subtitle" text="Track revenue and sales performance" />
     </VBox>
 
-    <HBox spacing="16">
-        <VBox HBox.hgrow="ALWAYS" spacing="6" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-            <Label text="TODAY'S SALES" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #895737;" />
-            <Label text="—" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #5E3023;" />
+    <HBox spacing="16.0">
+        <VBox styleClass="card, kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <Label styleClass="kpi-title" text="TODAY'S SALES" />
+            <Label styleClass="kpi-value" text="—" />
         </VBox>
-        <VBox HBox.hgrow="ALWAYS" spacing="6" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-            <Label text="THIS WEEK" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #895737;" />
-            <Label text="—" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #5E3023;" />
+        <VBox styleClass="card, kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <Label styleClass="kpi-title" text="THIS WEEK" />
+            <Label styleClass="kpi-value" text="—" />
         </VBox>
-        <VBox HBox.hgrow="ALWAYS" spacing="6" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-            <Label text="THIS MONTH" style="-fx-font-size: 11; -fx-font-weight: bold; -fx-text-fill: #895737;" />
-            <Label text="—" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #5E3023;" />
+        <VBox styleClass="card, kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <Label styleClass="kpi-title" text="THIS MONTH" />
+            <Label styleClass="kpi-value" text="—" />
         </VBox>
     </HBox>
 
-    <VBox alignment="CENTER" prefHeight="320" VBox.vgrow="ALWAYS"
-          style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-        <Label text="Sales chart coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
+    <VBox alignment="CENTER" prefHeight="320.0" styleClass="card, panel-card" VBox.vgrow="ALWAYS">
+        <Label styleClass="empty-note" text="Sales chart coming soon" />
     </VBox>
-
 </VBox>

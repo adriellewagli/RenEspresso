@@ -9,14 +9,12 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.transact.TransactionController">
 
-    <VBox spacing="4.0">
+    <VBox spacing="4.0" styleClass="page-header">
         <Label styleClass="transact-title" text="Transaction History" />
         <Label styleClass="transact-subtitle" text="Review past orders and payments" />
     </VBox>
 
-    <VBox alignment="CENTER" prefHeight="400" VBox.vgrow="ALWAYS"
-          style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-        <Label text="Transaction list coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
+    <VBox alignment="CENTER" prefHeight="400.0" styleClass="card, table-card" VBox.vgrow="ALWAYS">
+        <Label styleClass="empty-note" text="Transaction list coming soon" />
     </VBox>
-
 </VBox>

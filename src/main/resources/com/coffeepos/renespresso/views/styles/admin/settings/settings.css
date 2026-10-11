@@ -1,0 +1,28 @@
+.settings-root     { -fx-padding: 28; }
+.page-header       { -fx-padding: 0 4 4 4; }
+.settings-title    { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
+.settings-subtitle { -fx-text-fill: #895737; -fx-font-size: 15px; }
+
+.card {
+    -fx-background-color: #FFFDFA;
+    -fx-background-radius: 16;
+    -fx-border-color: #EFE5D6;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
+}
+.settings-card { -fx-padding: 22 24; }
+.card-title    { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.card-desc     { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.status-text   { -fx-text-fill: #C08552; -fx-font-size: 13px; }
+
+.primary-button {
+    -fx-background-color: #5E3023;
+    -fx-text-fill: #F3E9DC;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-padding: 13 24;
+    -fx-cursor: hand;
+}
+.primary-button:hover   { -fx-background-color: #7A4130; }
+.primary-button:pressed { -fx-background-color: #4A241A; }

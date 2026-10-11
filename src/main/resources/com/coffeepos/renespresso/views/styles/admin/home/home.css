@@ -1,19 +1,24 @@
-.home-root { -fx-padding: 24; }
+.home-root { -fx-padding: 28; }
 
-.page-title    { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
-.page-subtitle { -fx-text-fill: #895737; -fx-font-size: 14px; }
+.page-title    { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
+.page-subtitle { -fx-text-fill: #895737; -fx-font-size: 15px; }
+.page-header { -fx-padding: 0 4 4 4; }
+.kpi-card   { -fx-padding: 18 22; -fx-spacing: 6; }
+.panel-card { -fx-padding: 20 24; -fx-spacing: 4; }
+
 .date-label    { -fx-text-fill: #5E3023; -fx-font-size: 13px; -fx-font-weight: bold; }
 .updated-label { -fx-text-fill: #9A8878; -fx-font-size: 11px; }
 
 .refresh-button {
     -fx-background-color: #F6E7D5;
     -fx-text-fill: #5E3023;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-background-radius: 10;
-    -fx-padding: 9 16;
+    -fx-background-radius: 12;
+    -fx-padding: 13 24;
     -fx-cursor: hand;
 }
+
 .refresh-button:hover { -fx-background-color: #EFD6BB; }
 
 .error-banner {
@@ -32,9 +37,6 @@
     -fx-border-radius: 16;
     -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
 }
-.kpi-card   { -fx-padding: 18 20; -fx-spacing: 6; }
-.panel-card { -fx-padding: 18 20; -fx-spacing: 4; }
-
 .kpi-title { -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; }
 .kpi-value { -fx-text-fill: #2F2118; -fx-font-size: 28px; -fx-font-weight: bold; }
 .kpi-sub   { -fx-text-fill: #7A6757; -fx-font-size: 12px; }

@@ -1,3 +1,14 @@
-.transact-container { -fx-padding: 30; }
-.transact-title     { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
+.transact-container { -fx-padding: 28; }
+.page-header        { -fx-padding: 0 4 4 4; }
+.transact-title     { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
 .transact-subtitle  { -fx-text-fill: #895737; -fx-font-size: 15px; }
+
+.card {
+    -fx-background-color: #FFFDFA;
+    -fx-background-radius: 16;
+    -fx-border-color: #EFE5D6;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
+}
+.table-card { -fx-padding: 16 24 20 24; }
+.empty-note { -fx-text-fill: #9A8878; -fx-font-size: 14px; }

@@ -75,10 +75,6 @@
                     </VBox>
 
                     <VBox spacing="8.0">
-                        <HBox>
-                            <Label styleClass="field-label" text="Status" />
-                            <Label styleClass="field-required" text=" *" />
-                        </HBox>
 
                         <VBox spacing="8.0">
                             <HBox>
@@ -87,6 +83,11 @@
                             </HBox>
                             <TextField fx:id="qtyField" promptText="0" styleClass="form-input" />
                         </VBox>
+
+                        <HBox>
+                            <Label styleClass="field-label" text="Status" />
+                            <Label styleClass="field-required" text=" *" />
+                        </HBox>
 
                         <HBox spacing="12.0">
                             <ToggleButton fx:id="availableBtn" maxWidth="Infinity" selected="true"

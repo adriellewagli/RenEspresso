@@ -1,3 +1,18 @@
-.sales-container { -fx-padding: 30; }
-.sales-title     { -fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold; }
+.sales-container { -fx-padding: 28; }
+.page-header     { -fx-padding: 0 4 4 4; }
+.sales-title     { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
 .sales-subtitle  { -fx-text-fill: #895737; -fx-font-size: 15px; }
+
+.card {
+    -fx-background-color: #FFFDFA;
+    -fx-background-radius: 16;
+    -fx-border-color: #EFE5D6;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
+}
+.kpi-card   { -fx-padding: 18 22; -fx-spacing: 6; }
+.panel-card { -fx-padding: 20 24; }
+
+.kpi-title { -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; }
+.kpi-value { -fx-text-fill: #2F2118; -fx-font-size: 28px; -fx-font-weight: bold; }
+.empty-note { -fx-text-fill: #9A8878; -fx-font-size: 14px; }
