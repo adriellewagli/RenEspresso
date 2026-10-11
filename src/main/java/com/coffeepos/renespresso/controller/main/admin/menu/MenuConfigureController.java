@@ -98,6 +98,17 @@ public class MenuConfigureController {
             qtyField.setText("0");
         }
 
+        qtyField.textProperty().addListener((obs, oldVal, newVal) -> {
+            try {
+                int q = Integer.parseInt(newVal.trim());
+                if (q <= 0) {
+                    unavailableBtn.setSelected(true);
+                } else {
+                    availableBtn.setSelected(true);
+                }
+            } catch (NumberFormatException ignored) {}
+        });
+
         if (variantRows.isEmpty()) addVariantRow(null);
         refreshPreview();
     }
@@ -313,7 +324,7 @@ public class MenuConfigureController {
 
             String desc = descField.getText().trim();
             String descOrNull = desc.isEmpty() ? null : desc;
-            boolean available = availableBtn.isSelected();
+            boolean available = (qty > 0);
 
             if (edit) {
                 MenuDAO.updateProduct(existing.id(), name, cat.id(), descOrNull, newImage, available, qty);

@@ -296,6 +296,11 @@ public class MenuController {
     }
 
     private void toggleAvailability(Product p) {
+        if (!p.available() && p.quantity() <= 0) {
+            AlertUtil.showWarning("Out of Stock", "Cannot mark as available because quantity is 0. Please update the stock first.");
+            return;
+        }
+
         boolean next = !p.available();
         try {
             MenuDAO.setAvailable(p.id(), next);
