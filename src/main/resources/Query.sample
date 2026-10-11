@@ -1,8 +1,7 @@
 CREATE DATABASE coffee;
 USE coffee;
 
-1. USER
-
+-- 1. USERS
 CREATE TABLE users (
     user_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -15,8 +14,14 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 );
 
-2. PRODUCTS
+-- 2. CATEGORIES (Must be created before products)
+CREATE TABLE categories (
+    category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    sort_order INT NOT NULL DEFAULT 0
+);
 
+-- 3. PRODUCTS
 CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -28,16 +33,7 @@ CREATE TABLE products (
     FOREIGN KEY (category_id) REFERENCES categories(category_id)
 );
 
-3. CATEGORIES
-
-CREATE TABLE categories (
-    category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    sort_order INT NOT NULL DEFAULT 0
-);
-
-4. TRANSACTIONS
-
+-- 4. TRANSACTIONS
 CREATE TABLE transactions (
     transaction_id INT AUTO_INCREMENT PRIMARY KEY,
     cashier_id INT,
@@ -47,15 +43,13 @@ CREATE TABLE transactions (
     FOREIGN KEY (cashier_id) REFERENCES users(user_id)
 );
 
-5. TRANSACTION ITEMS
-
+-- 5. TRANSACTION ITEMS
 CREATE TABLE transaction_items (
     transaction_id INT NOT NULL,
     product_id INT NOT NULL,
     quantity INT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY (transaction_id, product_id), -- Added composite primary key
     FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id),
-    FOREIGN KEY (id) REFERENCES products(id)
+    FOREIGN KEY (product_id) REFERENCES products(id) -- Fixed from (id)
 );
-
-
