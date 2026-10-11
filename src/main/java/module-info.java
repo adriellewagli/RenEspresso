@@ -13,6 +13,10 @@ module com.coffeepos.renespresso {
     requires jbcrypt;
     requires MaterialFX;
 
+    requires org.apache.poi.poi;
+    requires org.apache.poi.ooxml;
+    opens com.coffeepos.renespresso.controller.main.admin.settings to javafx.fxml;
+
     exports com.coffeepos.renespresso;
     opens com.coffeepos.renespresso to javafx.fxml;
 

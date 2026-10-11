@@ -76,22 +76,7 @@
             <fx:include fx:id="salesView"       source="sales/SalesView.fxml" />
             <fx:include fx:id="transactionView" source="transact/TransactionView.fxml" />
             <fx:include fx:id="accountsView"    source="account/AccountView.fxml" />
-
-            <!-- Settings placeholder (move to its own folder when you build it) -->
-            <VBox fx:id="settingsView" visible="false" managed="false" spacing="20.0" style="-fx-padding: 30;">
-                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="Settings" />
-                <Label style="-fx-text-fill: #895737; -fx-font-size: 15px;" text="Application preferences and configuration" />
-
-                <VBox alignment="CENTER_LEFT" maxWidth="640" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-                    <Label text="Store information coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
-                </VBox>
-                <VBox alignment="CENTER_LEFT" maxWidth="640" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-                    <Label text="Receipt settings coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
-                </VBox>
-                <VBox alignment="CENTER_LEFT" maxWidth="640" style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 18;">
-                    <Label text="Security settings coming soon" style="-fx-text-fill: #C08552; -fx-font-size: 14;" />
-                </VBox>
-            </VBox>
+            <fx:include fx:id="settingsView" source="settings/SettingsView.fxml" />
         </StackPane>
     </HBox>
 </StackPane>
