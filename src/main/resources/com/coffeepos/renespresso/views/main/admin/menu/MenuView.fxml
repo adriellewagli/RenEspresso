@@ -9,7 +9,6 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.menu.MenuController">
 
-    <!-- HEADER -->
     <HBox alignment="CENTER_LEFT" spacing="12.0">
         <VBox spacing="4.0" HBox.hgrow="ALWAYS">
             <Label styleClass="menu-title" text="Menu Management" />
@@ -18,7 +17,6 @@
         <Button fx:id="addDishBtn" onAction="#handleAddDish" styleClass="add-dish-button" text="+  Add New Dish" />
     </HBox>
 
-    <!-- SEARCH + FILTERS -->
     <VBox spacing="12.0" styleClass="card, toolbar-card">
         <HBox alignment="CENTER_LEFT" spacing="12.0">
             <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="search-box" HBox.hgrow="ALWAYS">
@@ -33,10 +31,17 @@
 
     <Label fx:id="countLabel" styleClass="count-label" />
 
-    <!-- DISH GRID -->
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="menu-scroll" VBox.vgrow="ALWAYS">
         <content>
-            <FlowPane fx:id="dishGrid" hgap="18.0" vgap="22.0" styleClass="dish-grid" />
+            <VBox spacing="16.0">
+                <FlowPane fx:id="dishGrid" hgap="18.0" vgap="22.0" styleClass="dish-grid" />
+
+                <HBox alignment="CENTER" spacing="16.0" styleClass="pagination-box">
+                    <Button fx:id="prevBtn" text="&lt; Prev" styleClass="page-btn" onAction="#handlePrev" />
+                    <Label fx:id="pageLabel" text="Page 1 of 1" styleClass="page-label" />
+                    <Button fx:id="nextBtn" text="Next &gt;" styleClass="page-btn" onAction="#handleNext" />
+                </HBox>
+            </VBox>
         </content>
     </ScrollPane>
 </VBox>

@@ -317,3 +317,48 @@
 }
 .btn-secondary:hover { -fx-background-color: #F3E9DC; }
 .form-footer { -fx-padding: 14 0 0 0; -fx-border-color: #E7DCCB; -fx-border-width: 1 0 0 0; }
+
+/* ===== New Variant Pills and Qty ===== */
+.variant-pill {
+    -fx-background-color: #F8F2E8;
+    -fx-border-color: #E7DCCB;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 3 8;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #5E3023;
+}
+.dish-qty {
+    -fx-text-fill: #895737;
+    -fx-font-size: 11px;
+    -fx-padding: 4 0 0 0;
+}
+
+/* ===== Pagination UI ===== */
+.pagination-box {
+    -fx-padding: 16 0 0 0;
+}
+.page-btn {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E7DCCB;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 6 16;
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.page-btn:hover {
+    -fx-background-color: #F8F2E8;
+}
+.page-btn:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+}
+.page-label {
+    -fx-text-fill: #895737;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}

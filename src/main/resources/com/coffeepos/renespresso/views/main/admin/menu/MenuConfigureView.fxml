@@ -49,31 +49,24 @@
                         <TextField fx:id="nameField" promptText="e.g. Caramel Macchiato" styleClass="form-input" />
                     </VBox>
 
-                    <GridPane hgap="18.0">
-                        <columnConstraints>
-                            <ColumnConstraints percentWidth="50.0" />
-                            <ColumnConstraints percentWidth="50.0" />
-                        </columnConstraints>
-                        <VBox spacing="8.0" GridPane.columnIndex="0">
-                            <HBox>
-                                <Label styleClass="field-label" text="Category" />
-                                <Label styleClass="field-required" text=" *" />
-                            </HBox>
-                            <ComboBox fx:id="categoryBox" maxWidth="Infinity" promptText="Select category"
-                                      styleClass="form-combo" />
-                        </VBox>
-                        <VBox spacing="8.0" GridPane.columnIndex="1">
-                            <HBox>
-                                <Label styleClass="field-label" text="Selling Price (PHP)" />
-                                <Label styleClass="field-required" text=" *" />
-                            </HBox>
-                            <HBox>
-                                <Label maxHeight="Infinity" styleClass="input-prefix" text="₱" />
-                                <TextField fx:id="priceField" promptText="0.00" styleClass="price-field"
-                                           HBox.hgrow="ALWAYS" />
-                            </HBox>
-                        </VBox>
-                    </GridPane>
+                    <VBox spacing="8.0">
+                        <HBox>
+                            <Label styleClass="field-label" text="Category" />
+                            <Label styleClass="field-required" text=" *" />
+                        </HBox>
+                        <ComboBox fx:id="categoryBox" maxWidth="Infinity" promptText="Select category"
+                                  styleClass="form-combo" />
+                    </VBox>
+
+                    <VBox spacing="10.0">
+                        <HBox alignment="CENTER_LEFT">
+                            <Label styleClass="field-label" text="Sizes &amp; Prices" />
+                            <Label styleClass="field-required" text=" *" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button onAction="#handleAddVariant" styleClass="btn-secondary" text="+ Add Size" />
+                        </HBox>
+                        <VBox fx:id="variantsBox" spacing="8.0" />
+                    </VBox>
 
                     <VBox spacing="8.0">
                         <Label styleClass="field-label" text="Description" />
@@ -86,6 +79,15 @@
                             <Label styleClass="field-label" text="Status" />
                             <Label styleClass="field-required" text=" *" />
                         </HBox>
+
+                        <VBox spacing="8.0">
+                            <HBox>
+                                <Label styleClass="field-label" text="Stock Quantity" />
+                                <Label styleClass="field-required" text=" *" />
+                            </HBox>
+                            <TextField fx:id="qtyField" promptText="0" styleClass="form-input" />
+                        </VBox>
+
                         <HBox spacing="12.0">
                             <ToggleButton fx:id="availableBtn" maxWidth="Infinity" selected="true"
                                           styleClass="status-toggle" text="Available" HBox.hgrow="ALWAYS">
@@ -125,7 +127,7 @@
                 </VBox>
             </HBox>
         </content>
-    </ScrollPane>
+        </ScrollPane>
 
     <!-- FOOTER -->
     <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="form-footer">

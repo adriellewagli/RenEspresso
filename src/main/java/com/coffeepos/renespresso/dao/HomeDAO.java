@@ -88,7 +88,8 @@ public class HomeDAO {
         String sql = "SELECT p.name, SUM(ti.quantity) AS qty, SUM(ti.quantity * ti.price) AS revenue "
                 + "FROM transaction_items ti "
                 + "JOIN transactions t ON t.transaction_id = ti.transaction_id "
-                + "JOIN products p ON p.id = ti.product_id "
+                + "JOIN product_variants pv ON pv.variant_id = ti.variant_id "
+                + "JOIN products p ON p.id = pv.product_id "
                 + "WHERE t.status = 'COMPLETED' AND t.created_at >= ? AND t.created_at < ? "
                 + "GROUP BY p.id, p.name ORDER BY qty DESC LIMIT 5";
         List<TopProduct> out = new ArrayList<>();

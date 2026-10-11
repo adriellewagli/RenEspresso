@@ -3,6 +3,7 @@ package com.coffeepos.renespresso.controller.main.admin.menu;
 import com.coffeepos.renespresso.dao.MenuDAO;
 import com.coffeepos.renespresso.model.Category;
 import com.coffeepos.renespresso.model.Product;
+import com.coffeepos.renespresso.model.ProductVariant;
 import com.coffeepos.renespresso.util.ImageStore;
 import com.coffeepos.renespresso.util.NavigateUtil;
 import javafx.collections.FXCollections;
@@ -16,16 +17,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import com.coffeepos.renespresso.util.AlertUtil;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
+import java.util.Map;
 
 public class MenuController {
 
@@ -33,44 +32,48 @@ public class MenuController {
     @FXML private TextField searchField;
     @FXML private ComboBox<String> availabilityFilter;
     @FXML private FlowPane categoryChips, dishGrid;
-    @FXML private Label countLabel;
-    @FXML private Button addDishBtn;
+    @FXML private Label countLabel, pageLabel;
+    @FXML private Button addDishBtn, prevBtn, nextBtn;
 
     private static final DecimalFormat MONEY = new DecimalFormat("\u20B1#,##0.00");
-    private static final BigDecimal MAX_PRICE = new BigDecimal("999999.99");
     private static final double PHOTO = 106;
 
     private final ToggleGroup chipGroup = new ToggleGroup();
     private List<Product> allProducts = new ArrayList<>();
     private List<Category> categories = new ArrayList<>();
-    private int selectedCategoryId = -1;          // -1 = All
+    private Map<Integer, List<ProductVariant>> variantMap = new HashMap<>();
+
+    private int selectedCategoryId = -1;
     private boolean rebuildingChips = false;
     private boolean loading = false;
 
-    private record Loaded(List<Category> categories, List<Product> products) {}
+    // Pagination variables
+    private int currentPage = 0;
+    private final int itemsPerPage = 14;
+
+    private record Loaded(List<Category> categories, List<Product> products, Map<Integer, List<ProductVariant>> variants) {}
 
     @FXML
     public void initialize() {
         availabilityFilter.setItems(FXCollections.observableArrayList("All items", "Available", "Unavailable"));
         availabilityFilter.getSelectionModel().selectFirst();
 
-        searchField.textProperty().addListener((o, a, b) -> render());
-        availabilityFilter.valueProperty().addListener((o, a, b) -> render());
+        searchField.textProperty().addListener((o, a, b) -> { currentPage = 0; render(); });
+        availabilityFilter.valueProperty().addListener((o, a, b) -> { currentPage = 0; render(); });
 
         chipGroup.selectedToggleProperty().addListener((o, old, now) -> {
             if (rebuildingChips) return;
-            if (now == null) {                      // never allow "nothing selected"
+            if (now == null) {
                 if (old != null) old.setSelected(true);
                 return;
             }
             selectedCategoryId = (Integer) now.getUserData();
+            currentPage = 0;
             render();
         });
 
         loadData();
     }
-
-    // ------------------------------------------------------------------ DATA
 
     public void loadData() {
         if (loading) return;
@@ -79,12 +82,13 @@ public class MenuController {
         Task<Loaded> task = new Task<>() {
             @Override
             protected Loaded call() throws Exception {
-                return new Loaded(MenuDAO.getCategories(), MenuDAO.getProducts());
+                return new Loaded(MenuDAO.getCategories(), MenuDAO.getProducts(), MenuDAO.getAllVariants());
             }
         };
         task.setOnSucceeded(e -> {
             categories = new ArrayList<>(task.getValue().categories());
             allProducts = new ArrayList<>(task.getValue().products());
+            variantMap = task.getValue().variants();
             buildChips();
             render();
             loading = false;
@@ -99,8 +103,6 @@ public class MenuController {
         t.setDaemon(true);
         t.start();
     }
-
-    // ------------------------------------------------------------------ CHIPS + GRID
 
     private void buildChips() {
         rebuildingChips = true;
@@ -143,14 +145,31 @@ public class MenuController {
                 .toList();
 
         dishGrid.getChildren().clear();
+
+        int totalItems = shown.size();
+        int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+        if (totalPages == 0) totalPages = 1;
+        if (currentPage >= totalPages) currentPage = totalPages - 1;
+
         if (shown.isEmpty()) {
             Label empty = new Label(allProducts.isEmpty()
                     ? "No dishes yet. Click \"Add New Dish\" to create your first one."
                     : "No dishes match your search or filters.");
             empty.getStyleClass().add("empty-state");
             dishGrid.getChildren().add(empty);
+            pageLabel.setText("Page 1 of 1");
+            prevBtn.setDisable(true);
+            nextBtn.setDisable(true);
         } else {
-            for (Product p : shown) dishGrid.getChildren().add(buildCard(p));
+            int start = currentPage * itemsPerPage;
+            int end = Math.min(start + itemsPerPage, totalItems);
+            List<Product> pageItems = shown.subList(start, end);
+
+            for (Product p : pageItems) dishGrid.getChildren().add(buildCard(p));
+
+            pageLabel.setText("Page " + (currentPage + 1) + " of " + totalPages);
+            prevBtn.setDisable(currentPage == 0);
+            nextBtn.setDisable(currentPage >= totalPages - 1);
         }
 
         long availableCount = allProducts.stream().filter(Product::available).count();
@@ -159,7 +178,17 @@ public class MenuController {
                 : "Showing " + shown.size() + " of " + allProducts.size() + " dishes");
     }
 
-    // ------------------------------------------------------------------ DISH CARD
+    @FXML private void handlePrev() {
+        if (currentPage > 0) {
+            currentPage--;
+            render();
+        }
+    }
+
+    @FXML private void handleNext() {
+        currentPage++;
+        render();
+    }
 
     private StackPane buildCard(Product p) {
         StackPane photo = new StackPane();
@@ -196,19 +225,37 @@ public class MenuController {
         description.setPrefHeight(30);
         description.setMaxHeight(30);
 
-        Label price = new Label(MONEY.format(p.price()));
-        price.getStyleClass().add("dish-price");
+        FlowPane variantsPane = new FlowPane(4, 4);
+        variantsPane.setAlignment(Pos.TOP_CENTER);
+        variantsPane.setMaxWidth(156);
+
+        List<ProductVariant> vars = variantMap.getOrDefault(p.id(), new ArrayList<>());
+        for(ProductVariant v : vars) {
+            Label vLbl = new Label(v.getSizeName() + " " + MONEY.format(v.getPrice()));
+            vLbl.getStyleClass().add("variant-pill");
+            variantsPane.getChildren().add(vLbl);
+        }
+        if(vars.isEmpty()) {
+            Label noPrice = new Label("No prices set");
+            noPrice.getStyleClass().add("variant-pill");
+            variantsPane.getChildren().add(noPrice);
+        }
+
+        Label qtyLabel = new Label("Qty: " + p.quantity());
+        qtyLabel.getStyleClass().add("dish-qty");
+        if (p.quantity() <= 0) {
+            qtyLabel.setStyle("-fx-text-fill: #C0392B; -fx-font-weight: bold;");
+        }
 
         Button pill = new Button(p.available() ? "Available" : "Unavailable");
         pill.getStyleClass().addAll("avail-pill", p.available() ? "avail-on" : "avail-off");
         pill.setTooltip(new Tooltip(p.available() ? "Click to mark unavailable" : "Click to mark available"));
         pill.setOnAction(e -> toggleAvailability(p));
 
-        VBox body = new VBox(6, photo, category, name, description, price, pill);
+        VBox body = new VBox(6, photo, category, name, description, variantsPane, qtyLabel, pill);
         body.setAlignment(Pos.TOP_CENTER);
         body.getStyleClass().add("dish-body");
 
-        // hover actions
         Button edit = iconButton("icon-edit", "action-edit");
         edit.setOnAction(e -> showDishDialog(p));
         Button delete = iconButton("icon-delete", "action-delete");
@@ -226,7 +273,7 @@ public class MenuController {
         actions.visibleProperty().bind(card.hoverProperty());
         card.setOnMouseClicked(e -> { if (e.getClickCount() == 2) showDishDialog(p); });
 
-        if (!desc.isEmpty()) {                      // full description on hover
+        if (!desc.isEmpty()) {
             Tooltip tip = new Tooltip(desc);
             tip.setWrapText(true);
             tip.setMaxWidth(260);
@@ -288,21 +335,5 @@ public class MenuController {
                     if (back[0] != null) back[0].run();
                     loadData();
                 }));
-    }
-
-    private BigDecimal parsePrice(String text) {
-        try {
-            BigDecimal v = new BigDecimal(text.trim().replace(",", "").replace("\u20B1", ""));
-            if (v.signum() <= 0 || v.compareTo(MAX_PRICE) > 0) return null;
-            return v.setScale(2, RoundingMode.HALF_UP);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private void alert(Alert.AlertType type, String header, String msg) {
-        Alert a = new Alert(type, msg);
-        a.setHeaderText(header);
-        a.showAndWait();
     }
 }
