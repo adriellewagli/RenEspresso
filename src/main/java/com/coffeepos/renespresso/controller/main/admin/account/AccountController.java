@@ -45,7 +45,6 @@ public class AccountController {
     private final ObservableList<AccountRow> accounts = FXCollections.observableArrayList();
     private FilteredList<AccountRow> filtered;
 
-    /** Optional: call from the dashboard after login so users can't delete/deactivate themselves. */
     private int currentUserId = -1;
     public void setCurrentUserId(int id) { this.currentUserId = id; }
 

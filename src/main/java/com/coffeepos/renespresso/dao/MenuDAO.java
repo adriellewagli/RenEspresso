@@ -41,8 +41,8 @@ public class MenuDAO {
     }
 
     public static List<Product> getProducts() throws SQLException {
-        String sql = "SELECT p.product_id, p.name, p.category_id, c.name AS category, p.price, "
-                + "p.description, p.image_path, p.is_available "
+        String sql = "SELECT p.id, p.name, p.category_id, c.name AS category, p.price, "
+                + "p.description, p.image_path, p.available "
                 + "FROM products p JOIN categories c ON c.category_id = p.category_id "
                 + "ORDER BY c.sort_order, p.name";
         List<Product> list = new ArrayList<>();
@@ -51,14 +51,14 @@ public class MenuDAO {
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new Product(
-                        rs.getInt("product_id"),
+                        rs.getInt("id"),
                         rs.getString("name"),
                         rs.getInt("category_id"),
                         rs.getString("category"),
                         rs.getDouble("price"),
                         rs.getString("description"),
                         rs.getString("image_path"),
-                        rs.getBoolean("is_available")));
+                        rs.getBoolean("available")));
             }
         }
         return list;
@@ -66,7 +66,7 @@ public class MenuDAO {
 
     public static void addProduct(String name, int categoryId, BigDecimal price, String description,
                                   String imagePath, boolean available) throws SQLException {
-        String sql = "INSERT INTO products (name, category_id, price, description, image_path, is_available) "
+        String sql = "INSERT INTO products (name, category_id, price, description, image_path, available) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
@@ -83,7 +83,7 @@ public class MenuDAO {
     public static void updateProduct(int id, String name, int categoryId, BigDecimal price, String description,
                                      String imagePath, boolean available) throws SQLException {
         String sql = "UPDATE products SET name = ?, category_id = ?, price = ?, description = ?, "
-                + "image_path = ?, is_available = ? WHERE product_id = ?";
+                + "image_path = ?, available = ? WHERE id = ?";
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, name);
@@ -96,6 +96,7 @@ public class MenuDAO {
             ps.executeUpdate();
         }
     }
+
     public static void setAvailable(int id, boolean available) throws SQLException {
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement("UPDATE products SET is_available = ? WHERE product_id = ?")) {

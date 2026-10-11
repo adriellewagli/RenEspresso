@@ -41,7 +41,7 @@ public class DatabaseManager {
         config.setMaximumPoolSize(10);
         config.setMinimumIdle(2);
         config.setIdleTimeout(30000);
-        config.setConnectionTimeout(5000); // reduced timeout to fail fast on wrong host
+        config.setConnectionTimeout(5000);
         config.setMaxLifetime(1800000);
 
         try {

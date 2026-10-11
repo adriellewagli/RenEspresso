@@ -40,7 +40,6 @@ public class HomeDAO {
         }
     }
 
-    /** returns {sum, count} of completed transactions in [from, too) */
     private static double[] totals(Connection c, LocalDate from, LocalDate to) throws SQLException {
         String sql = "SELECT COALESCE(SUM(total_amount), 0), COUNT(*) FROM transactions "
                 + "WHERE status = 'COMPLETED' AND created_at >= ? AND created_at < ?";
@@ -89,9 +88,9 @@ public class HomeDAO {
         String sql = "SELECT p.name, SUM(ti.quantity) AS qty, SUM(ti.quantity * ti.price) AS revenue "
                 + "FROM transaction_items ti "
                 + "JOIN transactions t ON t.transaction_id = ti.transaction_id "
-                + "JOIN products p ON p.product_id = ti.product_id "
+                + "JOIN products p ON p.id = ti.product_id "
                 + "WHERE t.status = 'COMPLETED' AND t.created_at >= ? AND t.created_at < ? "
-                + "GROUP BY p.product_id, p.name ORDER BY qty DESC LIMIT 5";
+                + "GROUP BY p.id, p.name ORDER BY qty DESC LIMIT 5";
         List<TopProduct> out = new ArrayList<>();
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             range(ps, from, to);

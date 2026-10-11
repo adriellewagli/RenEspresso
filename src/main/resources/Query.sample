@@ -1,0 +1,61 @@
+CREATE DATABASE coffee;
+USE coffee;
+
+1. USER
+
+CREATE TABLE users (
+    user_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    role ENUM('ADMIN', 'CASHIER', 'SUPERVISOR', 'MANAGER', 'SERVER', 'CHEF') NOT NULL DEFAULT 'CASHIER',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    last_login DATETIME DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+);
+
+2. PRODUCTS
+
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    category_id INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    description VARCHAR(255),
+    image_path TEXT,
+    available BOOLEAN NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+);
+
+3. CATEGORIES
+
+CREATE TABLE categories (
+    category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    sort_order INT NOT NULL DEFAULT 0
+);
+
+4. TRANSACTIONS
+
+CREATE TABLE transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    cashier_id INT,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'COMPLETED',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cashier_id) REFERENCES users(user_id)
+);
+
+5. TRANSACTION ITEMS
+
+CREATE TABLE transaction_items (
+    transaction_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+

@@ -74,7 +74,6 @@ public class MenuController {
 
     // ------------------------------------------------------------------ DATA
 
-    /** Public so the dashboard can call it whenever the Menu view is shown. */
     public void loadData() {
         if (loading) return;
         loading = true;

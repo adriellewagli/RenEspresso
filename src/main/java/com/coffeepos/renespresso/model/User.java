@@ -20,7 +20,6 @@ public class User {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
-    // Default Constructor
     public User() {
         this.userId = new SimpleIntegerProperty(0);
         this.username = new SimpleStringProperty("");
@@ -30,7 +29,6 @@ public class User {
         this.isActive = new SimpleBooleanProperty(true);
     }
 
-    // AUTH Constructor
     public User(int userId, String username, String fullName, String role, boolean isActive) {
         this.userId = new SimpleIntegerProperty(userId);
         this.username = new SimpleStringProperty(username);
@@ -40,7 +38,6 @@ public class User {
         this.isActive = new SimpleBooleanProperty(isActive);
     }
 
-    // Full Constructor
     public User(int userId, String username, String password, String fullName, String role, boolean isActive, Timestamp createdAt, Timestamp updatedAt) {
         this.userId = new SimpleIntegerProperty(userId);
         this.username = new SimpleStringProperty(username);
@@ -52,7 +49,6 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    // --- Getters, Setters, & JavaFX Properties ---
 
     public int getUserId() { return userId.get(); }
     public void setUserId(int userId) { this.userId.set(userId); }
