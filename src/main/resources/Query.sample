@@ -1,5 +1,5 @@
 -- ==========================================
--- 1. DATABASE CREATION
+-- 1. DATABASE SETUP
 -- ==========================================
 CREATE DATABASE IF NOT EXISTS coffee;
 USE coffee;
@@ -7,6 +7,7 @@ USE coffee;
 -- ==========================================
 -- 2. TABLE CREATION
 -- ==========================================
+
 -- USERS
 CREATE TABLE users (
     user_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -28,13 +29,15 @@ CREATE TABLE categories (
 );
 
 -- PRODUCTS
+-- Note: 'available' defaults to FALSE (0) since 'quantity' defaults to 0
 CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     category_id INT NOT NULL,
     description VARCHAR(255),
     image_path TEXT,
-    available BOOLEAN NOT NULL DEFAULT TRUE,
+    available BOOLEAN NOT NULL DEFAULT FALSE,
+    quantity INT(11) NOT NULL DEFAULT 0,
     FOREIGN KEY (category_id) REFERENCES categories(category_id)
 );
 
@@ -71,6 +74,7 @@ CREATE TABLE transaction_items (
 -- ==========================================
 -- 3. DATA INSERTION
 -- ==========================================
+
 -- Insert Categories
 INSERT INTO categories (category_id, name, sort_order) VALUES
 (1, 'Milk Tea', 1),
@@ -80,7 +84,7 @@ INSERT INTO categories (category_id, name, sort_order) VALUES
 (5, 'Fruit Juice', 5),
 (6, 'Bread & Pastries', 6);
 
--- Insert Products (Accented characters replaced to prevent warnings)
+-- Insert Products
 INSERT INTO products (id, name, category_id) VALUES
 -- Milk Teas
 (1, 'Classic Pearl Milk Tea', 1), (2, 'Wintermelon Milk Tea', 1), (3, 'Okinawa Brown Sugar', 1),
@@ -176,12 +180,4 @@ INSERT INTO product_variants (product_id, size_name, price) VALUES
 (57, '1 pc', 65.00), (58, '1 pc', 25.00), (59, '1 pc', 85.00),
 (60, '1 pc', 30.00);
 
--- ==========================================
--- 4. VERIFICATION QUERY
--- ==========================================
-SELECT p.name AS Product, c.name AS Category, pv.size_name AS Size, pv.price AS Price
-FROM products p
-JOIN categories c ON p.category_id = c.category_id
-JOIN product_variants pv ON p.id = pv.product_id
-ORDER BY c.sort_order, p.id
-LIMIT 20;
+UPDATE products SET quantity = 50, available = TRUE;
