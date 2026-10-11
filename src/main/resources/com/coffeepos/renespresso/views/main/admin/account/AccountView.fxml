@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="16.0" styleClass="account-root"
+<VBox spacing="20.0" styleClass="account-root"
       stylesheets="@../../../styles/admin/account/account.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -19,10 +19,10 @@
     </HBox>
 
     <!-- FILTER BAR -->
-    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card, filter-bar">
-        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="search-box" HBox.hgrow="ALWAYS">
+    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="card, filter-bar">
+        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="search-box" HBox.hgrow="ALWAYS">
             <Region styleClass="icon-search" />
-            <TextField fx:id="searchField" promptText="Search accounts by name or email…"
+            <TextField fx:id="searchField" promptText="Search accounts by name or username…"
                        styleClass="search-field" HBox.hgrow="ALWAYS" />
         </HBox>
 
@@ -40,12 +40,12 @@
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
             </columnResizePolicy>
             <columns>
-                <TableColumn fx:id="colName"      prefWidth="180.0" text="NAME" />
-                <TableColumn fx:id="colUsername"  prefWidth="160.0" text="USERNAME" />
-                <TableColumn fx:id="colRole"      prefWidth="110.0" text="ROLE" />
-                <TableColumn fx:id="colStatus"    prefWidth="120.0" text="STATUS" />
-                <TableColumn fx:id="colLastLogin" prefWidth="170.0" text="LAST LOGIN" />
-                <TableColumn fx:id="colCreated"   prefWidth="140.0" text="CREATED DATE" />
+                <TableColumn fx:id="colName"      prefWidth="220.0" text="NAME" />
+                <TableColumn fx:id="colUsername"  prefWidth="170.0" text="USERNAME" />
+                <TableColumn fx:id="colRole"      prefWidth="130.0" text="ROLE" />
+                <TableColumn fx:id="colStatus"    prefWidth="130.0" text="STATUS" />
+                <TableColumn fx:id="colLastLogin" prefWidth="180.0" text="LAST LOGIN" />
+                <TableColumn fx:id="colCreated"   prefWidth="150.0" text="CREATED DATE" />
                 <TableColumn fx:id="colActions"   prefWidth="110.0" text="ACTIONS" />
             </columns>
         </TableView>

@@ -2,8 +2,12 @@ package com.coffeepos.renespresso.controller.main.admin.account;
 
 import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.model.AccountRow;
+import com.coffeepos.renespresso.util.AlertUtil;
+import com.coffeepos.renespresso.util.ConfirmUtil;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -13,13 +17,15 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.paint.Color;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-import com.coffeepos.renespresso.util.AlertUtil;
-import javafx.application.Platform;
+import javafx.stage.WindowEvent;
+
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDate;
@@ -27,6 +33,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 public class AccountController {
 
@@ -216,10 +224,10 @@ public class AccountController {
                     setGraphic(null);
                     return;
                 }
-                Circle dot = new Circle(3);
+                Circle dot = new Circle(4);
                 dot.getStyleClass().add("status-dot");
                 Label pill = new Label(status, dot);
-                pill.setGraphicTextGap(5);
+                pill.setGraphicTextGap(6);
                 pill.getStyleClass().addAll("pill", "status-" + status.toLowerCase());
                 setGraphic(pill);
             }
@@ -241,7 +249,7 @@ public class AccountController {
                 Button delete = iconButton("icon-delete", "action-delete");
                 delete.setOnAction(e -> handleDelete(row));
 
-                HBox box = new HBox(8, edit, delete);
+                HBox box = new HBox(10, edit, delete);
                 box.setAlignment(Pos.CENTER_LEFT);
                 setGraphic(box);
             }
@@ -292,8 +300,7 @@ public class AccountController {
             accounts.remove(row);
         } catch (SQLIntegrityConstraintViolationException e) {
             AlertUtil.showWarning("Can't delete this account",
-                    row.name() + " is linked to existing transactions. "
-                            + "Edit the account and set it to inactive instead.");
+                    row.name() + " is linked to existing transactions, so it can't be deleted.");
         } catch (SQLException e) {
             e.printStackTrace();
             AlertUtil.showError("Delete failed", e.getMessage());
@@ -304,55 +311,114 @@ public class AccountController {
 
     private void showAccountDialog(AccountRow existing) {
         boolean edit = existing != null;
+        // No checkbox: new accounts are active, edited accounts keep their current status
+        final boolean active = !edit || "Active".equals(existing.status());
 
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(edit ? "Edit Account" : "Add Account");
-        dialog.setHeaderText(edit ? "Edit " + existing.name() : "Create a new account");
+        dialog.setHeaderText(null);
+        dialog.setGraphic(null);
         if (accountTable.getScene() != null) dialog.initOwner(accountTable.getScene().getWindow());
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getStylesheets().addAll(ConfirmUtil.collectStylesheets(accountTable));
+        pane.getStyleClass().add("account-dialog");
 
         ButtonType saveType = new ButtonType(edit ? "Save Changes" : "Create Account",
                 ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveType, ButtonType.CANCEL);
+        pane.getButtonTypes().addAll(saveType, ButtonType.CANCEL);
 
+        // ---- fields
         TextField nameField = new TextField(edit ? existing.name() : "");
         TextField userField = new TextField(edit ? existing.username() : "");
         PasswordField passField = new PasswordField();
         PasswordField confirmField = new PasswordField();
         ComboBox<String> roleBox = new ComboBox<>(FXCollections.observableArrayList(ROLES));
         roleBox.setValue(edit ? existing.role() : "Cashier");
-        CheckBox activeBox = new CheckBox("Account is active");
-        activeBox.setSelected(!edit || existing.status().equals("Active"));
 
-        passField.setPromptText(edit ? "Leave blank to keep current" : "At least 6 characters");
+        nameField.setPromptText("e.g. Juan Dela Cruz");
+        userField.setPromptText("3-30 characters");
+        passField.setPromptText(edit ? "Leave blank to keep current" : "Create a strong password");
         confirmField.setPromptText("Re-enter password");
 
-        GridPane grid = new GridPane();
-        grid.setHgap(12);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(10, 10, 0, 10));
-        grid.addRow(0, new Label("Full name"), nameField);
-        grid.addRow(1, new Label("Username"), userField);
-        grid.addRow(2, new Label(edit ? "New password" : "Password"), passField);
-        grid.addRow(3, new Label("Confirm"), confirmField);
-        grid.addRow(4, new Label("Role"), roleBox);
-        grid.add(activeBox, 1, 5);
-        nameField.setPrefWidth(260);
-        roleBox.setPrefWidth(260);
-        dialog.getDialogPane().setContent(grid);
+        nameField.getStyleClass().add("form-field");
+        userField.getStyleClass().add("form-field");
+        roleBox.getStyleClass().add("form-combo");
 
-        Button saveBtn = (Button) dialog.getDialogPane().lookupButton(saveType);
+        // ---- header
+        Label title = new Label(edit ? "Edit Account" : "Create a new account");
+        title.getStyleClass().add("dialog-title");
+        Label subtitle = new Label(edit ? "Update the details for " + existing.name()
+                : "Fill in the details below to add a staff account");
+        subtitle.getStyleClass().add("dialog-subtitle");
+        VBox header = new VBox(6, title, subtitle);
+
+        Region divider = new Region();
+        divider.getStyleClass().add("dialog-divider");
+
+        // ---- form grid
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(18);
+        ColumnConstraints half = new ColumnConstraints();
+        half.setPercentWidth(50);
+        grid.getColumnConstraints().addAll(half, half);
+
+        grid.add(field("Full name", nameField), 0, 0, 2, 1);
+        grid.add(field("Username", userField), 0, 1);
+        grid.add(field("Role", roleBox), 1, 1);
+        grid.add(field(edit ? "New password" : "Password", passwordField(passField)), 0, 2);
+        grid.add(field("Confirm password", passwordField(confirmField)), 1, 2);
+
+        Label hint = new Label((edit ? "Leave both password fields blank to keep the current password. " : "")
+                + "Passwords need at least 8 characters, including an uppercase letter, "
+                + "a lowercase letter, a number and a special character.");
+        hint.getStyleClass().add("form-hint");
+        hint.setWrapText(true);
+        grid.add(hint, 0, 3, 2, 1);
+
+        VBox content = new VBox(22, header, divider, grid);
+        content.setPadding(new Insets(32, 36, 14, 36));
+        content.setPrefWidth(680);
+        pane.setContent(content);
+
+        // ---- buttons
+        Button saveBtn = (Button) pane.lookupButton(saveType);
+        Button cancelBtn = (Button) pane.lookupButton(ButtonType.CANCEL);
+        saveBtn.getStyleClass().add("dialog-primary");
+        cancelBtn.getStyleClass().add("dialog-secondary");
+
+        // ---- unsaved-change detection
+        final String name0 = nameField.getText(), user0 = userField.getText(), role0 = roleBox.getValue();
+        BooleanSupplier dirty = () ->
+                !nameField.getText().equals(name0)
+                        || !userField.getText().equals(user0)
+                        || !Objects.equals(roleBox.getValue(), role0)
+                        || !passField.getText().isEmpty()
+                        || !confirmField.getText().isEmpty();
+
+        // ---- SAVE: validate -> confirm -> write to DB
         saveBtn.addEventFilter(ActionEvent.ACTION, ev -> {
+            if (edit && !dirty.getAsBoolean()) return;   // nothing changed, just close
+
             String name = nameField.getText().trim();
             String username = userField.getText().trim();
             String pw = passField.getText();
             String role = roleBox.getValue();
-            boolean active = activeBox.isSelected();
 
             try {
                 String warning = validate(existing, name, username, pw, confirmField.getText(), role, active);
                 if (warning != null) {
                     AlertUtil.showWarning("Check your input", warning);
-                    ev.consume();                       // keep the dialog open
+                    ev.consume();                        // keep the dialog open
+                    return;
+                }
+
+                String question = edit
+                        ? "Save the changes to " + name + "'s account?"
+                        : "Create an account for " + name + " (" + role + ")?";
+                if (!ConfirmUtil.confirmSave(pane, question)) {
+                    ev.consume();                        // stay in the dialog
                     return;
                 }
 
@@ -373,7 +439,82 @@ public class AccountController {
             loadAccounts();
         });
 
+        // ---- CANCEL button + window X: warn only if something changed
+        cancelBtn.addEventFilter(ActionEvent.ACTION, ev -> {
+            if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane)) ev.consume();
+        });
+        dialog.setOnShown(e -> pane.getScene().getWindow().addEventFilter(
+                WindowEvent.WINDOW_CLOSE_REQUEST, ev -> {
+                    if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane)) ev.consume();
+                }));
+
         dialog.showAndWait();
+    }
+
+    /** Label-above-control block used by the dialog form. */
+    private VBox field(String label, Region control) {
+        Label l = new Label(label);
+        l.getStyleClass().add("form-label");
+        control.setMaxWidth(Double.MAX_VALUE);
+        VBox box = new VBox(8, l, control);
+        GridPane.setHgrow(box, Priority.ALWAYS);
+        return box;
+    }
+
+    /** Password field with an eye button that shows / hides the text. */
+    private HBox passwordField(PasswordField hidden) {
+        TextField visible = new TextField();
+        visible.promptTextProperty().bind(hidden.promptTextProperty());
+        visible.textProperty().bindBidirectional(hidden.textProperty());
+        visible.setVisible(false);
+        visible.setManaged(false);
+
+        hidden.getStyleClass().add("form-field-inner");
+        visible.getStyleClass().add("form-field-inner");
+        HBox.setHgrow(hidden, Priority.ALWAYS);
+        HBox.setHgrow(visible, Priority.ALWAYS);
+        hidden.setMaxWidth(Double.MAX_VALUE);
+        visible.setMaxWidth(Double.MAX_VALUE);
+
+        Region eye = new Region();
+        eye.getStyleClass().add("icon-eye");
+        Button toggle = new Button();
+        toggle.setGraphic(eye);
+        toggle.getStyleClass().add("eye-button");
+        toggle.setFocusTraversable(false);
+
+        toggle.setOnAction(e -> {
+            boolean show = !visible.isVisible();
+            visible.setVisible(show);
+            visible.setManaged(show);
+            hidden.setVisible(!show);
+            hidden.setManaged(!show);
+            if (show) {
+                if (!eye.getStyleClass().contains("icon-eye-off")) eye.getStyleClass().add("icon-eye-off");
+            } else {
+                eye.getStyleClass().remove("icon-eye-off");
+            }
+            TextField current = show ? visible : hidden;
+            current.requestFocus();
+            current.positionCaret(current.getText().length());
+        });
+
+        HBox box = new HBox(4, hidden, visible, toggle);
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.getStyleClass().add("form-field-box");
+
+        // highlight the whole box while either inner field is focused
+        ChangeListener<Boolean> focusListener = (o, was, now) -> {
+            boolean focused = hidden.isFocused() || visible.isFocused();
+            if (focused) {
+                if (!box.getStyleClass().contains("box-focused")) box.getStyleClass().add("box-focused");
+            } else {
+                box.getStyleClass().remove("box-focused");
+            }
+        };
+        hidden.focusedProperty().addListener(focusListener);
+        visible.focusedProperty().addListener(focusListener);
+        return box;
     }
 
     /** Returns a warning message if the input is invalid, otherwise null. */
@@ -387,7 +528,8 @@ public class AccountController {
         if (role == null) return "Please choose a role.";
 
         if (!edit || !pw.isEmpty()) {
-            if (pw.length() < 6) return "Password must be at least 6 characters.";
+            String problem = passwordProblem(pw);
+            if (problem != null) return problem;
             if (!pw.equals(confirm)) return "Passwords do not match.";
         }
 
@@ -405,7 +547,17 @@ public class AccountController {
         return null;
     }
 
-    // ------------------------------------------------------------------ FORMAT / ALERTS
+    /** Password rules: 8+ chars, upper, lower, digit and special character. */
+    private String passwordProblem(String pw) {
+        if (pw.length() < 8) return "Password must be at least 8 characters.";
+        if (!pw.matches(".*[A-Z].*")) return "Password must include an uppercase letter.";
+        if (!pw.matches(".*[a-z].*")) return "Password must include a lowercase letter.";
+        if (!pw.matches(".*\\d.*")) return "Password must include a number.";
+        if (!pw.matches(".*[^A-Za-z0-9].*")) return "Password must include a special character (e.g. ! @ # $ %).";
+        return null;
+    }
+
+    // ------------------------------------------------------------------ FORMAT
 
     private String formatLastLogin(LocalDateTime t) {
         if (t == null) return "Never";
@@ -417,17 +569,5 @@ public class AccountController {
         if (days < 14) return "1 week ago";
         if (days < 30) return (days / 7) + " weeks ago";
         return t.format(DATE_FMT);
-    }
-
-    private void warn(String header, String msg) {
-        Alert a = new Alert(Alert.AlertType.WARNING, msg);
-        a.setHeaderText(header);
-        a.showAndWait();
-    }
-
-    private void error(String header, String msg) {
-        Alert a = new Alert(Alert.AlertType.ERROR, msg);
-        a.setHeaderText(header);
-        a.showAndWait();
     }
 }
