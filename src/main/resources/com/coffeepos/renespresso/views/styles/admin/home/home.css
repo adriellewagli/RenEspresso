@@ -10,16 +10,22 @@
 .updated-label { -fx-text-fill: #9A8878; -fx-font-size: 11px; }
 
 .refresh-button {
-    -fx-background-color: #F6E7D5;
-    -fx-text-fill: #5E3023;
+    -fx-background-color: #895737;
+    -fx-text-fill: #F3E9DC;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-background-radius: 12;
-    -fx-padding: 13 24;
+    -fx-background-radius: 8px;
+    -fx-padding: 10 22;
     -fx-cursor: hand;
 }
 
-.refresh-button:hover { -fx-background-color: #EFD6BB; }
+.refresh-button:hover {
+    -fx-background-color: #5E3023;
+}
+
+.refresh-button:pressed {
+    -fx-background-color: #C89360;
+}
 
 .error-banner {
     -fx-background-color: #FBE0DE;
