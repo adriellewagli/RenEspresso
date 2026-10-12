@@ -4,10 +4,14 @@ import com.coffeepos.renespresso.controller.main.user.om.OrderManagementControll
 import com.coffeepos.renespresso.controller.main.user.pos.PosController;
 import com.coffeepos.renespresso.controller.main.user.queue.OrderQueueController;
 import com.coffeepos.renespresso.model.TransactionRecord;
+import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
+import com.coffeepos.renespresso.util.NavigateUtil;
+import com.coffeepos.renespresso.util.SessionManager;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -70,6 +74,11 @@ public class UserViewController {
     public void initialize() {
         UserUi.attachCss(rootPane, ADMIN_CSS);
         UserUi.attachCss(rootPane, USER_CSS);
+
+        User cur = SessionManager.getCurrentUser();
+        if (cur != null && cur.getFullName() != null && !cur.getFullName().isBlank()) {
+            session.cashierName = cur.getFullName();
+        }
 
         lblClock.setText(clockFormat.format(new Date()));
         lblDate.setText(dateFormat.format(new Date()));
@@ -222,10 +231,11 @@ public class UserViewController {
     @FXML public void showTransactionHistory() { show(orderView, btnTransactionHistory); }
 
     @FXML
-    public void handleLogout() {
-        if (AlertUtil.showYesNo("Log Out", "Are you sure you want to log out?")) {
-            if (onLogout != null) onLogout.run();
-        }
+    public void handleLogout(ActionEvent event) {
+        if (!AlertUtil.showYesNo("Log Out", "Are you sure you want to log out of RenEspresso?")) return;
+        SessionManager.logout();
+        NavigateUtil.navigateTo(event, "id/LoginView.fxml", "RenEspresso POS - Login",
+                NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 
     // =====================================================================
@@ -270,11 +280,15 @@ public class UserViewController {
             Label total = new Label(r.getTotalPaid());
             total.getStyleClass().add("queue-total");
 
+            Button receiptBtn = new Button("Receipt");
+            receiptBtn.getStyleClass().add("btn-secondary-sm");
+            receiptBtn.setOnAction(e -> UserUi.showReceiptDialog(r));
+
             Button done = new Button("Complete");
             done.getStyleClass().add("btn-primary-sm");
             done.setOnAction(e -> session.completeOrder(r));
 
-            HBox row = new HBox(14, badge, new VBox(2, items, meta), spacer, total, done);
+            HBox row = new HBox(14, badge, new VBox(2, items, meta), spacer, total, receiptBtn, done);
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add("queue-row");
             queueBox.getChildren().add(row);
@@ -300,7 +314,10 @@ public class UserViewController {
             status.getStyleClass().addAll("pill", r.getStatus().styleClass());
             Label right = new Label(r.getTotalPaid());
             right.getStyleClass().add("recent-right");
-            HBox row = new HBox(10, left, spacer, status, right);
+            Button receiptBtn = new Button("Receipt");
+            receiptBtn.getStyleClass().add("btn-secondary-sm");
+            receiptBtn.setOnAction(e -> UserUi.showReceiptDialog(r));
+            HBox row = new HBox(10, left, spacer, status, right, receiptBtn);
             row.setAlignment(Pos.CENTER_LEFT);
             recentOrdersBox.getChildren().add(row);
         }

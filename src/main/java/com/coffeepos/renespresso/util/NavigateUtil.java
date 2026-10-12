@@ -58,15 +58,8 @@ public class NavigateUtil {
                 stage.centerOnScreen();
 
             } else if (mode == WindowMode.FULLSCREEN_WORKSPACE) {
-                // Allow resizing when maximized
-                // stage.setResizable(true);
-
-                // Maximize window to fill desktop workspace (includes taskbar)
-                // stage.setMaximized(true);
-
-                // OPTIONAL FOR TOUCH/KIOSK TERMINALS:
-                // Uncomment the line below for true borderless full screen mode
-                stage.setFullScreen(true);
+                stage.setResizable(true);
+                stage.setMaximized(true);
             }
 
             stage.show();

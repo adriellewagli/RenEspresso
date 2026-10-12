@@ -20,6 +20,12 @@ module com.coffeepos.renespresso {
     exports com.coffeepos.renespresso;
     opens com.coffeepos.renespresso to javafx.fxml;
 
+    exports com.coffeepos.renespresso.model;
+    opens com.coffeepos.renespresso.model to javafx.fxml, javafx.base;
+
+    exports com.coffeepos.renespresso.dao;
+    opens com.coffeepos.renespresso.dao to javafx.fxml;
+
     exports com.coffeepos.renespresso.util;
     opens com.coffeepos.renespresso.util to javafx.fxml;
 

@@ -6,16 +6,18 @@ import com.coffeepos.renespresso.model.OrderStatus;
 import com.coffeepos.renespresso.model.TransactionRecord;
 import com.coffeepos.renespresso.util.AlertUtil;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
@@ -50,15 +52,41 @@ public class OrderManagementController {
         TableColumn<TransactionRecord, String> colPayment = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(4);
         TableColumn<TransactionRecord, String> colTotal = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(5);
         TableColumn<TransactionRecord, String> colStatus = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(6);
+        TableColumn<TransactionRecord, Void> colAction = (TableColumn<TransactionRecord, Void>) tblHistory.getColumns().get(7);
 
-        colTicket.setCellValueFactory(new PropertyValueFactory<>("ticketNumber"));
-        colTime.setCellValueFactory(new PropertyValueFactory<>("time"));
-        colItems.setCellValueFactory(new PropertyValueFactory<>("items"));
-        colDiscount.setCellValueFactory(new PropertyValueFactory<>("discountApplied"));
-        colPayment.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
-        colTotal.setCellValueFactory(new PropertyValueFactory<>("totalPaid"));
+        colTicket.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTicketNumber()));
+        colTime.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTime()));
+        colItems.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getItems()));
+        colDiscount.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDiscountApplied()));
+        colPayment.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getPaymentMethod()));
+        colTotal.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTotalPaid()));
         colStatus.setCellValueFactory(c -> Bindings.createStringBinding(
                 () -> c.getValue().getStatus().label(), c.getValue().statusProperty()));
+
+        colAction.setCellFactory(param -> new TableCell<>() {
+            private final Button btnReceipt = new Button("View Receipt");
+            {
+                btnReceipt.getStyleClass().add("btn-secondary-sm");
+                btnReceipt.setOnAction(e -> {
+                    if (getIndex() >= 0 && getIndex() < getTableView().getItems().size()) {
+                        TransactionRecord record = getTableView().getItems().get(getIndex());
+                        if (record != null) {
+                            UserUi.showReceiptDialog(record);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btnReceipt);
+                }
+            }
+        });
 
         FilteredList<TransactionRecord> filtered = new FilteredList<>(session.transactionHistory, r -> true);
         txtHistorySearch.textProperty().addListener((obs, o, n) -> filtered.setPredicate(r -> matches(r, n)));

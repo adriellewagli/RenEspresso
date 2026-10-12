@@ -13,6 +13,8 @@ public class DatabaseSeeder {
     public static void main(String[] args) {
         createUsersTableIfNotExists();
         seedAdminAccount();
+        seedCashierAccount();
+        seedManagerAccount();
     }
 
     private static void createUsersTableIfNotExists() {
@@ -39,31 +41,43 @@ public class DatabaseSeeder {
     }
 
     private static void seedAdminAccount() {
-        String checkQuery = "SELECT COUNT(*) FROM users WHERE username = 'admin'";
-        // Updated column names to match the database schema
-        String insertQuery = "INSERT INTO users (username, password, full_name, role, is_active) VALUES (?, ?, ?, ?, ?)";
+        seedAccountIfNotExists("admin", "admin123", "System Administrator", "ADMIN");
+    }
+
+    private static void seedCashierAccount() {
+        seedAccountIfNotExists("cashier", "cashier123", "Default Cashier", "CASHIER");
+    }
+
+    private static void seedManagerAccount() {
+        seedAccountIfNotExists("manager", "manager123", "Default Manager", "MANAGER");
+    }
+
+    private static void seedAccountIfNotExists(String username, String plainPassword, String fullName, String role) {
+        String checkQuery = "SELECT COUNT(*) FROM users WHERE username = ?";
+        String insertQuery = "INSERT INTO users (username, password, full_name, role, is_active) VALUES (?, ?, ?, ?, 1)";
 
         try (Connection conn = DatabaseManager.getConnection();
-                PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
-                ResultSet rs = checkStmt.executeQuery()) {
+                PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
 
-            if (rs.next() && rs.getInt(1) == 0) {
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-                    insertStmt.setString(1, "admin");
-                    insertStmt.setString(2, PasswordUtil.hashPassword("admin123"));
-                    insertStmt.setString(3, "System Administrator");
-                    insertStmt.setString(4, "ADMIN"); // Matches the enum requirement
-                    insertStmt.setInt(5, 1); // 1 represents true/active for tinyint(1)
+            checkStmt.setString(1, username);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                        insertStmt.setString(1, username);
+                        insertStmt.setString(2, PasswordUtil.hashPassword(plainPassword));
+                        insertStmt.setString(3, fullName);
+                        insertStmt.setString(4, role);
 
-                    if (insertStmt.executeUpdate() > 0) {
-                        System.out.println("[DatabaseSeeder] Default admin account created successfully.");
+                        if (insertStmt.executeUpdate() > 0) {
+                            System.out.println("[DatabaseSeeder] Default " + role.toLowerCase() + " account ('" + username + "') created successfully.");
+                        }
                     }
+                } else {
+                    System.out.println("[DatabaseSeeder] " + role + " account ('" + username + "') already exists. Skipping seed.");
                 }
-            } else {
-                System.out.println("[DatabaseSeeder] Admin account already exists. Skipping seed.");
             }
         } catch (SQLException e) {
-            System.err.println("[DatabaseSeeder] Error seeding database: " + e.getMessage());
+            System.err.println("[DatabaseSeeder] Error seeding " + username + ": " + e.getMessage());
         }
     }
 }

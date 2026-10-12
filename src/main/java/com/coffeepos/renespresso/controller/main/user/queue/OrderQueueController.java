@@ -27,6 +27,7 @@ import javafx.util.Duration;
 
 import java.util.List;
 
+import com.coffeepos.renespresso.controller.main.user.UserUi;
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 
 public class OrderQueueController {
@@ -253,11 +254,16 @@ public class OrderQueueController {
             detailPanel.getChildren().addAll(done, cancel);
         }
 
+        Button receiptBtn = new Button("View Receipt");
+        receiptBtn.getStyleClass().add("btn-secondary");
+        receiptBtn.setMaxWidth(Double.MAX_VALUE);
+        receiptBtn.setOnAction(e -> UserUi.showReceiptDialog(r));
+
         Button back = new Button("Go Back");
         back.getStyleClass().add("btn-secondary");
         back.setMaxWidth(Double.MAX_VALUE);
         back.setOnAction(e -> closeDetails());
-        detailPanel.getChildren().add(back);
+        detailPanel.getChildren().addAll(receiptBtn, back);
 
         detailPanel.setVisible(true);
         detailPanel.setManaged(true);

@@ -13,8 +13,6 @@
             <Label styleClass="page-title" text="Transaction History" />
             <Label styleClass="page-subtitle" text="Review this shift's orders and payments" />
         </VBox>
-        <Button onAction="#handleReprintReceipt" styleClass="btn-secondary" text="View Receipt" />
-        <Button onAction="#handleExportHistory" styleClass="btn-primary" text="Export CSV" />
     </HBox>
 
     <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="card, toolbar-card">
@@ -32,13 +30,14 @@
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
             </columnResizePolicy>
             <columns>
-                <TableColumn prefWidth="90.0" text="TICKET" />
-                <TableColumn prefWidth="100.0" text="TIME" />
-                <TableColumn prefWidth="260.0" text="ITEMS" />
-                <TableColumn prefWidth="140.0" text="DISCOUNT" />
-                <TableColumn prefWidth="100.0" text="PAYMENT" />
-                <TableColumn prefWidth="110.0" text="TOTAL" />
-                <TableColumn prefWidth="110.0" text="STATUS" />
+                <TableColumn prefWidth="85.0" text="TICKET" />
+                <TableColumn prefWidth="95.0" text="TIME" />
+                <TableColumn prefWidth="250.0" text="ITEMS" />
+                <TableColumn prefWidth="130.0" text="DISCOUNT" />
+                <TableColumn prefWidth="95.0" text="PAYMENT" />
+                <TableColumn prefWidth="105.0" text="TOTAL" />
+                <TableColumn prefWidth="105.0" text="STATUS" />
+                <TableColumn prefWidth="120.0" text="ACTION" />
             </columns>
         </TableView>
     </VBox>

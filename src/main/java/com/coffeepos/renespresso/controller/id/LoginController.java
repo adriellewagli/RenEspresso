@@ -4,6 +4,7 @@ import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
+import com.coffeepos.renespresso.controller.main.user.UserSession;
 import com.coffeepos.renespresso.util.SessionManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -110,6 +111,7 @@ public class LoginController {
 
         if (user != null) {
             SessionManager.login(user);     // remember who is logged in (used by Account screen, sidebar, etc.)
+            UserSession.get().cashierName = user.getFullName();
 
             AlertUtil.showSuccess("Welcome", "Login successful! Logging in as " + user.getFullName());
 
