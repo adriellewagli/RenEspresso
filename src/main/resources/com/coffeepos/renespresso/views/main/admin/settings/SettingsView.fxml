@@ -3,30 +3,31 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="settingsRoot" spacing="20.0" style="-fx-padding: 30;"
+<VBox fx:id="settingsRoot" spacing="20.0" styleClass="settings-root"
+      stylesheets="@../../../styles/admin/settings/settings.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.settings.SettingsController">
 
-    <Label style="-fx-text-fill: #5E3023; -fx-font-size: 28px; -fx-font-weight: bold;" text="Settings" />
-    <Label style="-fx-text-fill: #895737; -fx-font-size: 15px;" text="Application preferences and configuration" />
+    <VBox spacing="4.0" styleClass="page-header">
+        <Label styleClass="settings-title" text="Settings" />
+        <Label styleClass="settings-subtitle" text="Application preferences and configuration" />
+    </VBox>
 
     <!-- BACKUP DATABASE CARD -->
-    <VBox maxWidth="640" spacing="10.0"
-          style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 22;">
-
-        <Label style="-fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold;" text="Backup Database" />
-        <Label wrapText="true" style="-fx-text-fill: #895737; -fx-font-size: 13px;"
+    <VBox maxWidth="640.0" spacing="10.0" styleClass="card, settings-card">
+        <Label styleClass="card-title" text="Backup Database" />
+        <Label styleClass="card-desc" wrapText="true"
                text="Export all store data (menu, transactions, accounts) so you can keep a safe copy." />
 
         <Separator style="-fx-opacity: 0.3;" />
 
         <HBox alignment="CENTER_LEFT" spacing="14.0">
-            <Button fx:id="btnBackupExcel" onAction="#handleBackupExcel" text="📊  Backup Database into Excel"
-                    style="-fx-background-color: #895737; -fx-text-fill: #F3E9DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-cursor: hand;" />
-            <ProgressIndicator fx:id="progress" visible="false" managed="false" prefWidth="24" prefHeight="24" />
+            <Button fx:id="btnBackupExcel" onAction="#handleBackupExcel"
+                    styleClass="primary-button" text="📊  Backup Database into Excel" />
+            <ProgressIndicator fx:id="progress" managed="false" prefHeight="24.0" prefWidth="24.0" visible="false" />
         </HBox>
 
-        <Label fx:id="lblStatus" wrapText="true" style="-fx-text-fill: #C08552; -fx-font-size: 13px;" />
+        <Label fx:id="lblStatus" styleClass="status-text" wrapText="true" />
     </VBox>
 </VBox>

@@ -5,67 +5,64 @@
 
 <StackPane fx:id="posRoot"
            xmlns="http://javafx.com/javafx/21"
-           stylesheets="@../../../styles.user/pos/pos.css"
-
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.coffeepos.renespresso.controller.main.user.pos.PosController">
 
     <HBox>
-        <!-- MENU -->
-        <VBox spacing="18.0" styleClass="menu-container" HBox.hgrow="ALWAYS">
-            <HBox fx:id="categoryBar" alignment="CENTER_LEFT" spacing="8.0">
-                <Button onAction="#filterCategory" styleClass="category-btn-active" text="All" />
-                <Button onAction="#filterCategory" styleClass="category-btn" text="Hot Coffee" />
-                <Button onAction="#filterCategory" styleClass="category-btn" text="Iced Coffee" />
-                <Button onAction="#filterCategory" styleClass="category-btn" text="Milk Tea" />
-                <Button onAction="#filterCategory" styleClass="category-btn" text="Pastries" />
-                <Region HBox.hgrow="ALWAYS" />
-                <TextField fx:id="txtMenuSearch" prefWidth="220.0" promptText="🔍 Search menu..." styleClass="search-field-white" />
-            </HBox>
+        <!-- ================= MENU ================= -->
+        <VBox spacing="20.0" styleClass="view-container" HBox.hgrow="ALWAYS">
+            <VBox spacing="4.0" styleClass="page-header">
+                <Label styleClass="page-title" text="Menu" />
+                <Label styleClass="page-subtitle" text="Tap a size to add the item to the current order" />
+            </VBox>
 
-            <ScrollPane fitToWidth="true" styleClass="transparent-scrollpane" VBox.vgrow="ALWAYS">
-                <GridPane fx:id="menuGrid" hgap="16.0" vgap="16.0" />
+            <VBox spacing="14.0" styleClass="card, toolbar-card">
+                <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="search-box">
+                    <Region styleClass="icon-search" />
+                    <TextField fx:id="txtMenuSearch" promptText="Search dishes or categories…"
+                               styleClass="search-field" HBox.hgrow="ALWAYS" />
+                </HBox>
+                <FlowPane fx:id="categoryBar" hgap="8.0" vgap="8.0" />
+            </VBox>
+
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="transparent-scrollpane" VBox.vgrow="ALWAYS">
+                <content>
+                    <FlowPane fx:id="menuGrid" hgap="18.0" vgap="22.0" styleClass="dish-grid" />
+                </content>
             </ScrollPane>
         </VBox>
 
-        <!-- ORDER SIDEBAR -->
-        <VBox prefWidth="380.0" minWidth="380.0" spacing="14.0" styleClass="order-sidebar">
-            <HBox alignment="CENTER_LEFT">
-                <VBox spacing="2">
-                    <Label styleClass="cart-header-title" text="Current Order" />
-                    <Label fx:id="lblCartTicket" styleClass="cart-ticket-subtext" text="will be ticket #042" />
-                </VBox>
-                <Region HBox.hgrow="ALWAYS" />
-                <Button onAction="#handleClearCart" styleClass="btn-secondary, btn-small" text="🗑  Clear" />
-            </HBox>
+        <!-- ================= CURRENT ORDER ================= -->
+        <VBox minWidth="380.0" prefWidth="380.0" maxWidth="380.0" spacing="14.0" styleClass="order-sidebar">
+            <VBox spacing="2.0">
+                <Label styleClass="cart-header-title" text="Current Order" />
+                <Label fx:id="lblCartTicket" styleClass="cart-ticket-subtext" />
+            </VBox>
 
-            <Separator styleClass="light-separator" />
             <ListView fx:id="cartListView" styleClass="transparent-listview" VBox.vgrow="ALWAYS" />
-            <Separator styleClass="light-separator" />
 
-            <HBox alignment="CENTER_LEFT" styleClass="discount-banner">
-                <CheckBox fx:id="chkDiscount" onAction="#handleDiscountToggle" styleClass="discount-checkbox" text="Senior / PWD Discount" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Label styleClass="discount-tag" text="-20% + VAT Exemption" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="discount-banner">
+                <CheckBox fx:id="chkDiscount" onAction="#handleDiscountToggle" styleClass="discount-checkbox"
+                          text="Senior / PWD discount" />
             </HBox>
 
             <VBox spacing="8.0" styleClass="totals-box">
+                <Separator styleClass="totals-separator" />
                 <HBox>
                     <Label styleClass="total-label-muted" text="Subtotal" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="lblSubtotal" styleClass="total-value-dark-bold" text="₱0.00" />
+                    <Label fx:id="lblSubtotal" styleClass="total-value-dark" text="₱0.00" />
                 </HBox>
                 <HBox>
                     <Label styleClass="total-label-muted" text="VAT (12%)" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblVat" styleClass="total-value-dark" text="₱0.00" />
                 </HBox>
-                <HBox fx:id="rowDiscount" visible="false">
-                    <Label styleClass="total-label-accent" text="Discount Applied" />
+                <HBox fx:id="rowDiscount" managed="false" visible="false">
+                    <Label styleClass="total-label-accent" text="Senior/PWD (20%)" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblDiscount" styleClass="total-value-accent" text="-₱0.00" />
                 </HBox>
-                <Separator styleClass="totals-separator" />
                 <HBox alignment="CENTER_LEFT">
                     <Label styleClass="total-grand-label" text="Total" />
                     <Region HBox.hgrow="ALWAYS" />
@@ -73,46 +70,54 @@
                 </HBox>
             </VBox>
 
-            <Button maxWidth="Infinity" onAction="#openConfirmationModal" styleClass="btn-accent" text="Finalize Order &amp; Print Receipt" />
+            <HBox spacing="10.0">
+                <Button maxWidth="Infinity" onAction="#handleClearCart" styleClass="btn-secondary" text="Clear" HBox.hgrow="SOMETIMES" />
+                <Button maxWidth="Infinity" onAction="#openConfirmationModal" styleClass="btn-primary" text="Charge" HBox.hgrow="ALWAYS" />
+            </HBox>
         </VBox>
     </HBox>
 
-    <!-- PAYMENT MODAL (covers the content area) -->
+    <!-- ================= PAYMENT MODAL ================= -->
     <StackPane fx:id="modalOverlay" styleClass="modal-overlay" visible="false">
-        <VBox alignment="CENTER" fillWidth="false" maxWidth="420.0" maxHeight="-Infinity" spacing="18.0" styleClass="modal-dialog">
-            <Label styleClass="modal-title" text="Confirm Order Finalization" />
-            <Label fx:id="lblModalTicket" styleClass="modal-ticket-badge" text="Ticket #042" />
-            <Label styleClass="modal-body-text" text="Are you sure you want to finalize this order and process the payment?" wrapText="true" />
-            <HBox spacing="8.0" styleClass="modal-amount-box">
-                <Label styleClass="modal-amount-label" text="Total Amount Due:" />
-                <Label fx:id="lblModalTotal" styleClass="modal-amount-value" text="₱0.00" />
+        <VBox maxHeight="-Infinity" maxWidth="460.0" spacing="14.0" styleClass="modal-dialog">
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label styleClass="modal-title" text="Confirm Payment" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblModalTicket" styleClass="modal-ticket-badge" />
             </HBox>
 
-            <VBox alignment="CENTER_LEFT" spacing="8.0">
-                <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <Label styleClass="modal-body-text" text="Payment Method:" />
-                    <ComboBox fx:id="cmbPaymentMethod" prefWidth="160.0" styleClass="btn-secondary" />
+            <VBox spacing="2.0" styleClass="modal-amount-box">
+                <Label styleClass="modal-amount-label" text="Amount due" />
+                <Label fx:id="lblModalTotal" styleClass="modal-amount-value" />
+            </VBox>
+
+            <VBox spacing="6.0">
+                <Label styleClass="field-label" text="Payment method" />
+                <ComboBox fx:id="cmbPaymentMethod" maxWidth="Infinity" styleClass="filter-combo" />
+            </VBox>
+
+            <VBox fx:id="rowCashBox" spacing="10.0">
+                <HBox fx:id="rowCash" alignment="CENTER_LEFT" spacing="10.0">
+                    <Label styleClass="field-label" text="Cash received" />
+                    <TextField fx:id="txtCashReceived" promptText="0.00" HBox.hgrow="ALWAYS" />
                 </HBox>
-                <HBox fx:id="rowCash" alignment="CENTER_LEFT" spacing="8.0">
-                    <Label styleClass="modal-body-text" text="Cash Received:" />
-                    <TextField fx:id="txtCashReceived" prefWidth="160.0" promptText="₱0.00" />
+                <HBox fx:id="quickCashBar" spacing="8.0">
+                    <Button onAction="#handleQuickCash" styleClass="btn-secondary-sm" text="Exact" />
+                    <Button onAction="#handleQuickCash" styleClass="btn-secondary-sm" text="₱100" />
+                    <Button onAction="#handleQuickCash" styleClass="btn-secondary-sm" text="₱200" />
+                    <Button onAction="#handleQuickCash" styleClass="btn-secondary-sm" text="₱500" />
+                    <Button onAction="#handleQuickCash" styleClass="btn-secondary-sm" text="₱1000" />
                 </HBox>
-                <HBox fx:id="quickCashBar" spacing="6.0">
-                    <Button onAction="#handleQuickCash" styleClass="btn-secondary, btn-small" text="Exact" />
-                    <Button onAction="#handleQuickCash" styleClass="btn-secondary, btn-small" text="₱100" />
-                    <Button onAction="#handleQuickCash" styleClass="btn-secondary, btn-small" text="₱200" />
-                    <Button onAction="#handleQuickCash" styleClass="btn-secondary, btn-small" text="₱500" />
-                    <Button onAction="#handleQuickCash" styleClass="btn-secondary, btn-small" text="₱1000" />
-                </HBox>
-                <HBox fx:id="rowChange" alignment="CENTER_LEFT" spacing="8.0">
-                    <Label styleClass="modal-amount-label" text="Change Due:" />
+                <HBox fx:id="rowChange" alignment="CENTER_LEFT">
+                    <Label styleClass="modal-body-text" text="Change" />
+                    <Region HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblChange" styleClass="modal-amount-value" text="₱0.00" />
                 </HBox>
             </VBox>
 
-            <HBox spacing="12.0">
-                <Button onAction="#closeConfirmationModal" prefWidth="130.0" styleClass="btn-secondary" text="Cancel" />
-                <Button fx:id="btnConfirmOrder" onAction="#confirmAndFinalizeOrder" prefWidth="160.0" styleClass="btn-primary" text="Confirm &amp; Print" />
+            <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                <Button onAction="#closeConfirmationModal" styleClass="btn-secondary" text="Cancel" />
+                <Button fx:id="btnConfirmOrder" onAction="#confirmAndFinalizeOrder" styleClass="btn-primary" text="Confirm Order" />
             </HBox>
         </VBox>
     </StackPane>

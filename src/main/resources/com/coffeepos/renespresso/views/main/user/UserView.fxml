@@ -3,232 +3,120 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane fx:id="rootPane" prefHeight="768.0" prefWidth="1280.0"
-           style="-fx-background-color: #F3E9DC;"
+<!-- NOTE: adjust the three fx:include "source" paths to where your included FXMLs live. -->
+<StackPane fx:id="rootPane" styleClass="user-root"
            xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.coffeepos.renespresso.controller.main.user.UserViewController">
+    <HBox>
 
-    <HBox prefHeight="768.0" prefWidth="1280.0">
-
-        <!-- SIDEBAR NAVIGATION (starts minimized at 85px, same as admin) -->
-        <VBox fx:id="sidebar" prefWidth="85.0" spacing="12.0" style="-fx-background-color: #5E3023; -fx-padding: 20 10 20 10;">
-
-            <HBox fx:id="brandBox" alignment="CENTER" prefHeight="42.0" minHeight="42.0" spacing="8.0" onMouseClicked="#toggleSidebar" style="-fx-cursor: hand;">
-                <Label alignment="CENTER" style="-fx-text-fill: #F3E9DC; -fx-font-size: 28px;" text="☕" />
-                <VBox fx:id="brandTextBox" visible="false" managed="false" alignment="CENTER_LEFT" spacing="1">
-                    <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 22px; -fx-font-weight: bold;" text="RenEspresso" />
-                    <Label style="-fx-text-fill: #C08552; -fx-font-size: 10px; -fx-font-weight: bold;" text="POS SYSTEM" />
+        <!-- ================= SIDEBAR ================= -->
+        <VBox fx:id="sidebar" minWidth="85.0" prefWidth="85.0" maxWidth="85.0" spacing="8.0" styleClass="user-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Button onAction="#toggleSidebar" styleClass="brand-button">
+                    <graphic><Region styleClass="nav-svg, icon-cafe" /></graphic>
+                </Button>
+                <VBox fx:id="brandTextBox" spacing="1.0">
+                    <Label styleClass="brand-name" text="RenEspresso" />
+                    <Label styleClass="brand-sub" text="Cashier Terminal" />
                 </VBox>
             </HBox>
 
-            <Separator style="-fx-opacity: 0.2;" />
-
-            <VBox fx:id="sessionBox" visible="false" managed="false" spacing="4.0" style="-fx-background-color: rgba(243, 233, 220, 0.1); -fx-padding: 10; -fx-background-radius: 8;">
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <Region style="-fx-background-color: #2ECC71; -fx-min-width: 8; -fx-min-height: 8; -fx-max-width: 8; -fx-max-height: 8; -fx-background-radius: 4;" />
-                    <Label style="-fx-text-fill: #F3E9DC; -fx-font-size: 12px; -fx-font-weight: bold;" text="SYSTEM ONLINE" />
-                </HBox>
-                <Label fx:id="lblCashierName" style="-fx-text-fill: #F3E9DC; -fx-font-size: 13px; -fx-font-weight: bold;" text="Cashier — Rina" />
-                <Label fx:id="lblClock" style="-fx-text-fill: #F3E9DC; -fx-font-size: 12px;" text="03:52 PM" />
-                <Label fx:id="lblDate" style="-fx-text-fill: #C08552; -fx-font-size: 12px;" text="Monday, Sep 29, 2026" />
+            <VBox fx:id="sessionBox" spacing="2.0" styleClass="session-box">
+                <Label fx:id="lblClock" styleClass="session-clock" />
+                <Label fx:id="lblDate" styleClass="session-date" />
+                <Label fx:id="lblCashierName" styleClass="session-name" />
             </VBox>
 
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="NEVER"
-                        style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;"
-                        VBox.vgrow="ALWAYS">
-                <content>
-                    <VBox spacing="8.0" style="-fx-background-color: transparent;">
-                        <Button fx:id="btnHome" styleClass="nav-button-active" alignment="CENTER" maxWidth="Infinity" onAction="#showHome">
-                            <tooltip><Tooltip text="Home" /></tooltip>
-                        </Button>
-                        <Button fx:id="btnMenu" styleClass="nav-button" alignment="CENTER" maxWidth="Infinity" onAction="#showMenu">
-                            <tooltip><Tooltip text="Menu" /></tooltip>
-                        </Button>
-                        <Button fx:id="btnTransactionHistory" styleClass="nav-button" alignment="CENTER" maxWidth="Infinity" onAction="#showTransactionHistory">
-                            <tooltip><Tooltip text="Transaction History" /></tooltip>
-                        </Button>
-                        <Button fx:id="btnAbout" styleClass="nav-button" alignment="CENTER" maxWidth="Infinity" onAction="#showAbout">
-                            <tooltip><Tooltip text="About" /></tooltip>
-                        </Button>
-                        <Button fx:id="btnSettings" styleClass="nav-button" alignment="CENTER" maxWidth="Infinity" onAction="#showSettings">
-                            <tooltip><Tooltip text="Settings" /></tooltip>
-                        </Button>
-                    </VBox>
-                </content>
-            </ScrollPane>
+            <Separator styleClass="sidebar-sep" />
 
-            <Separator style="-fx-opacity: 0.2;" />
+            <Button fx:id="btnHome" maxWidth="Infinity" onAction="#showHome" styleClass="nav-button" />
+            <Button fx:id="btnMenu" maxWidth="Infinity" onAction="#showMenu" styleClass="nav-button" />
+            <Button fx:id="btnOrders" maxWidth="Infinity" onAction="#showOrders" styleClass="nav-button" />
+            <Button fx:id="btnTransactionHistory" maxWidth="Infinity" onAction="#showTransactionHistory" styleClass="nav-button" />
 
-            <Button fx:id="btnLogout" styleClass="logout-button" alignment="CENTER" maxWidth="Infinity" onAction="#handleLogout">
-                <tooltip><Tooltip text="Logout" /></tooltip>
-            </Button>
+            <Region VBox.vgrow="ALWAYS" />
+            <Separator styleClass="sidebar-sep" />
+            <Button fx:id="btnLogout" maxWidth="Infinity" onAction="#handleLogout" styleClass="nav-button" />
         </VBox>
 
-        <!-- CONTENT AREA: each section lives in its own FXML (paths relative to this file) -->
-        <StackPane HBox.hgrow="ALWAYS">
+        <!-- ================= CONTENT ================= -->
+        <StackPane HBox.hgrow="ALWAYS" styleClass="content-area">
 
-            <!-- HOME (stays in the shell) -->
-            <VBox fx:id="homeView" spacing="24.0" styleClass="view-container">
-                <VBox spacing="4.0">
-                    <Label fx:id="lblWelcome" styleClass="page-title" text="Welcome back, Cashier Rina 👋" />
-                    <Label styleClass="page-subtitle" text="Here is your real-time performance summary for this shift." />
-                </VBox>
+            <!-- HOME -->
+            <VBox fx:id="homeView" spacing="20.0" styleClass="view-container">
+                <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-header">
+                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="page-title" text="Home" />
+                        <Label fx:id="lblWelcome" styleClass="page-subtitle" />
+                    </VBox>
+                    <Button onAction="#showMenu" styleClass="btn-primary" text="+  New Order" />
+                </HBox>
 
-                <HBox spacing="20.0">
-                    <VBox prefWidth="310.0" spacing="10.0" styleClass="dashboard-card" HBox.hgrow="ALWAYS">
-                        <Label styleClass="card-title" text="SESSION SALES" />
-                        <Label fx:id="lblDashSales" styleClass="card-metric-green" text="₱0.00" />
-                        <Label styleClass="card-subtext" text="Total from finalized orders" />
+                <!-- KPI CARDS -->
+                <HBox spacing="16.0">
+                    <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="TODAY'S SALES" />
+                        <Label fx:id="lblDashSales" styleClass="kpi-value" text="—" />
+                        <Label fx:id="lblDashLast" styleClass="kpi-sub" text=" " />
                     </VBox>
-                    <VBox prefWidth="310.0" spacing="10.0" styleClass="dashboard-card" HBox.hgrow="ALWAYS">
-                        <Label styleClass="card-title" text="ORDERS THIS SESSION" />
-                        <Label fx:id="lblDashOrders" styleClass="card-metric-dark" text="0" />
-                        <Label styleClass="card-subtext" text="Completed transactions" />
+                    <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="ORDERS TODAY" />
+                        <Label fx:id="lblDashOrders" styleClass="kpi-value" text="—" />
+                        <Label fx:id="lblDashItems" styleClass="kpi-sub" text=" " />
                     </VBox>
-                    <VBox prefWidth="310.0" spacing="10.0" styleClass="dashboard-card" HBox.hgrow="ALWAYS">
-                        <Label styleClass="card-title" text="NEXT TICKET NUMBER" />
-                        <Label fx:id="lblDashNextTicket" styleClass="card-metric-accent" text="#042" />
-                        <Label styleClass="card-subtext" text="Assigned upon order setup" />
+                    <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="IN QUEUE" />
+                        <Label fx:id="lblDashQueue" styleClass="kpi-value" text="—" />
+                        <Label styleClass="kpi-sub" text="Orders being prepared" />
+                    </VBox>
+                    <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                        <Label styleClass="kpi-title" text="NEXT TICKET" />
+                        <Label fx:id="lblDashNextTicket" styleClass="kpi-value" text="—" />
+                        <Label fx:id="lblDashAvg" styleClass="kpi-sub" text=" " />
                     </VBox>
                 </HBox>
 
-                <HBox spacing="20.0" VBox.vgrow="ALWAYS">
-                    <VBox prefWidth="400.0" spacing="16.0" styleClass="dashboard-card" HBox.hgrow="ALWAYS">
-                        <Label styleClass="section-header-title" text="Quick Actions" />
-                        <HBox spacing="12.0">
-                            <Button onAction="#showMenu" styleClass="btn-primary" text="➕  Create New Order" />
-                            <Button onAction="#showTransactionHistory" styleClass="btn-secondary" text="📜  View History" />
-                        </HBox>
-                        <Separator styleClass="light-separator" />
-                        <VBox spacing="8.0">
-                            <Label styleClass="section-subheader-title" text="Active Shift Summary" />
-                            <Label styleClass="card-subtext" text="• Terminal ID: REG-01 (Counter 1)" />
-                            <Label styleClass="card-subtext" text="• Senior/PWD Discounts: Auto-calculated" />
-                            <Label styleClass="card-subtext" text="• Default Printer: Thermal Receipt POS-80" />
-                        </VBox>
-                    </VBox>
-
-                    <VBox prefWidth="340.0" spacing="12.0" styleClass="dashboard-card">
-                        <Label styleClass="section-header-title" text="Shift Highlights" />
-                        <VBox spacing="8.0">
-                            <HBox>
-                                <Label styleClass="card-subtext" text="Average order value:" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblDashAvg" styleClass="about-item-bold" text="₱0.00" />
-                            </HBox>
-                            <HBox>
-                                <Label styleClass="card-subtext" text="Items sold:" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblDashItems" styleClass="about-item-bold" text="0" />
-                            </HBox>
-                            <HBox>
-                                <Label styleClass="card-subtext" text="Senior/PWD orders:" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblDashDiscounted" styleClass="about-item-bold" text="0" />
-                            </HBox>
-                            <HBox>
-                                <Label styleClass="card-subtext" text="Last order at:" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblDashLast" styleClass="about-item-bold" text="—" />
-                            </HBox>
-                        </VBox>
-                        <Separator styleClass="light-separator" />
-                        <Label styleClass="section-subheader-title" text="Recent Orders" />
-                        <VBox fx:id="recentOrdersBox" spacing="6.0" />
-                    </VBox>
-                </HBox>
-            </VBox>
-
-            <!-- INCLUDED VIEWS: fx:id "posView" injects posView (node) + posViewController -->
-            <fx:include fx:id="posView"   source="pos/PosView.fxml" />
-            <fx:include fx:id="orderView" source="om/OrderManagementView.fxml" />
-            <fx:include fx:id="aboutView" source="About/AboutView.fxml" />
-
-            <!-- SETTINGS (stays in the shell) -->
-            <VBox fx:id="settingsView" spacing="20.0" styleClass="view-container" visible="false" managed="false">
-                <VBox spacing="4.0">
-                    <Label styleClass="page-title" text="Settings" />
-                    <Label styleClass="page-subtitle" text="Configure hardware peripherals, checkout preferences, and local terminal behaviors." />
-                </VBox>
-
-                <ScrollPane fitToWidth="true" styleClass="transparent-scrollpane" VBox.vgrow="ALWAYS">
-                    <VBox spacing="20.0" style="-fx-background-color: transparent;">
-
-                        <VBox spacing="14.0" styleClass="dashboard-card">
-                            <Label styleClass="section-header-title" text="🖨️ Printer &amp; Hardware Configuration" />
-                            <Separator styleClass="light-separator" />
-
-                            <GridPane hgap="20.0" vgap="14.0">
-                                <columnConstraints>
-                                    <ColumnConstraints prefWidth="220.0" />
-                                    <ColumnConstraints hgrow="ALWAYS" />
-                                </columnConstraints>
-
-                                <Label styleClass="card-subtext" text="Target Printer:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                <ComboBox fx:id="cmbPrinter" maxWidth="300.0" promptText="Select Thermal Printer..." styleClass="btn-secondary" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                                <Label styleClass="card-subtext" text="Paper Roll Width:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                <HBox spacing="12.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <RadioButton fx:id="rbPaper80" selected="true" styleClass="settings-checkbox" text="80mm Thermal Paper (Standard)" />
-                                    <RadioButton fx:id="rbPaper58" styleClass="settings-checkbox" text="58mm Small Roll" />
-                                </HBox>
-
-                                <VBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                    <CheckBox fx:id="chkAutoPrint" selected="true" styleClass="settings-checkbox" text="Auto-print receipt immediately after order finalization" />
-                                    <CheckBox fx:id="chkCashDrawer" selected="true" styleClass="settings-checkbox" text="Pop open cash drawer electronically upon payment" />
-                                    <CheckBox fx:id="chkDualReceipt" styleClass="settings-checkbox" text="Print dual receipt copies (Customer + Merchant Copy)" />
-                                </VBox>
-                            </GridPane>
-                        </VBox>
-
-                        <VBox spacing="14.0" styleClass="dashboard-card">
-                            <Label styleClass="section-header-title" text="🛒 Checkout &amp; Order Behavior" />
-                            <Separator styleClass="light-separator" />
-
-                            <VBox spacing="12.0">
-                                <CheckBox fx:id="chkChime" selected="true" styleClass="settings-checkbox" text="Play audio chime when items are added/removed from cart" />
-                                <CheckBox fx:id="chkRequireConfirm" selected="true" styleClass="settings-checkbox" text="Require confirmation dialog before finalizing orders" />
-                                <CheckBox fx:id="chkAutoClearDiscount" selected="true" styleClass="settings-checkbox" text="Automatically clear Senior/PWD discount state for next order" />
-
-                                <HBox alignment="CENTER_LEFT" spacing="16.0" style="-fx-padding: 6 0 0 0;">
-                                    <Label styleClass="card-subtext" text="Default Payment Method:" />
-                                    <ComboBox fx:id="cmbDefaultPayment" maxWidth="200.0" promptText="Cash" styleClass="btn-secondary" />
-                                </HBox>
+                <!-- QUEUE + RECENT (share the leftover height, no page scrollbar) -->
+                <HBox spacing="16.0" minHeight="0.0" prefHeight="0.0" VBox.vgrow="ALWAYS">
+                    <VBox styleClass="card, panel-card" minHeight="0.0" prefWidth="560.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="card-title" text="Order Queue" />
+                                <Label fx:id="lblQueueCount" styleClass="card-subtitle" />
                             </VBox>
-                        </VBox>
-
-                        <VBox spacing="14.0" styleClass="dashboard-card">
-                            <Label styleClass="section-header-title" text="💾 System &amp; Local Database Maintenance" />
-                            <Separator styleClass="light-separator" />
-
-                            <HBox alignment="CENTER_LEFT" spacing="16.0">
-                                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                                    <Label styleClass="section-subheader-title" text="Backup POS Database" />
-                                    <Label styleClass="card-subtext" text="Generate a local SQL/SQLite backup file containing sales history and product catalog." />
-                                </VBox>
-                                <Button onAction="#handleBackupDatabase" styleClass="btn-secondary" text="📦 Backup Database Now" />
-                            </HBox>
-
-                            <Separator styleClass="light-separator" />
-
-                            <HBox alignment="CENTER_LEFT" spacing="16.0">
-                                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                                    <Label styleClass="section-subheader-title" text="Reset Ticket Sequence" />
-                                    <Label styleClass="card-subtext" text="Reset order queue counter back to #001 for a new operational shift day." />
-                                </VBox>
-                                <Button onAction="#handleResetQueue" styleClass="btn-secondary" text="🔄 Reset Queue Counter" />
-                            </HBox>
-                        </VBox>
-
-                        <HBox alignment="CENTER_RIGHT" spacing="12.0">
-                            <Button onAction="#handleResetSettings" styleClass="btn-secondary" text="Reset Defaults" />
-                            <Button onAction="#handleSaveSettings" styleClass="btn-primary" text="💾 Save Preference Changes" />
+                            <Button onAction="#showOrders" styleClass="btn-secondary-sm" text="View all" />
                         </HBox>
-
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minHeight="0.0" prefHeight="0.0"
+                                    styleClass="transparent-scrollpane" VBox.vgrow="ALWAYS">
+                            <content>
+                                <VBox fx:id="queueBox" spacing="10.0" styleClass="list-box" />
+                            </content>
+                        </ScrollPane>
                     </VBox>
-                </ScrollPane>
+
+                    <VBox styleClass="card, panel-card" minHeight="0.0" minWidth="300.0" prefWidth="340.0">
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="card-title" text="Recent Orders" />
+                                <Label fx:id="lblDashDiscounted" styleClass="card-subtitle" />
+                            </VBox>
+                        </HBox>
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minHeight="0.0" prefHeight="0.0"
+                                    styleClass="transparent-scrollpane" VBox.vgrow="ALWAYS">
+                            <content>
+                                <VBox fx:id="recentOrdersBox" spacing="14.0" styleClass="list-box" />
+                            </content>
+                        </ScrollPane>
+                    </VBox>
+                </HBox>
             </VBox>
+
+            <!-- INCLUDED VIEWS -->
+            <!-- INCLUDED VIEWS -->
+            <fx:include fx:id="posView" source="pos/PosView.fxml" />
+            <fx:include fx:id="queueView" source="queue/OrderQueueView.fxml" />
+            <fx:include fx:id="orderView" source="om/OrderManagementView.fxml" />
 
         </StackPane>
     </HBox>

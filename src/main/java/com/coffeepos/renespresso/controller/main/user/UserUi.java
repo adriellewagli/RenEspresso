@@ -1,5 +1,6 @@
 package com.coffeepos.renespresso.controller.main.user;
 
+import com.coffeepos.renespresso.model.TransactionRecord;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextArea;

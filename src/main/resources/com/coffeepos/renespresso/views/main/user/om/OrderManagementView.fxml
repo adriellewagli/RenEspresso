@@ -3,38 +3,43 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="orderRoot" spacing="16.0" styleClass="view-container"
-      stylesheets="@../../../styles.user/om/ordermanagement.css"
-
+<VBox fx:id="orderRoot" spacing="20.0" styleClass="view-container"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.user.om.OrderManagementController">
 
-    <VBox spacing="4.0">
-        <Label styleClass="page-title" text="Transaction History" />
-        <Label styleClass="page-subtitle" text="Recent transactions for this active cashier session." />
-    </VBox>
+    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-header">
+        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+            <Label styleClass="page-title" text="Transaction History" />
+            <Label styleClass="page-subtitle" text="Review this shift's orders and payments" />
+        </VBox>
+        <Button onAction="#handleReprintReceipt" styleClass="btn-secondary" text="View Receipt" />
+        <Button onAction="#handleExportHistory" styleClass="btn-primary" text="Export CSV" />
+    </HBox>
 
-    <VBox spacing="12.0" styleClass="dashboard-card, history-card" VBox.vgrow="ALWAYS">
-        <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <TextField fx:id="txtHistorySearch" prefWidth="300.0" promptText="🔍 Search ticket, item, payment..." styleClass="search-field-cream" />
-            <Region HBox.hgrow="ALWAYS" />
-            <Button onAction="#handleReprintReceipt" styleClass="btn-secondary" text="🧾 View Receipt" />
-            <Button onAction="#handleExportHistory" styleClass="btn-secondary" text="📤 Export CSV" />
+    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="card, toolbar-card">
+        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="search-box" HBox.hgrow="ALWAYS">
+            <Region styleClass="icon-search" />
+            <TextField fx:id="txtHistorySearch" promptText="Search by ticket, item, payment or status…"
+                       styleClass="search-field" HBox.hgrow="ALWAYS" />
         </HBox>
+        <Label fx:id="lblHistorySummary" styleClass="card-subtitle" />
+    </HBox>
+
+    <VBox styleClass="card, table-card" VBox.vgrow="ALWAYS">
         <TableView fx:id="tblHistory" styleClass="modern-audit-table" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn prefWidth="140.0" text="TICKET #" />
-                <TableColumn prefWidth="140.0" text="TIME" />
-                <TableColumn prefWidth="320.0" text="ITEMS" />
-                <TableColumn prefWidth="180.0" text="DISCOUNT APPLIED" />
-                <TableColumn prefWidth="160.0" text="TOTAL PAID" />
-                <TableColumn prefWidth="120.0" text="PAYMENT" />
-            </columns>
             <columnResizePolicy>
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
             </columnResizePolicy>
+            <columns>
+                <TableColumn prefWidth="90.0" text="TICKET" />
+                <TableColumn prefWidth="100.0" text="TIME" />
+                <TableColumn prefWidth="260.0" text="ITEMS" />
+                <TableColumn prefWidth="140.0" text="DISCOUNT" />
+                <TableColumn prefWidth="100.0" text="PAYMENT" />
+                <TableColumn prefWidth="110.0" text="TOTAL" />
+                <TableColumn prefWidth="110.0" text="STATUS" />
+            </columns>
         </TableView>
-        <Label fx:id="lblHistorySummary" styleClass="card-subtext" text="No transactions yet" />
     </VBox>
 </VBox>

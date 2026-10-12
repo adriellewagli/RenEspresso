@@ -1,73 +1,45 @@
 package com.coffeepos.renespresso.controller.main.user.pos;
 
-import com.coffeepos.renespresso.controller.main.user.TransactionRecord;
 import com.coffeepos.renespresso.controller.main.user.UserSession;
-import com.coffeepos.renespresso.controller.main.user.UserUi;
+import com.coffeepos.renespresso.dao.MenuDAO;
+import com.coffeepos.renespresso.model.CartItem;
+import com.coffeepos.renespresso.model.Category;
+import com.coffeepos.renespresso.model.OrderLine;
+import com.coffeepos.renespresso.model.Product;
+import com.coffeepos.renespresso.model.ProductVariant;
+import com.coffeepos.renespresso.model.TransactionRecord;
+import com.coffeepos.renespresso.util.AlertUtil;
+import com.coffeepos.renespresso.util.ImageStore;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
-import java.io.InputStream;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 
 public class PosController {
 
-    private static final String CSS = "/com/coffeepos/renespresso/views/styles.user/pos/pos.css";
-    private static final String IMG_DIR = "/com/coffeepos/renespresso/images/";
-
-    // --- Inner models ---
-    public static class MenuItem {
-        private final String name, category, imageName;
-        private final double priceS, priceM, priceL;
-
-        public MenuItem(String name, String category, double priceS, double priceM, double priceL, String imageName) {
-            this.name = name; this.category = category;
-            this.priceS = priceS; this.priceM = priceM; this.priceL = priceL;
-            this.imageName = imageName;
-        }
-        public String getName() { return name; }
-        public String getCategory() { return category; }
-        public double getPriceS() { return priceS; }
-        public double getPriceM() { return priceM; }
-        public double getPriceL() { return priceL; }
-        public String getImageName() { return imageName; }
-        public boolean isSingleSize() { return priceS == priceM && priceM == priceL; }
-    }
-
-    public static class CartItem {
-        private final String name, size;
-        private final double price;
-        private int quantity = 1;
-
-        public CartItem(String name, String size, double price) {
-            this.name = name; this.size = size; this.price = price;
-        }
-        public String getName() { return name; }
-        public String getSize() { return size; }
-        public double getPrice() { return price; }
-        public int getQuantity() { return quantity; }
-        public void increment() { quantity++; }
-        public void decrement() { if (quantity > 1) quantity--; }
-        public double getLineTotal() { return price * quantity; }
-    }
+    private static final double PHOTO = 96;
 
     // --- FXML bindings ---
     @FXML private StackPane posRoot;
-    @FXML private HBox categoryBar;
+    @FXML private FlowPane categoryBar, menuGrid;
     @FXML private TextField txtMenuSearch;
-    @FXML private GridPane menuGrid;
 
     @FXML private ListView<HBox> cartListView;
     @FXML private Label lblCartTicket, lblSubtotal, lblVat, lblDiscount, lblTotal;
@@ -84,173 +56,195 @@ public class PosController {
     // --- State ---
     private final UserSession session = UserSession.get();
     private final ObservableList<CartItem> cartItems = FXCollections.observableArrayList();
-    private final SimpleDateFormat clockFormat = new SimpleDateFormat("hh:mm a");
     private final SimpleDateFormat receiptDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
-    private String currentCategory = "All";
+    private final ToggleGroup chipGroup = new ToggleGroup();
+
+    private List<Category> categories = new ArrayList<>();
+    private List<Product> products = new ArrayList<>();
+    private Map<Integer, List<ProductVariant>> variantMap = new HashMap<>();
+
+    private int selectedCategoryId = -1;
+    private boolean rebuildingChips = false;
+    private boolean loading = false;
     private double currentSubtotal, currentVat, currentDiscount, currentTotal;
 
-    private final List<MenuItem> menuData = List.of(
-            new MenuItem("Fresh Brew / Americano", "Hot Coffee", 55.0, 75.0, 95.0, "freshbrewamericano.jpg"),
-            new MenuItem("Classic Caffè Latte", "Hot Coffee", 65.0, 85.0, 105.0, "classiccafelate.jpg"),
-            new MenuItem("Cappuccino", "Hot Coffee", 65.0, 85.0, 105.0, "cappucino.jpg"),
-            new MenuItem("Cafè Mocha", "Hot Coffee", 75.0, 95.0, 115.0, "cafemocha.jpg"),
-            new MenuItem("Caramel Macchiato", "Hot Coffee", 80.0, 100.0, 120.0, "caramelmacchiato.jpg"),
-            new MenuItem("Spanish Latte", "Hot Coffee", 75.0, 95.0, 115.0, "spanishlatte.jpg"),
-
-            new MenuItem("Iced Americano", "Iced Coffee", 65.0, 85.0, 105.0, "icedamericano.jpg"),
-            new MenuItem("Iced Caffè Latte", "Iced Coffee", 75.0, 105.0, 125.0, "icedlatte.jpg"),
-            new MenuItem("Iced Spanish Latte", "Iced Coffee", 85.0, 105.0, 125.0, "icedspanishlatte.jpg"),
-            new MenuItem("Iced Caramel Macchiato", "Iced Coffee", 90.0, 110.0, 130.0, "icedcaramelmacchiato.jpg"),
-            new MenuItem("Iced Mocha", "Iced Coffee", 85.0, 105.0, 125.0, "icedmocha.jpg"),
-
-            new MenuItem("Classic Milk Tea", "Milk Tea", 60.0, 80.0, 100.0, "classicmilktea.jpg"),
-            new MenuItem("Wintermelon Milk Tea", "Milk Tea", 60.0, 80.0, 100.0, "wintermelon.jpg"),
-            new MenuItem("Okinawa Milk Tea", "Milk Tea", 65.0, 85.0, 105.0, "okinawa.jpg"),
-            new MenuItem("Taro Milk Tea", "Milk Tea", 65.0, 85.0, 105.0, "taro.jpg"),
-
-            new MenuItem("Butter Croissant", "Pastries", 75.0, 75.0, 75.0, "croissant.jpg"),
-            new MenuItem("Blueberry Muffin", "Pastries", 70.0, 70.0, 70.0, "blueberrymuffin.jpg"),
-            new MenuItem("Choco Chip Cookie", "Pastries", 55.0, 55.0, 55.0, "chocochipcookie.jpg"),
-            new MenuItem("Cinnamon Roll", "Pastries", 85.0, 85.0, 85.0, "cinnamonroll.jpg")
-    );
+    private record Loaded(List<Category> categories, List<Product> products, Map<Integer, List<ProductVariant>> variants) {}
 
     @FXML
     public void initialize() {
-        UserUi.attachCss(posRoot, CSS);
-        txtMenuSearch.textProperty().addListener((obs, o, n) -> renderMenu(currentCategory));
+        txtMenuSearch.textProperty().addListener((obs, o, n) -> renderMenu());
+
+        chipGroup.selectedToggleProperty().addListener((o, old, now) -> {
+            if (rebuildingChips) return;
+            if (now == null) { if (old != null) old.setSelected(true); return; }
+            selectedCategoryId = (Integer) now.getUserData();
+            renderMenu();
+        });
+
         setupPaymentModal();
-        renderMenu("All");
         updateTotals();
+        reload();
     }
 
     // --- Called by the dashboard shell ---
-    /** Re-reads the ticket number (e.g. after the queue was reset in Settings). */
     public void refreshTicket() { updateTotals(); }
     public boolean isModalOpen() { return modalOverlay.isVisible(); }
 
     // =====================================================================
-    //  MENU
+    //  MENU (real data from MenuDAO)
     // =====================================================================
-    private void renderMenu(String category) {
-        currentCategory = category;
-        String query = txtMenuSearch.getText() == null ? "" : txtMenuSearch.getText().trim().toLowerCase();
+    public void reload() {
+        if (loading) return;
+        loading = true;
+
+        Task<Loaded> task = new Task<>() {
+            @Override protected Loaded call() throws Exception {
+                return new Loaded(MenuDAO.getCategories(), MenuDAO.getProducts(), MenuDAO.getAllVariants());
+            }
+        };
+        task.setOnSucceeded(e -> {
+            categories = new ArrayList<>(task.getValue().categories());
+            products = new ArrayList<>(task.getValue().products());
+            variantMap = task.getValue().variants();
+            buildChips();
+            renderMenu();
+            loading = false;
+        });
+        task.setOnFailed(e -> {
+            loading = false;
+            task.getException().printStackTrace();
+            AlertUtil.showError("Could not load menu", task.getException().getMessage());
+        });
+        Thread t = new Thread(task, "pos-menu-loader");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void buildChips() {
+        rebuildingChips = true;
+        chipGroup.getToggles().clear();
+        categoryBar.getChildren().clear();
+
+        addChip("All", -1);
+        for (Category c : categories) addChip(c.name(), c.id());
+
+        boolean found = false;
+        for (Toggle t : chipGroup.getToggles()) {
+            if ((Integer) t.getUserData() == selectedCategoryId) { t.setSelected(true); found = true; }
+        }
+        if (!found) {
+            selectedCategoryId = -1;
+            chipGroup.getToggles().get(0).setSelected(true);
+        }
+        rebuildingChips = false;
+    }
+
+    private void addChip(String text, int id) {
+        ToggleButton b = new ToggleButton(text);
+        b.setToggleGroup(chipGroup);
+        b.setUserData(id);
+        b.getStyleClass().add("chip");
+        categoryBar.getChildren().add(b);
+    }
+
+    private void renderMenu() {
+        String q = txtMenuSearch.getText() == null ? "" : txtMenuSearch.getText().trim().toLowerCase();
+
+        List<Product> shown = products.stream()
+                .filter(p -> selectedCategoryId == -1 || p.categoryId() == selectedCategoryId)
+                .filter(p -> q.isEmpty() || p.name().toLowerCase().contains(q)
+                        || p.category().toLowerCase().contains(q))
+                .toList();
 
         menuGrid.getChildren().clear();
-        int col = 0, row = 0;
+        if (shown.isEmpty()) {
+            Label none = new Label(products.isEmpty()
+                    ? "The menu is empty. Ask the admin to add dishes."
+                    : "No menu items match your search.");
+            none.getStyleClass().add("empty-note");
+            menuGrid.getChildren().add(none);
+            return;
+        }
+        for (Product p : shown) menuGrid.getChildren().add(buildCard(p));
+    }
 
-        for (MenuItem item : menuData) {
-            if (!category.equals("All") && !item.getCategory().equalsIgnoreCase(category)) continue;
-            if (!query.isEmpty() && !item.getName().toLowerCase().contains(query)) continue;
+    private VBox buildCard(Product p) {
+        boolean sellable = p.available() && p.quantity() > 0;
 
-            VBox card = new VBox(8);
-            card.setPrefWidth(220);
-            card.setAlignment(Pos.TOP_CENTER);
-            card.getStyleClass().add("menu-card");
-
-            Label cat = new Label(item.getCategory().toUpperCase());
-            cat.getStyleClass().add("menu-card-category");
-
-            ImageView imageView = new ImageView();
-            imageView.setFitWidth(130);
-            imageView.setFitHeight(100);
-            imageView.setPreserveRatio(true);
-
-            boolean imageLoaded = false;
-            try (InputStream is = getClass().getResourceAsStream(IMG_DIR + item.getImageName())) {
-                if (is != null) {
-                    imageView.setImage(new Image(is));
-                    imageLoaded = true;
-                }
-            } catch (Exception e) {
-                System.err.println("Could not load image: " + item.getImageName());
-            }
-
-            Node imageNode = imageView;
-            if (!imageLoaded) {
-                Label placeholder = new Label(categoryEmoji(item.getCategory()));
-                placeholder.getStyleClass().add("menu-card-placeholder");
-                StackPane holder = new StackPane(placeholder);
-                holder.setPrefSize(130, 100);
-                holder.setMinHeight(100);
-                imageNode = holder;
-            }
-
-            Label title = new Label(item.getName());
-            title.getStyleClass().add("menu-card-title");
-            title.setWrapText(true);
-
-            HBox sizes = new HBox(6);
-            sizes.setAlignment(Pos.CENTER);
-            if (item.isSingleSize()) {
-                sizes.getChildren().add(createSingleChip(item.getPriceM(), item));
-            } else {
-                sizes.getChildren().addAll(
-                        createSizeChip("S 8oz", item.getPriceS(), item),
-                        createSizeChip("M 12oz", item.getPriceM(), item),
-                        createSizeChip("L 16oz", item.getPriceL(), item));
-            }
-
-            VBox infoBox = new VBox(2, cat, title);
-            infoBox.setAlignment(Pos.CENTER_LEFT);
-            infoBox.setMaxWidth(Double.MAX_VALUE);
-
-            card.getChildren().addAll(infoBox, imageNode, sizes);
-            menuGrid.add(card, col, row);
-
-            if (++col > 2) { col = 0; row++; }
+        StackPane photo = new StackPane();
+        photo.getStyleClass().add("dish-photo");
+        ImageView iv = ImageStore.circleView(p.imagePath(), PHOTO);
+        if (iv != null) {
+            photo.getChildren().add(iv);
+        } else {
+            Label ph = new Label(p.name().isEmpty() ? "?" : p.name().substring(0, 1).toUpperCase());
+            ph.getStyleClass().add("dish-placeholder");
+            photo.getChildren().add(ph);
         }
 
-        if (menuGrid.getChildren().isEmpty()) {
-            Label none = new Label("No menu items match your search.");
-            none.getStyleClass().add("card-subtext");
-            menuGrid.add(none, 0, 0);
+        Label category = new Label(p.category().toUpperCase());
+        category.getStyleClass().add("dish-category");
+
+        Label name = new Label(p.name());
+        name.getStyleClass().add("dish-name");
+        name.setWrapText(true);
+        name.setAlignment(Pos.TOP_CENTER);
+        name.setMaxWidth(156);
+        name.setMinHeight(38);
+
+        FlowPane sizes = new FlowPane(6, 6);
+        sizes.setAlignment(Pos.CENTER);
+        sizes.setMaxWidth(156);
+        List<ProductVariant> vars = variantMap.getOrDefault(p.id(), List.of());
+        for (ProductVariant v : vars) {
+            String size = v.getSizeName() == null ? "" : v.getSizeName().trim();
+            Button chip = new Button((size.isEmpty() ? "Add" : size) + "\n" + peso(priceOf(v)));
+            chip.getStyleClass().add("size-chip");
+            chip.setDisable(!sellable);
+            chip.setOnAction(e -> addToCart(p, v));
+            sizes.getChildren().add(chip);
         }
-    }
-
-    private String categoryEmoji(String category) {
-        return switch (category) {
-            case "Iced Coffee" -> "🧊";
-            case "Milk Tea" -> "🧋";
-            case "Pastries" -> "🥐";
-            default -> "☕";
-        };
-    }
-
-    private Button createSizeChip(String label, double price, MenuItem item) {
-        Button btn = new Button(label + "\n₱" + String.format("%.2f", price));
-        btn.getStyleClass().add("size-chip");
-        btn.setOnAction(e -> addToCart(item.getName(), label.split(" ")[0], price));
-        return btn;
-    }
-
-    private Button createSingleChip(double price, MenuItem item) {
-        Button btn = new Button("Add to order\n₱" + String.format("%.2f", price));
-        btn.getStyleClass().add("size-chip");
-        btn.setOnAction(e -> addToCart(item.getName(), "", price));
-        return btn;
-    }
-
-    @FXML
-    public void filterCategory(ActionEvent event) {
-        Button btn = (Button) event.getSource();
-        for (var child : categoryBar.getChildren()) {
-            if (child instanceof Button b) {
-                b.getStyleClass().removeAll("category-btn-active", "category-btn");
-                b.getStyleClass().add(b == btn ? "category-btn-active" : "category-btn");
-            }
+        if (vars.isEmpty()) {
+            Label noPrice = new Label("No prices set");
+            noPrice.getStyleClass().add("dish-qty");
+            sizes.getChildren().add(noPrice);
         }
-        renderMenu(btn.getText());
+
+        Label stock = new Label(sellable ? p.quantity() + " left" : "Unavailable");
+        stock.getStyleClass().add(sellable ? "dish-qty" : "dish-qty-off");
+
+        VBox card = new VBox(6, photo, category, name, sizes, stock);
+        card.setAlignment(Pos.TOP_CENTER);
+        card.getStyleClass().add("menu-card");
+        if (!sellable) card.getStyleClass().add("menu-card-off");
+        return card;
+    }
+
+    /** getPrice() may be a BigDecimal or a double depending on the model; handle both. */
+    private static double priceOf(ProductVariant v) {
+        Object price = v.getPrice();
+        return ((Number) price).doubleValue();
     }
 
     // =====================================================================
     //  CART
     // =====================================================================
-    private void addToCart(String name, String size, double price) {
+    private int inCart(int productId) {
+        return cartItems.stream().filter(c -> c.getProductId() == productId).mapToInt(CartItem::getQuantity).sum();
+    }
+
+    private void addToCart(Product p, ProductVariant v) {
+        if (inCart(p.id()) >= p.quantity()) {
+            AlertUtil.showWarning("Not enough stock", "Only " + p.quantity() + " of \"" + p.name() + "\" left in stock.");
+            return;
+        }
+        String size = v.getSizeName() == null ? "" : v.getSizeName().trim();
         CartItem existing = null;
         for (CartItem ci : cartItems) {
-            if (ci.getName().equals(name) && ci.getSize().equals(size)) { existing = ci; break; }
+            if (ci.getProductId() == p.id() && ci.getVariantId() == v.getVariantId()) { existing = ci; break; }
         }
-        if (existing != null) existing.increment(); else cartItems.add(new CartItem(name, size, price));
+        if (existing != null) existing.increment();
+        else cartItems.add(new CartItem(p.id(), v.getVariantId(), p.name(), size, priceOf(v), p.quantity()));
         refreshCartUI();
         updateTotals();
     }
@@ -261,18 +255,17 @@ public class PosController {
             HBox row = new HBox(8);
             row.setAlignment(Pos.CENTER_LEFT);
 
-            VBox details = new VBox(2);
             Label title = new Label(item.getName() + (item.getSize().isEmpty() ? "" : " (" + item.getSize() + ")"));
             title.getStyleClass().add("cart-item-title");
-            Label pr = new Label("₱" + String.format("%.2f", item.getPrice())
-                    + (item.getQuantity() > 1 ? "  ×  " + item.getQuantity() + "  =  ₱" + String.format("%.2f", item.getLineTotal()) : ""));
+            Label pr = new Label(peso(item.getPrice())
+                    + (item.getQuantity() > 1 ? "  \u00D7  " + item.getQuantity() + "  =  " + peso(item.getLineTotal()) : ""));
             pr.getStyleClass().add("cart-item-price");
-            details.getChildren().addAll(title, pr);
+            VBox details = new VBox(2, title, pr);
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            Button btnMinus = new Button("−");
+            Button btnMinus = new Button("\u2212");
             btnMinus.getStyleClass().add("qty-btn");
             btnMinus.setOnAction(e -> {
                 if (item.getQuantity() > 1) item.decrement(); else cartItems.remove(item);
@@ -285,9 +278,17 @@ public class PosController {
             lblQty.setAlignment(Pos.CENTER);
             Button btnPlus = new Button("+");
             btnPlus.getStyleClass().add("qty-btn");
-            btnPlus.setOnAction(e -> { item.increment(); refreshCartUI(); updateTotals(); });
+            btnPlus.setOnAction(e -> {
+                if (inCart(item.getProductId()) >= item.getStock()) {
+                    AlertUtil.showWarning("Not enough stock", "No more \"" + item.getName() + "\" in stock.");
+                    return;
+                }
+                item.increment();
+                refreshCartUI();
+                updateTotals();
+            });
 
-            Button btnRemove = new Button("✕");
+            Button btnRemove = new Button("\u2715");
             btnRemove.getStyleClass().add("remove-btn");
             btnRemove.setOnAction(e -> { cartItems.remove(item); refreshCartUI(); updateTotals(); });
 
@@ -299,16 +300,11 @@ public class PosController {
     @FXML
     public void handleClearCart() {
         if (cartItems.isEmpty()) return;
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Remove all items from the current order?", ButtonType.YES, ButtonType.NO);
-        alert.setHeaderText("Clear Order");
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                cartItems.clear();
-                chkDiscount.setSelected(false);
-                refreshCartUI();
-                updateTotals();
-            }
-        });
+        if (!AlertUtil.showYesNo("Clear Order", "Remove all items from the current order?")) return;
+        cartItems.clear();
+        chkDiscount.setSelected(false);
+        refreshCartUI();
+        updateTotals();
     }
 
     @FXML
@@ -330,9 +326,10 @@ public class PosController {
         lblSubtotal.setText(peso(rawSubtotal));
         lblVat.setText(peso(vat));
         rowDiscount.setVisible(isDiscounted);
+        rowDiscount.setManaged(isDiscounted);
         lblDiscount.setText("-" + peso(discountAmount));
         lblTotal.setText(peso(finalTotal));
-        lblCartTicket.setText("will be ticket " + session.ticketLabel());
+        lblCartTicket.setText("Next ticket " + session.ticketLabel());
     }
 
     // =====================================================================
@@ -368,20 +365,20 @@ public class PosController {
         Double cash = parseMoney(txtCashReceived.getText());
         long due = Math.round(currentTotal * 100);
         if (cash == null) {
-            lblChange.setText("₱0.00");
+            lblChange.setText("\u20B10.00");
             btnConfirmOrder.setDisable(true);
         } else if (Math.round(cash * 100) < due) {
-            lblChange.setText("Short ₱" + String.format("%.2f", (due - Math.round(cash * 100)) / 100.0));
+            lblChange.setText("Short \u20B1" + String.format("%.2f", (due - Math.round(cash * 100)) / 100.0));
             btnConfirmOrder.setDisable(true);
         } else {
-            lblChange.setText("₱" + String.format("%.2f", (Math.round(cash * 100) - due) / 100.0));
+            lblChange.setText("\u20B1" + String.format("%.2f", (Math.round(cash * 100) - due) / 100.0));
             btnConfirmOrder.setDisable(false);
         }
     }
 
     private Double parseMoney(String text) {
         if (text == null) return null;
-        String cleaned = text.replace("₱", "").replace(",", "").trim();
+        String cleaned = text.replace("\u20B1", "").replace(",", "").trim();
         if (cleaned.isEmpty()) return null;
         try {
             double v = Double.parseDouble(cleaned);
@@ -394,14 +391,11 @@ public class PosController {
     @FXML
     public void openConfirmationModal() {
         if (cartItems.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Please add items to the cart before finalizing.");
-            alert.setHeaderText("Empty Cart");
-            alert.showAndWait();
+            AlertUtil.showWarning("Empty Cart", "Please add items to the order before charging.");
             return;
         }
 
         String defaultMethod = session.defaultPayment == null ? "Cash" : session.defaultPayment;
-
         if (!session.requireConfirm) {
             processOrder(defaultMethod, currentTotal);
             return;
@@ -433,35 +427,44 @@ public class PosController {
     }
 
     private void processOrder(String paymentMethod, double tendered) {
-        double totalPaid = currentTotal;
-        int totalQty = cartItems.stream().mapToInt(CartItem::getQuantity).sum();
+        try {
+            deductStock();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            AlertUtil.showError("Could not update stock", ex.getMessage());
+            return;
+        }
 
-        String itemsSummary = totalQty + " item(s) (" + cartItems.get(0).getName() + (cartItems.size() > 1 ? ", ..." : "") + ")";
-        String timeNow = clockFormat.format(new Date());
         String ticket = session.ticketLabel();
-        boolean discounted = chkDiscount.isSelected();
+        List<OrderLine> lines = cartItems.stream()
+                .map(c -> new OrderLine(c.getName(), c.getSize(), c.getQuantity(), c.getLineTotal()))
+                .toList();
         String receipt = buildReceipt(ticket, paymentMethod, tendered);
 
-        session.recordOrder(new TransactionRecord(
-                ticket, timeNow, itemsSummary,
-                discounted ? "Senior/PWD (20%)" : "None",
-                lblTotal.getText(), paymentMethod, totalPaid, receipt), totalQty, discounted);
+        session.recordOrder(new TransactionRecord(ticket, LocalDateTime.now(), session.cashierName,
+                paymentMethod, lines, currentSubtotal, currentVat, currentDiscount, currentTotal, tendered, receipt));
 
         cartItems.clear();
         if (session.autoClearDiscount) chkDiscount.setSelected(false);
         refreshCartUI();
         updateTotals();
         closeConfirmationModal();
+        reload();
 
-        boolean autoPrint = session.autoPrint;
-        Alert alert = new Alert(Alert.AlertType.INFORMATION,
-                autoPrint ? "Order finalized and sent to receipt printer!" : "Order finalized.");
-        alert.setHeaderText("Order Processed");
-        if (autoPrint) {
-            alert.getDialogPane().setExpandableContent(UserUi.receiptArea(receipt));
-            alert.getDialogPane().setExpanded(true);
+        AlertUtil.showSuccess("Order Processed", "Ticket " + ticket + " was added to the queue.");
+    }
+
+    /** Takes the sold quantities out of stock (uses the same MenuDAO call as the admin menu editor). */
+    private void deductStock() throws SQLException {
+        Map<Integer, Integer> sold = new HashMap<>();
+        for (CartItem ci : cartItems) sold.merge(ci.getProductId(), ci.getQuantity(), Integer::sum);
+
+        for (Map.Entry<Integer, Integer> e : sold.entrySet()) {
+            Product p = products.stream().filter(x -> x.id() == e.getKey()).findFirst().orElse(null);
+            if (p == null) continue;
+            int left = Math.max(0, p.quantity() - e.getValue());
+            MenuDAO.updateProduct(p.id(), p.name(), p.categoryId(), p.description(), p.imagePath(), left > 0, left);
         }
-        alert.showAndWait();
     }
 
     // =====================================================================
@@ -515,7 +518,7 @@ public class PosController {
 
     private String row(String left, String right, int width) {
         int room = width - right.length() - 1;
-        if (left.length() > room) left = left.substring(0, Math.max(0, room - 1)) + "…";
+        if (left.length() > room) left = left.substring(0, Math.max(0, room - 1)) + "\u2026";
         return left + " ".repeat(Math.max(1, width - left.length() - right.length())) + right;
     }
 }

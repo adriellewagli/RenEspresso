@@ -1,13 +1,15 @@
 package com.coffeepos.renespresso.controller.main.user.om;
 
-import com.coffeepos.renespresso.controller.main.user.TransactionRecord;
 import com.coffeepos.renespresso.controller.main.user.UserSession;
 import com.coffeepos.renespresso.controller.main.user.UserUi;
+import com.coffeepos.renespresso.model.OrderStatus;
+import com.coffeepos.renespresso.model.TransactionRecord;
+import com.coffeepos.renespresso.util.AlertUtil;
+import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -28,10 +30,8 @@ import java.util.List;
 
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 
-/** Transaction history for the active cashier session. */
+/** Transaction history for the active cashier session (columns: Ticket, Time, Items, Discount, Payment, Total, Status). */
 public class OrderManagementController {
-
-    private static final String CSS = "/com/coffeepos/renespresso/views/styles.user/om/ordermanagement.css";
 
     @FXML private VBox orderRoot;
     @FXML private TextField txtHistorySearch;
@@ -43,24 +43,22 @@ public class OrderManagementController {
     @FXML
     @SuppressWarnings("unchecked")
     public void initialize() {
-        UserUi.attachCss(orderRoot, CSS);
-
         TableColumn<TransactionRecord, String> colTicket = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(0);
         TableColumn<TransactionRecord, String> colTime = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(1);
         TableColumn<TransactionRecord, String> colItems = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(2);
         TableColumn<TransactionRecord, String> colDiscount = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(3);
-        TableColumn<TransactionRecord, String> colTotal = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(4);
-        TableColumn<TransactionRecord, String> colPayment = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(5);
+        TableColumn<TransactionRecord, String> colPayment = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(4);
+        TableColumn<TransactionRecord, String> colTotal = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(5);
+        TableColumn<TransactionRecord, String> colStatus = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(6);
 
         colTicket.setCellValueFactory(new PropertyValueFactory<>("ticketNumber"));
         colTime.setCellValueFactory(new PropertyValueFactory<>("time"));
         colItems.setCellValueFactory(new PropertyValueFactory<>("items"));
         colDiscount.setCellValueFactory(new PropertyValueFactory<>("discountApplied"));
-        colTotal.setCellValueFactory(new PropertyValueFactory<>("totalPaid"));
         colPayment.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
-
-        List.of(colTicket, colTime, colItems, colDiscount, colTotal, colPayment)
-                .forEach(col -> col.setStyle("-fx-alignment: CENTER;"));
+        colTotal.setCellValueFactory(new PropertyValueFactory<>("totalPaid"));
+        colStatus.setCellValueFactory(c -> Bindings.createStringBinding(
+                () -> c.getValue().getStatus().label(), c.getValue().statusProperty()));
 
         FilteredList<TransactionRecord> filtered = new FilteredList<>(session.transactionHistory, r -> true);
         txtHistorySearch.textProperty().addListener((obs, o, n) -> filtered.setPredicate(r -> matches(r, n)));
@@ -70,7 +68,9 @@ public class OrderManagementController {
         sorted.comparatorProperty().bind(tblHistory.comparatorProperty());
         tblHistory.setItems(sorted);
 
-        tblHistory.setPlaceholder(new Label("No transactions recorded for this session yet."));
+        Label placeholder = new Label("No transactions recorded for this session yet.");
+        placeholder.getStyleClass().add("empty-note");
+        tblHistory.setPlaceholder(placeholder);
         tblHistory.setRowFactory(tv -> {
             TableRow<TransactionRecord> row = new TableRow<>();
             row.setOnMouseClicked(e -> {
@@ -88,7 +88,8 @@ public class OrderManagementController {
                 || r.getTime().toLowerCase().contains(q)
                 || r.getItems().toLowerCase().contains(q)
                 || r.getDiscountApplied().toLowerCase().contains(q)
-                || r.getPaymentMethod().toLowerCase().contains(q);
+                || r.getPaymentMethod().toLowerCase().contains(q)
+                || r.getStatus().label().toLowerCase().contains(q);
     }
 
     private void updateSummary(List<TransactionRecord> visible) {
@@ -96,15 +97,17 @@ public class OrderManagementController {
             lblHistorySummary.setText("No transactions yet");
             return;
         }
-        double sum = visible.stream().mapToDouble(TransactionRecord::getTotal).sum();
-        lblHistorySummary.setText(visible.size() + " transaction(s)  •  Total " + peso(sum));
+        double sum = visible.stream()
+                .filter(r -> r.getStatus() != OrderStatus.CANCELLED)
+                .mapToDouble(TransactionRecord::getTotal).sum();
+        lblHistorySummary.setText(visible.size() + " transaction(s)  \u2022  Total " + peso(sum) + " (cancelled excluded)");
     }
 
     @FXML
     public void handleReprintReceipt() {
         TransactionRecord selected = tblHistory.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            UserUi.showInfo(Alert.AlertType.INFORMATION, "No Selection", "Select a transaction first (or double-click a row).");
+            AlertUtil.showInfo("No Selection", "Select a transaction first (or double-click a row).");
             return;
         }
         UserUi.showReceiptDialog(selected);
@@ -113,8 +116,8 @@ public class OrderManagementController {
     @FXML
     public void handleExportHistory() {
         if (session.transactionHistory.isEmpty()) {
-            UserUi.showInfo(Alert.AlertType.INFORMATION, "Nothing to Export", "There are no transactions in this session yet.");
-            return;
+            AlertUtil.showInfo("Nothing to Export", "There are no transactions in this session yet.");
+                return;
         }
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Export Transaction History");
@@ -124,18 +127,19 @@ public class OrderManagementController {
         if (file == null) return;
 
         List<String> lines = new ArrayList<>();
-        lines.add("Ticket,Time,Items,Discount,Payment,Total");
+        lines.add("Ticket,Time,Items,Discount,Payment,Total,Status");
         for (TransactionRecord r : tblHistory.getItems()) {
             lines.add(String.join(",",
                     csv(r.getTicketNumber()), csv(r.getTime()), csv(r.getItems()),
-                    csv(r.getDiscountApplied()), csv(r.getPaymentMethod()), String.format("%.2f", r.getTotal())));
+                    csv(r.getDiscountApplied()), csv(r.getPaymentMethod()),
+                    String.format("%.2f", r.getTotal()), csv(r.getStatus().label())));
         }
         try {
             Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
-            UserUi.showInfo(Alert.AlertType.INFORMATION, "Export Complete",
+            AlertUtil.showSuccess("Export Complete",
                     "Saved " + tblHistory.getItems().size() + " transaction(s) to:\n" + file.getAbsolutePath());
         } catch (IOException ex) {
-            UserUi.showInfo(Alert.AlertType.ERROR, "Export Failed", ex.getMessage());
+            AlertUtil.showError("Export Failed", ex.getMessage());
         }
     }
 
