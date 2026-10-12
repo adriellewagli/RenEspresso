@@ -2,16 +2,161 @@
 
 .history-card { -fx-padding: 20; }
 
-.modern-audit-table { -fx-background-color: transparent; -fx-background-radius: 10; }
-.modern-audit-table .column-header-background { -fx-background-color: #5E3023; -fx-background-radius: 10 10 0 0; }
-.modern-audit-table .column-header, .modern-audit-table .filler { -fx-background-color: transparent; -fx-size: 40; }
-.modern-audit-table .column-header .label { -fx-text-fill: #F3E9DC; -fx-font-weight: bold; -fx-font-size: 12px; }
-.modern-audit-table .table-row-cell {
-    -fx-background-color: white;
-    -fx-border-color: transparent transparent rgba(94,48,35,0.08) transparent;
+.modern-audit-table {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-border-color: #EFE5D6;
+    -fx-border-radius: 12;
 }
-.modern-audit-table .table-row-cell:odd { -fx-background-color: #FBF7F1; }
-.modern-audit-table .table-row-cell:hover { -fx-background-color: #F3E9DC; }
-.modern-audit-table .table-row-cell:selected { -fx-background-color: #C89360; }
-.modern-audit-table .table-cell { -fx-text-fill: #5E3023; -fx-font-size: 13px; }
-.modern-audit-table .table-row-cell:selected .table-cell { -fx-text-fill: white; }
+
+.modern-audit-table .column-header-background {
+    -fx-background-color: #FCFAF7;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.modern-audit-table .column-header, .modern-audit-table .filler {
+    -fx-background-color: transparent;
+    -fx-size: 46;
+    -fx-border-color: transparent transparent #EFE5D6 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.modern-audit-table .column-header .label {
+    -fx-text-fill: #895737;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.modern-audit-table .table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-cell-size: 56px;
+    -fx-border-color: transparent transparent #F4ECE3 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.modern-audit-table .table-row-cell:hover {
+    -fx-background-color: #FCF9F5;
+}
+
+.modern-audit-table .table-row-cell:selected {
+    -fx-background-color: #F6EFE7;
+}
+
+.modern-audit-table .table-cell {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 10;
+}
+
+/* Specific Cells */
+.col-order-id {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2B2523;
+    -fx-font-size: 13px;
+}
+
+.staff-name {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2B2523;
+    -fx-font-size: 13px;
+}
+
+.staff-role {
+    -fx-text-fill: #8C7E77;
+    -fx-font-size: 11px;
+}
+
+.col-created {
+    -fx-text-fill: #4A3E39;
+    -fx-font-size: 12px;
+}
+
+.col-total {
+    -fx-font-weight: bold;
+    -fx-text-fill: #78350F;
+    -fx-font-size: 13px;
+}
+
+/* Status Pill Badge */
+.status-pill {
+    -fx-padding: 4 12 4 8;
+    -fx-background-radius: 14;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 6;
+}
+
+.status-pill-preparing {
+    -fx-background-color: #FEF3C7;
+}
+.status-pill-preparing .status-text {
+    -fx-text-fill: #B45309;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.status-pill-pending {
+    -fx-background-color: #F3F4F6;
+}
+.status-pill-pending .status-text {
+    -fx-text-fill: #4B5563;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.status-pill-completed {
+    -fx-background-color: #DEF7EC;
+}
+.status-pill-completed .status-text {
+    -fx-text-fill: #03543F;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.status-pill-cancelled {
+    -fx-background-color: #FDE8E8;
+}
+.status-pill-cancelled .status-text {
+    -fx-text-fill: #9B1C1C;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+/* Payment Pill Badge */
+.payment-pill {
+    -fx-padding: 4 12;
+    -fx-background-radius: 14;
+    -fx-alignment: CENTER;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.payment-paid {
+    -fx-background-color: #DEF7EC;
+    -fx-text-fill: #03543F;
+}
+
+.payment-unpaid {
+    -fx-background-color: #FDE8E8;
+    -fx-text-fill: #9B1C1C;
+}
+
+.payment-refunded {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #B45309;
+}
+
+/* Action Button */
+.btn-action-receipt {
+    -fx-background-color: #F8F4EF;
+    -fx-border-color: #E6DDD4;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+
+.btn-action-receipt:hover {
+    -fx-background-color: #EBDDCF;
+}

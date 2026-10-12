@@ -4,69 +4,182 @@ import com.coffeepos.renespresso.controller.main.user.UserSession;
 import com.coffeepos.renespresso.controller.main.user.UserUi;
 import com.coffeepos.renespresso.model.OrderStatus;
 import com.coffeepos.renespresso.model.TransactionRecord;
-import com.coffeepos.renespresso.util.AlertUtil;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 
-/** Transaction history for the active cashier session (columns: Ticket, Time, Items, Discount, Payment, Total, Status). */
+/**
+ * Transaction history for the active cashier session.
+ * Columns: ORDER ID, STAFF, CREATED / LAST EDIT, TOTAL, STATUS, PAYMENT, ACTIONS.
+ */
 public class OrderManagementController {
 
     @FXML private VBox orderRoot;
     @FXML private TextField txtHistorySearch;
     @FXML private TableView<TransactionRecord> tblHistory;
+    @FXML private TableColumn<TransactionRecord, String> colOrderId;
+    @FXML private TableColumn<TransactionRecord, Void> colStaff;
+    @FXML private TableColumn<TransactionRecord, String> colCreated;
+    @FXML private TableColumn<TransactionRecord, String> colTotal;
+    @FXML private TableColumn<TransactionRecord, Void> colStatus;
+    @FXML private TableColumn<TransactionRecord, Void> colPayment;
+    @FXML private TableColumn<TransactionRecord, Void> colActions;
     @FXML private Label lblHistorySummary;
 
     private final UserSession session = UserSession.get();
 
     @FXML
-    @SuppressWarnings("unchecked")
     public void initialize() {
-        TableColumn<TransactionRecord, String> colTicket = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(0);
-        TableColumn<TransactionRecord, String> colTime = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(1);
-        TableColumn<TransactionRecord, String> colItems = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(2);
-        TableColumn<TransactionRecord, String> colDiscount = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(3);
-        TableColumn<TransactionRecord, String> colPayment = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(4);
-        TableColumn<TransactionRecord, String> colTotal = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(5);
-        TableColumn<TransactionRecord, String> colStatus = (TableColumn<TransactionRecord, String>) tblHistory.getColumns().get(6);
-        TableColumn<TransactionRecord, Void> colAction = (TableColumn<TransactionRecord, Void>) tblHistory.getColumns().get(7);
+        setupColumns();
+        setupDataBinding();
+    }
 
-        colTicket.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTicketNumber()));
-        colTime.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTime()));
-        colItems.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getItems()));
-        colDiscount.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDiscountApplied()));
-        colPayment.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getPaymentMethod()));
+    private void setupColumns() {
+        // ORDER ID
+        colOrderId.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getOrderId()));
+        colOrderId.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    setText(item);
+                    getStyleClass().add("col-order-id");
+                }
+            }
+        });
+
+        // STAFF (Two lines: Name bold, Role muted)
+        colStaff.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                } else {
+                    TransactionRecord r = getTableView().getItems().get(getIndex());
+                    if (r == null) { setGraphic(null); return; }
+
+                    Label nameLbl = new Label(r.getStaffName());
+                    nameLbl.getStyleClass().add("staff-name");
+
+                    Label roleLbl = new Label(r.getStaffRole());
+                    roleLbl.getStyleClass().add("staff-role");
+
+                    VBox box = new VBox(2, nameLbl, roleLbl);
+                    box.setAlignment(Pos.CENTER_LEFT);
+                    setGraphic(box);
+                }
+            }
+        });
+
+        // CREATED / LAST EDIT
+        colCreated.setCellValueFactory(c -> Bindings.createStringBinding(
+                c.getValue()::getFormattedCreatedOrUpdated, c.getValue().statusProperty()));
+        colCreated.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    getStyleClass().add("col-created");
+                }
+            }
+        });
+
+        // TOTAL
         colTotal.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTotalPaid()));
-        colStatus.setCellValueFactory(c -> Bindings.createStringBinding(
-                () -> c.getValue().getStatus().label(), c.getValue().statusProperty()));
+        colTotal.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    getStyleClass().add("col-total");
+                }
+            }
+        });
 
-        colAction.setCellFactory(param -> new TableCell<>() {
+        // STATUS (Dot + label badge)
+        colStatus.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                } else {
+                    TransactionRecord r = getTableView().getItems().get(getIndex());
+                    if (r == null) { setGraphic(null); return; }
+
+                    OrderStatus status = r.getStatus();
+                    Circle dot = new Circle(4);
+                    String styleClass = "status-pill-" + status.name().toLowerCase();
+                    Color dotColor = switch (status) {
+                        case PREPARING -> Color.web("#D97706");
+                        case PENDING -> Color.web("#6B7280");
+                        case COMPLETED -> Color.web("#10B981");
+                        case CANCELLED -> Color.web("#EF4444");
+                    };
+                    dot.setFill(dotColor);
+
+                    Label textLbl = new Label(status.label());
+                    textLbl.getStyleClass().add("status-text");
+
+                    HBox pill = new HBox(6, dot, textLbl);
+                    pill.setAlignment(Pos.CENTER_LEFT);
+                    pill.getStyleClass().addAll("status-pill", styleClass);
+                    pill.setMaxWidth(Region.USE_PREF_SIZE);
+
+                    setGraphic(pill);
+                }
+            }
+        });
+
+        // PAYMENT (Pill badge: Paid, Unpaid, Refunded)
+        colPayment.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                } else {
+                    TransactionRecord r = getTableView().getItems().get(getIndex());
+                    if (r == null) { setGraphic(null); return; }
+
+                    String pStatus = r.getPaymentStatus();
+                    Label pill = new Label(pStatus);
+                    pill.getStyleClass().addAll("payment-pill", "payment-" + pStatus.toLowerCase());
+                    pill.setMaxWidth(Region.USE_PREF_SIZE);
+                    setGraphic(pill);
+                }
+            }
+        });
+
+        // ACTIONS (View Receipt button)
+        colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnReceipt = new Button("View Receipt");
             {
-                btnReceipt.getStyleClass().add("btn-secondary-sm");
+                btnReceipt.getStyleClass().add("btn-action-receipt");
                 btnReceipt.setOnAction(e -> {
                     if (getIndex() >= 0 && getIndex() < getTableView().getItems().size()) {
                         TransactionRecord record = getTableView().getItems().get(getIndex());
@@ -87,7 +200,9 @@ public class OrderManagementController {
                 }
             }
         });
+    }
 
+    private void setupDataBinding() {
         FilteredList<TransactionRecord> filtered = new FilteredList<>(session.transactionHistory, r -> true);
         txtHistorySearch.textProperty().addListener((obs, o, n) -> filtered.setPredicate(r -> matches(r, n)));
         filtered.addListener((ListChangeListener<TransactionRecord>) c -> updateSummary(filtered));
@@ -112,12 +227,14 @@ public class OrderManagementController {
     private boolean matches(TransactionRecord r, String query) {
         if (query == null || query.isBlank()) return true;
         String q = query.trim().toLowerCase();
-        return r.getTicketNumber().toLowerCase().contains(q)
-                || r.getTime().toLowerCase().contains(q)
-                || r.getItems().toLowerCase().contains(q)
-                || r.getDiscountApplied().toLowerCase().contains(q)
+        return r.getOrderId().toLowerCase().contains(q)
+                || r.getStaffName().toLowerCase().contains(q)
+                || r.getStaffRole().toLowerCase().contains(q)
+                || r.getPaymentStatus().toLowerCase().contains(q)
                 || r.getPaymentMethod().toLowerCase().contains(q)
-                || r.getStatus().label().toLowerCase().contains(q);
+                || r.getStatus().label().toLowerCase().contains(q)
+                || r.getTicketNumber().toLowerCase().contains(q)
+                || r.getItems().toLowerCase().contains(q);
     }
 
     private void updateSummary(List<TransactionRecord> visible) {
@@ -129,49 +246,5 @@ public class OrderManagementController {
                 .filter(r -> r.getStatus() != OrderStatus.CANCELLED)
                 .mapToDouble(TransactionRecord::getTotal).sum();
         lblHistorySummary.setText(visible.size() + " transaction(s)  \u2022  Total " + peso(sum) + " (cancelled excluded)");
-    }
-
-    @FXML
-    public void handleReprintReceipt() {
-        TransactionRecord selected = tblHistory.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            AlertUtil.showInfo("No Selection", "Select a transaction first (or double-click a row).");
-            return;
-        }
-        UserUi.showReceiptDialog(selected);
-    }
-
-    @FXML
-    public void handleExportHistory() {
-        if (session.transactionHistory.isEmpty()) {
-            AlertUtil.showInfo("Nothing to Export", "There are no transactions in this session yet.");
-                return;
-        }
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Export Transaction History");
-        chooser.setInitialFileName("transactions_" + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".csv");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-        File file = chooser.showSaveDialog(orderRoot.getScene().getWindow());
-        if (file == null) return;
-
-        List<String> lines = new ArrayList<>();
-        lines.add("Ticket,Time,Items,Discount,Payment,Total,Status");
-        for (TransactionRecord r : tblHistory.getItems()) {
-            lines.add(String.join(",",
-                    csv(r.getTicketNumber()), csv(r.getTime()), csv(r.getItems()),
-                    csv(r.getDiscountApplied()), csv(r.getPaymentMethod()),
-                    String.format("%.2f", r.getTotal()), csv(r.getStatus().label())));
-        }
-        try {
-            Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
-            AlertUtil.showSuccess("Export Complete",
-                    "Saved " + tblHistory.getItems().size() + " transaction(s) to:\n" + file.getAbsolutePath());
-        } catch (IOException ex) {
-            AlertUtil.showError("Export Failed", ex.getMessage());
-        }
-    }
-
-    private String csv(String value) {
-        return "\"" + (value == null ? "" : value.replace("\"", "\"\"")) + "\"";
     }
 }

@@ -14,5 +14,29 @@
 .panel-card { -fx-padding: 20 24; }
 
 .kpi-title { -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; }
-.kpi-value { -fx-text-fill: #2F2118; -fx-font-size: 28px; -fx-font-weight: bold; }
+.kpi-value { -fx-text-fill: #2F2118; -fx-font-size: 26px; -fx-font-weight: bold; }
+.kpi-sub   { -fx-text-fill: #8C7E77; -fx-font-size: 12px; }
+.panel-title { -fx-text-fill: #5E3023; -fx-font-size: 16px; -fx-font-weight: bold; }
+.panel-subtitle { -fx-text-fill: #895737; -fx-font-size: 12px; }
 .empty-note { -fx-text-fill: #9A8878; -fx-font-size: 14px; }
+
+.btn-refresh {
+    -fx-background-color: #F8F4EF;
+    -fx-border-color: #E6DDD4;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: #5E3023;
+    -fx-font-weight: bold;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+.btn-refresh:hover {
+    -fx-background-color: #EBDDCF;
+}
+
+/* Bar Chart styling */
+.chart-bar {
+    -fx-bar-fill: #895737;
+    -fx-background-radius: 4 4 0 0;
+}
+.default-color0.chart-bar { -fx-bar-fill: #895737; }

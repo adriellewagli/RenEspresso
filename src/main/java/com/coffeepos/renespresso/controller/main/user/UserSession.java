@@ -1,5 +1,6 @@
 package com.coffeepos.renespresso.controller.main.user;
 
+import com.coffeepos.renespresso.dao.TransactionDAO;
 import com.coffeepos.renespresso.model.OrderStatus;
 import com.coffeepos.renespresso.model.TransactionRecord;
 import javafx.beans.Observable;
@@ -60,6 +61,35 @@ public final class UserSession {
 
     public String ticketLabel() { return String.format("#%03d", ticketNumber); }
 
+    /** Load today's transactions from the database into the cashier session */
+    public void loadFromDatabase() {
+        try {
+            List<TransactionRecord> todayList = TransactionDAO.loadTodayTransactions();
+            transactionHistory.clear();
+            salesTotal = 0;
+            ordersCount = 0;
+            itemsSold = 0;
+            discountedOrders = 0;
+
+            if (!todayList.isEmpty()) {
+                transactionHistory.addAll(todayList);
+                for (TransactionRecord r : todayList) {
+                    if (r.getStatus() != OrderStatus.CANCELLED) {
+                        salesTotal += r.getTotal();
+                        ordersCount++;
+                        itemsSold += r.getItemCount();
+                        if (r.isDiscounted()) discountedOrders++;
+                    }
+                }
+                lastOrderTime = todayList.get(0).getTime();
+            }
+            ticketNumber = todayList.size() + 1;
+        } catch (Exception e) {
+            System.err.println("Error loading session transactions from DB: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     /** Called by POS after an order is paid. The order starts in the queue as PREPARING. */
     public void recordOrder(TransactionRecord record) {
         transactionHistory.add(0, record);
@@ -72,13 +102,17 @@ public final class UserSession {
     }
 
     public void completeOrder(TransactionRecord record) {
-        if (record.getStatus() == OrderStatus.PREPARING) record.setStatus(OrderStatus.COMPLETED);
+        if (record.getStatus() == OrderStatus.PREPARING) {
+            record.setStatus(OrderStatus.COMPLETED);
+            TransactionDAO.updateStatus(record.getTransactionId(), OrderStatus.COMPLETED);
+        }
     }
 
     /** Cancelled orders are taken out of today's totals. */
     public void cancelOrder(TransactionRecord record) {
         if (record.getStatus() != OrderStatus.PREPARING) return;
         record.setStatus(OrderStatus.CANCELLED);
+        TransactionDAO.updateStatus(record.getTransactionId(), OrderStatus.CANCELLED);
         salesTotal = Math.max(0, salesTotal - record.getTotal());
         ordersCount = Math.max(0, ordersCount - 1);
         itemsSold = Math.max(0, itemsSold - record.getItemCount());

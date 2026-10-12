@@ -2,14 +2,18 @@ package com.coffeepos.renespresso.controller.main.user.pos;
 
 import com.coffeepos.renespresso.controller.main.user.UserSession;
 import com.coffeepos.renespresso.dao.MenuDAO;
+import com.coffeepos.renespresso.dao.TransactionDAO;
 import com.coffeepos.renespresso.model.CartItem;
 import com.coffeepos.renespresso.model.Category;
 import com.coffeepos.renespresso.model.OrderLine;
+import com.coffeepos.renespresso.model.OrderStatus;
 import com.coffeepos.renespresso.model.Product;
 import com.coffeepos.renespresso.model.ProductVariant;
 import com.coffeepos.renespresso.model.TransactionRecord;
+import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.ImageStore;
+import com.coffeepos.renespresso.util.SessionManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -441,8 +445,27 @@ public class PosController {
                 .toList();
         String receipt = buildReceipt(ticket, paymentMethod, tendered);
 
-        session.recordOrder(new TransactionRecord(ticket, LocalDateTime.now(), session.cashierName,
-                paymentMethod, lines, currentSubtotal, currentVat, currentDiscount, currentTotal, tendered, receipt));
+        User cur = SessionManager.getCurrentUser();
+        int cashierId = cur != null ? cur.getUserId() : 1;
+        String staffName = cur != null ? cur.getFullName() : session.cashierName;
+        String staffRole = cur != null ? cur.getRole() : "Cashier";
+
+        TransactionRecord record = new TransactionRecord(
+                0, null, ticket, LocalDateTime.now(), LocalDateTime.now(),
+                staffName, staffRole, paymentMethod, "Paid",
+                OrderStatus.PREPARING, lines, currentSubtotal, currentVat, currentDiscount,
+                currentTotal, tendered, receipt
+        );
+
+        try {
+            TransactionDAO.saveTransaction(record, new ArrayList<>(cartItems), cashierId);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            AlertUtil.showError("Database Error", "Failed to save transaction: " + ex.getMessage());
+            return;
+        }
+
+        session.recordOrder(record);
 
         cartItems.clear();
         if (session.autoClearDiscount) chkDiscount.setSelected(false);
@@ -451,7 +474,7 @@ public class PosController {
         closeConfirmationModal();
         reload();
 
-        AlertUtil.showSuccess("Order Processed", "Ticket " + ticket + " was added to the queue.");
+        AlertUtil.showSuccess("Order Processed", "Order " + record.getOrderId() + " (" + ticket + ") was added to the queue.");
     }
 
     /** Takes the sold quantities out of stock (uses the same MenuDAO call as the admin menu editor). */

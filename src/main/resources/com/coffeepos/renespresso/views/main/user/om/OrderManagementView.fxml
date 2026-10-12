@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox fx:id="orderRoot" spacing="20.0" styleClass="view-container"
+      stylesheets="@../../../../styles.user/om/ordermanagement.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.user.om.OrderManagementController">
@@ -11,14 +12,14 @@
     <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-header">
         <VBox spacing="4.0" HBox.hgrow="ALWAYS">
             <Label styleClass="page-title" text="Transaction History" />
-            <Label styleClass="page-subtitle" text="Review this shift's orders and payments" />
+            <Label styleClass="page-subtitle" text="Review this shift's orders, payments, and staff records" />
         </VBox>
     </HBox>
 
     <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="card, toolbar-card">
         <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="search-box" HBox.hgrow="ALWAYS">
             <Region styleClass="icon-search" />
-            <TextField fx:id="txtHistorySearch" promptText="Search by ticket, item, payment or status…"
+            <TextField fx:id="txtHistorySearch" promptText="Search by order ID, staff, payment or status…"
                        styleClass="search-field" HBox.hgrow="ALWAYS" />
         </HBox>
         <Label fx:id="lblHistorySummary" styleClass="card-subtitle" />
@@ -30,14 +31,13 @@
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
             </columnResizePolicy>
             <columns>
-                <TableColumn prefWidth="85.0" text="TICKET" />
-                <TableColumn prefWidth="95.0" text="TIME" />
-                <TableColumn prefWidth="250.0" text="ITEMS" />
-                <TableColumn prefWidth="130.0" text="DISCOUNT" />
-                <TableColumn prefWidth="95.0" text="PAYMENT" />
-                <TableColumn prefWidth="105.0" text="TOTAL" />
-                <TableColumn prefWidth="105.0" text="STATUS" />
-                <TableColumn prefWidth="120.0" text="ACTION" />
+                <TableColumn fx:id="colOrderId" prefWidth="120.0" text="ORDER ID" />
+                <TableColumn fx:id="colStaff" prefWidth="180.0" text="STAFF" />
+                <TableColumn fx:id="colCreated" prefWidth="180.0" text="CREATED / LAST EDIT" />
+                <TableColumn fx:id="colTotal" prefWidth="120.0" text="TOTAL" />
+                <TableColumn fx:id="colStatus" prefWidth="140.0" text="STATUS" />
+                <TableColumn fx:id="colPayment" prefWidth="110.0" text="PAYMENT" />
+                <TableColumn fx:id="colActions" prefWidth="130.0" text="ACTIONS" />
             </columns>
         </TableView>
     </VBox>

@@ -3,6 +3,8 @@ package com.coffeepos.renespresso.controller.main.admin;
 import com.coffeepos.renespresso.controller.main.admin.account.AccountController;
 import com.coffeepos.renespresso.controller.main.admin.home.HomeController;
 import com.coffeepos.renespresso.controller.main.admin.menu.MenuController;
+import com.coffeepos.renespresso.controller.main.admin.sales.SalesController;
+import com.coffeepos.renespresso.controller.main.admin.transact.TransactionController;
 import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
@@ -35,6 +37,8 @@ public class AdminDashboardController {
     @FXML private HomeController homeViewController;
     @FXML private MenuController menuViewController;
     @FXML private AccountController accountsViewController;
+    @FXML private TransactionController transactionViewController;
+    @FXML private SalesController salesViewController;
 
     @FXML private Button btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings;
     @FXML private MFXButton btnLogout;
@@ -172,8 +176,15 @@ public class AdminDashboardController {
         if (menuViewController != null) menuViewController.loadData();
     }
 
-    @FXML public void showSales()        { show(salesView, btnSales); }
-    @FXML public void showTransactions() { show(transactionView, btnTransactions); }
+    @FXML public void showSales() {
+        show(salesView, btnSales);
+        if (salesViewController != null) salesViewController.loadSales();
+    }
+
+    @FXML public void showTransactions() {
+        show(transactionView, btnTransactions);
+        if (transactionViewController != null) transactionViewController.loadTransactions();
+    }
 
     @FXML public void showAccounts() {
         show(accountsView, btnAccounts);

@@ -2,6 +2,7 @@ package com.coffeepos.renespresso.model;
 
 public enum OrderStatus {
     PREPARING("Preparing", "status-preparing"),
+    PENDING("Pending", "status-pending"),
     COMPLETED("Completed", "status-completed"),
     CANCELLED("Cancelled", "status-cancelled");
 

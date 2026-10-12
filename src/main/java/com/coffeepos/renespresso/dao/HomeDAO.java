@@ -52,7 +52,7 @@ public class HomeDAO {
 
     private static double[] totals(Connection c, LocalDate from, LocalDate to) throws SQLException {
         String sql = "SELECT COALESCE(SUM(total_amount), 0), COUNT(*) FROM transactions "
-                + "WHERE status = 'COMPLETED' AND created_at >= ? AND created_at < ?";
+                + "WHERE status != 'CANCELLED' AND created_at >= ? AND created_at < ?";
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             range(ps, from, to);
             try (ResultSet rs = ps.executeQuery()) {
@@ -65,7 +65,7 @@ public class HomeDAO {
     private static int itemsSold(Connection c, LocalDate from, LocalDate to) throws SQLException {
         String sql = "SELECT COALESCE(SUM(ti.quantity), 0) FROM transaction_items ti "
                 + "JOIN transactions t ON t.transaction_id = ti.transaction_id "
-                + "WHERE t.status = 'COMPLETED' AND t.created_at >= ? AND t.created_at < ?";
+                + "WHERE t.status != 'CANCELLED' AND t.created_at >= ? AND t.created_at < ?";
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             range(ps, from, to);
             try (ResultSet rs = ps.executeQuery()) {
@@ -77,7 +77,7 @@ public class HomeDAO {
     private static List<DayTotal> last7Days(Connection c, LocalDate today) throws SQLException {
         LocalDate start = today.minusDays(6);
         String sql = "SELECT DATE(created_at) AS d, SUM(total_amount) AS s FROM transactions "
-                + "WHERE status = 'COMPLETED' AND created_at >= ? AND created_at < ? "
+                + "WHERE status != 'CANCELLED' AND created_at >= ? AND created_at < " + " ? "
                 + "GROUP BY DATE(created_at)";
         Map<LocalDate, Double> byDay = new HashMap<>();
         try (PreparedStatement ps = c.prepareStatement(sql)) {
@@ -101,7 +101,7 @@ public class HomeDAO {
                 + "JOIN transactions t ON t.transaction_id = ti.transaction_id "
                 + "JOIN product_variants pv ON pv.variant_id = ti.variant_id "
                 + "JOIN products p ON p.id = pv.product_id "
-                + "WHERE t.status = 'COMPLETED' AND t.created_at >= ? AND t.created_at < ? "
+                + "WHERE t.status != 'CANCELLED' AND t.created_at >= ? AND t.created_at < ? "
                 + "GROUP BY p.id, p.name ORDER BY qty DESC LIMIT 5";
         List<TopProduct> out = new ArrayList<>();
         try (PreparedStatement ps = c.prepareStatement(sql)) {

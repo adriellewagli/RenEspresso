@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -9,27 +10,45 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.sales.SalesController">
 
-    <VBox spacing="4.0" styleClass="page-header">
-        <Label styleClass="sales-title" text="Sales" />
-        <Label styleClass="sales-subtitle" text="Track revenue and sales performance" />
-    </VBox>
+    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-header">
+        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+            <Label styleClass="sales-title" text="Sales" />
+            <Label styleClass="sales-subtitle" text="Track revenue, orders, and sales performance" />
+        </VBox>
+        <Label fx:id="lblUpdated" styleClass="empty-note" text="" />
+        <Button fx:id="btnRefresh" onAction="#loadSales" styleClass="btn-refresh" text="↻ Refresh" />
+    </HBox>
 
     <HBox spacing="16.0">
         <VBox styleClass="card, kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label styleClass="kpi-title" text="TODAY'S SALES" />
-            <Label styleClass="kpi-value" text="—" />
+            <Label fx:id="lblSalesToday" styleClass="kpi-value" text="₱0.00" />
+            <Label fx:id="lblOrdersToday" styleClass="kpi-sub" text="0 orders" />
         </VBox>
         <VBox styleClass="card, kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label styleClass="kpi-title" text="THIS WEEK" />
-            <Label styleClass="kpi-value" text="—" />
+            <Label fx:id="lblSalesWeek" styleClass="kpi-value" text="₱0.00" />
+            <Label fx:id="lblOrdersWeek" styleClass="kpi-sub" text="0 orders" />
         </VBox>
         <VBox styleClass="card, kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label styleClass="kpi-title" text="THIS MONTH" />
-            <Label styleClass="kpi-value" text="—" />
+            <Label fx:id="lblSalesMonth" styleClass="kpi-value" text="₱0.00" />
+            <Label fx:id="lblOrdersMonth" styleClass="kpi-sub" text="0 orders" />
         </VBox>
     </HBox>
 
-    <VBox alignment="CENTER" prefHeight="320.0" styleClass="card, panel-card" VBox.vgrow="ALWAYS">
-        <Label styleClass="empty-note" text="Sales chart coming soon" />
+    <VBox spacing="12.0" styleClass="card, panel-card" VBox.vgrow="ALWAYS">
+        <VBox spacing="2.0">
+            <Label styleClass="panel-title" text="Daily Revenue Trend" />
+            <Label styleClass="panel-subtitle" text="Sales performance over the last 14 days" />
+        </VBox>
+        <BarChart fx:id="salesChart" legendVisible="false" VBox.vgrow="ALWAYS" minHeight="280.0">
+            <xAxis>
+                <CategoryAxis fx:id="xAxis" animated="false" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="yAxis" animated="false" />
+            </yAxis>
+        </BarChart>
     </VBox>
 </VBox>

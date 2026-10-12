@@ -89,6 +89,8 @@ public class UserViewController {
         setupSidebar();
         setupKeyboardShortcuts();
 
+        session.loadFromDatabase();
+
         // Home reacts to every new / completed / cancelled order
         session.transactionHistory.addListener((ListChangeListener<TransactionRecord>) c -> refreshDashboard());
         showHome();
