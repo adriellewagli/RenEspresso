@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox spacing="20.0" styleClass="view-container"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coffeepos.renespresso.controller.main.user.queue.OrderQueueController">
+
+    <!-- LEFT: header, search + status chips, order cards -->
+    <VBox spacing="20.0" HBox.hgrow="ALWAYS">
+        <VBox spacing="4.0" styleClass="page-header">
+            <Label styleClass="page-title" text="Order Management" />
+            <Label styleClass="page-subtitle" text="Monitor the queue and complete orders as they are served" />
+        </VBox>
+
+        <VBox spacing="14.0" styleClass="card, toolbar-card">
+            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="search-box">
+                <Region styleClass="icon-search" />
+                <TextField fx:id="txtQueueSearch" promptText="Search by ticket or item…"
+                           styleClass="search-field" HBox.hgrow="ALWAYS" />
+            </HBox>
+            <FlowPane fx:id="statusChips" hgap="8.0" vgap="8.0" />
+        </VBox>
+
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="transparent-scrollpane" VBox.vgrow="ALWAYS">
+            <content>
+                <FlowPane fx:id="orderGrid" hgap="18.0" vgap="18.0" styleClass="dish-grid" />
+            </content>
+        </ScrollPane>
+    </VBox>
+
+    <!-- RIGHT: order detail (hidden until "Details" is clicked) -->
+    <VBox fx:id="detailPanel" managed="false" visible="false" spacing="14.0"
+          minWidth="380.0" prefWidth="380.0" maxWidth="380.0"
+          styleClass="card, detail-panel" />
+</HBox>
