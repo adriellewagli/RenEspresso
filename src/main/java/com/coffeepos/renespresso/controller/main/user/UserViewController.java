@@ -30,6 +30,7 @@ public class UserViewController {
 
     private static final String ADMIN_CSS = "/com/coffeepos/renespresso/views/styles/admin/dashboard.css";
     private static final String USER_CSS = "/com/coffeepos/renespresso/views/styles.user/user-dashboard.css";
+    private static final String ORDER_CSS = "/com/coffeepos/renespresso/views/styles.user/om/ordermanagement.css";
 
     // --- Shell FXML bindings ---
     @FXML private StackPane rootPane;
@@ -74,6 +75,7 @@ public class UserViewController {
     public void initialize() {
         UserUi.attachCss(rootPane, ADMIN_CSS);
         UserUi.attachCss(rootPane, USER_CSS);
+        UserUi.attachCss(rootPane, ORDER_CSS);
 
         User cur = SessionManager.getCurrentUser();
         if (cur != null && cur.getFullName() != null && !cur.getFullName().isBlank()) {
@@ -230,7 +232,13 @@ public class UserViewController {
     }
 
     @FXML public void showOrders() { show(queueView, btnOrders); }
-    @FXML public void showTransactionHistory() { show(orderView, btnTransactionHistory); }
+
+    @FXML public void showTransactionHistory() {
+        show(orderView, btnTransactionHistory);
+        if (orderViewController != null) {
+            orderViewController.loadTransactions();
+        }
+    }
 
     @FXML
     public void handleLogout(ActionEvent event) {

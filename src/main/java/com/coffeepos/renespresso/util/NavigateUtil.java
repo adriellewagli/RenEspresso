@@ -60,9 +60,16 @@ public class NavigateUtil {
             } else if (mode == WindowMode.FULLSCREEN_WORKSPACE) {
                 stage.setResizable(true);
                 stage.setMaximized(true);
+                stage.setFullScreenExitHint("");
+                stage.setFullScreenExitKeyCombination(javafx.scene.input.KeyCombination.NO_MATCH);
+                stage.setFullScreen(true);
             }
 
             stage.show();
+
+            if (mode == WindowMode.FULLSCREEN_WORKSPACE && !stage.isFullScreen()) {
+                stage.setFullScreen(true);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             AlertUtil.showError("Navigation Error", "Could not load view: " + fullPath);

@@ -18,18 +18,24 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 
 /**
- * Transaction history for the active cashier session.
+ * Transaction history for the cashier session.
  * Columns: ORDER ID, STAFF, CREATED / LAST EDIT, TOTAL, STATUS, PAYMENT, ACTIONS.
  */
 public class OrderManagementController {
 
     @FXML private VBox orderRoot;
     @FXML private TextField txtHistorySearch;
+    @FXML private ComboBox<String> cmbDateFilter;
+    @FXML private ComboBox<String> cmbStatusFilter;
+    @FXML private ComboBox<String> cmbPaymentFilter;
+    @FXML private Button btnClearFilters;
+
     @FXML private TableView<TransactionRecord> tblHistory;
     @FXML private TableColumn<TransactionRecord, String> colOrderId;
     @FXML private TableColumn<TransactionRecord, Void> colStaff;
@@ -41,11 +47,98 @@ public class OrderManagementController {
     @FXML private Label lblHistorySummary;
 
     private final UserSession session = UserSession.get();
+    private final javafx.collections.ObservableList<TransactionRecord> transactionsList = javafx.collections.FXCollections.observableArrayList();
+    private FilteredList<TransactionRecord> filtered;
 
     @FXML
     public void initialize() {
+        setupFilterControls();
         setupColumns();
         setupDataBinding();
+        loadTransactions();
+        session.transactionHistory.addListener((ListChangeListener<TransactionRecord>) c -> loadTransactions());
+    }
+
+    private void setupFilterControls() {
+        cmbDateFilter.getItems().setAll("Date: All Dates", "Date: Today", "Date: Yesterday", "Date: This Week", "Date: This Month");
+        cmbDateFilter.setValue("Date: All Dates");
+
+        cmbStatusFilter.getItems().setAll("Status: All States", "Status: Preparing", "Status: Pending", "Status: Completed", "Status: Cancelled");
+        cmbStatusFilter.setValue("Status: All States");
+
+        cmbPaymentFilter.getItems().setAll("Payment: All", "Payment: Paid", "Payment: Unpaid", "Payment: Refunded");
+        cmbPaymentFilter.setValue("Payment: All");
+
+        cmbDateFilter.valueProperty().addListener((obs, o, n) -> refreshFilter());
+        cmbStatusFilter.valueProperty().addListener((obs, o, n) -> refreshFilter());
+        cmbPaymentFilter.valueProperty().addListener((obs, o, n) -> refreshFilter());
+        txtHistorySearch.textProperty().addListener((obs, o, n) -> refreshFilter());
+    }
+
+    private void refreshFilter() {
+        if (filtered != null) {
+            filtered.setPredicate(this::applyFilters);
+        }
+    }
+
+    @FXML
+    public void handleClearFilters() {
+        txtHistorySearch.clear();
+        cmbDateFilter.setValue("Date: All Dates");
+        cmbStatusFilter.setValue("Status: All States");
+        cmbPaymentFilter.setValue("Payment: All");
+    }
+
+    private boolean applyFilters(TransactionRecord r) {
+        if (r == null) return false;
+
+        // Search text
+        String q = txtHistorySearch.getText();
+        if (q != null && !q.isBlank()) {
+            String query = q.trim().toLowerCase();
+            boolean matchSearch = r.getOrderId().toLowerCase().contains(query)
+                    || r.getStaffName().toLowerCase().contains(query)
+                    || r.getStaffRole().toLowerCase().contains(query)
+                    || r.getPaymentStatus().toLowerCase().contains(query)
+                    || r.getPaymentMethod().toLowerCase().contains(query)
+                    || r.getStatus().label().toLowerCase().contains(query)
+                    || r.getTicketNumber().toLowerCase().contains(query)
+                    || r.getItems().toLowerCase().contains(query);
+            if (!matchSearch) return false;
+        }
+
+        // Date filter
+        String dateOpt = cmbDateFilter.getValue();
+        if (dateOpt != null && !dateOpt.equals("Date: All Dates")) {
+            LocalDate recordDate = r.getCreatedAt().toLocalDate();
+            LocalDate today = LocalDate.now();
+            if (dateOpt.equals("Date: Today")) {
+                if (!recordDate.equals(today)) return false;
+            } else if (dateOpt.equals("Date: Yesterday")) {
+                if (!recordDate.equals(today.minusDays(1))) return false;
+            } else if (dateOpt.equals("Date: This Week")) {
+                LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
+                if (recordDate.isBefore(startOfWeek)) return false;
+            } else if (dateOpt.equals("Date: This Month")) {
+                if (recordDate.getMonth() != today.getMonth() || recordDate.getYear() != today.getYear()) return false;
+            }
+        }
+
+        // Status filter
+        String statusOpt = cmbStatusFilter.getValue();
+        if (statusOpt != null && !statusOpt.equals("Status: All States")) {
+            String expected = statusOpt.replace("Status: ", "").trim();
+            if (!r.getStatus().label().equalsIgnoreCase(expected)) return false;
+        }
+
+        // Payment filter
+        String paymentOpt = cmbPaymentFilter.getValue();
+        if (paymentOpt != null && !paymentOpt.equals("Payment: All")) {
+            String expected = paymentOpt.replace("Payment: ", "").trim();
+            if (!r.getPaymentStatus().equalsIgnoreCase(expected)) return false;
+        }
+
+        return true;
     }
 
     private void setupColumns() {
@@ -148,9 +241,15 @@ public class OrderManagementController {
                     HBox pill = new HBox(6, dot, textLbl);
                     pill.setAlignment(Pos.CENTER_LEFT);
                     pill.getStyleClass().addAll("status-pill", styleClass);
+                    pill.setMinHeight(22);
+                    pill.setPrefHeight(22);
+                    pill.setMaxHeight(22);
                     pill.setMaxWidth(Region.USE_PREF_SIZE);
 
-                    setGraphic(pill);
+                    HBox wrapper = new HBox(pill);
+                    wrapper.setFillHeight(false);
+                    wrapper.setAlignment(Pos.CENTER_LEFT);
+                    setGraphic(wrapper);
                 }
             }
         });
@@ -169,8 +268,15 @@ public class OrderManagementController {
                     String pStatus = r.getPaymentStatus();
                     Label pill = new Label(pStatus);
                     pill.getStyleClass().addAll("payment-pill", "payment-" + pStatus.toLowerCase());
+                    pill.setMinHeight(22);
+                    pill.setPrefHeight(22);
+                    pill.setMaxHeight(22);
                     pill.setMaxWidth(Region.USE_PREF_SIZE);
-                    setGraphic(pill);
+
+                    HBox wrapper = new HBox(pill);
+                    wrapper.setFillHeight(false);
+                    wrapper.setAlignment(Pos.CENTER_LEFT);
+                    setGraphic(wrapper);
                 }
             }
         });
@@ -180,6 +286,9 @@ public class OrderManagementController {
             private final Button btnReceipt = new Button("View Receipt");
             {
                 btnReceipt.getStyleClass().add("btn-action-receipt");
+                btnReceipt.setMinHeight(26);
+                btnReceipt.setPrefHeight(26);
+                btnReceipt.setMaxHeight(26);
                 btnReceipt.setOnAction(e -> {
                     if (getIndex() >= 0 && getIndex() < getTableView().getItems().size()) {
                         TransactionRecord record = getTableView().getItems().get(getIndex());
@@ -196,22 +305,24 @@ public class OrderManagementController {
                 if (empty || getIndex() >= getTableView().getItems().size()) {
                     setGraphic(null);
                 } else {
-                    setGraphic(btnReceipt);
+                    HBox wrapper = new HBox(btnReceipt);
+                    wrapper.setFillHeight(false);
+                    wrapper.setAlignment(Pos.CENTER_LEFT);
+                    setGraphic(wrapper);
                 }
             }
         });
     }
 
     private void setupDataBinding() {
-        FilteredList<TransactionRecord> filtered = new FilteredList<>(session.transactionHistory, r -> true);
-        txtHistorySearch.textProperty().addListener((obs, o, n) -> filtered.setPredicate(r -> matches(r, n)));
+        filtered = new FilteredList<>(transactionsList, this::applyFilters);
         filtered.addListener((ListChangeListener<TransactionRecord>) c -> updateSummary(filtered));
 
         SortedList<TransactionRecord> sorted = new SortedList<>(filtered);
         sorted.comparatorProperty().bind(tblHistory.comparatorProperty());
         tblHistory.setItems(sorted);
 
-        Label placeholder = new Label("No transactions recorded for this session yet.");
+        Label placeholder = new Label("No transactions match the selected filters.");
         placeholder.getStyleClass().add("empty-note");
         tblHistory.setPlaceholder(placeholder);
         tblHistory.setRowFactory(tv -> {
@@ -224,22 +335,34 @@ public class OrderManagementController {
         updateSummary(filtered);
     }
 
-    private boolean matches(TransactionRecord r, String query) {
-        if (query == null || query.isBlank()) return true;
-        String q = query.trim().toLowerCase();
-        return r.getOrderId().toLowerCase().contains(q)
-                || r.getStaffName().toLowerCase().contains(q)
-                || r.getStaffRole().toLowerCase().contains(q)
-                || r.getPaymentStatus().toLowerCase().contains(q)
-                || r.getPaymentMethod().toLowerCase().contains(q)
-                || r.getStatus().label().toLowerCase().contains(q)
-                || r.getTicketNumber().toLowerCase().contains(q)
-                || r.getItems().toLowerCase().contains(q);
+    @FXML
+    public void loadTransactions() {
+        javafx.concurrent.Task<List<TransactionRecord>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<TransactionRecord> call() {
+                return com.coffeepos.renespresso.dao.TransactionDAO.loadAllTransactions();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<TransactionRecord> list = task.getValue();
+            transactionsList.setAll(list);
+            updateSummary(filtered != null ? filtered : transactionsList);
+        });
+
+        task.setOnFailed(e -> {
+            task.getException().printStackTrace();
+            lblHistorySummary.setText("Failed to load transactions: " + task.getException().getMessage());
+        });
+
+        Thread t = new Thread(task, "cashier-transaction-loader");
+        t.setDaemon(true);
+        t.start();
     }
 
     private void updateSummary(List<TransactionRecord> visible) {
         if (visible.isEmpty()) {
-            lblHistorySummary.setText("No transactions yet");
+            lblHistorySummary.setText("No transactions match filters");
             return;
         }
         double sum = visible.stream()

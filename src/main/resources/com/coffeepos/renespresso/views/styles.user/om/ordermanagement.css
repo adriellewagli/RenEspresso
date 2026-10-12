@@ -2,23 +2,94 @@
 
 .history-card { -fx-padding: 20; }
 
-.modern-audit-table {
+.card {
     -fx-background-color: #FFFFFF;
-    -fx-background-radius: 12;
+    -fx-background-radius: 16;
     -fx-border-color: #EFE5D6;
-    -fx-border-radius: 12;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.05), 12, 0, 0, 2);
+}
+
+.table-card { -fx-padding: 16 20 20 20; }
+.empty-note { -fx-text-fill: #9A8878; -fx-font-size: 14px; }
+
+/* Filter Toolbar */
+.filter-toolbar-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 14;
+    -fx-border-color: #EFE5D6;
+    -fx-border-radius: 14;
+    -fx-padding: 12 18;
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.04), 10, 0, 0, 2);
+}
+
+.filter-search-box {
+    -fx-background-color: #FAF6F0;
+    -fx-background-radius: 8;
+    -fx-border-color: #EAE0D5;
+    -fx-border-radius: 8;
+    -fx-padding: 4 10;
+}
+.filter-search-box .search-field {
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: #A89B90;
+    -fx-text-fill: #2B2523;
+    -fx-font-size: 13px;
+}
+
+.filter-combo {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8;
+    -fx-border-color: #EAE0D5;
+    -fx-border-radius: 8;
+    -fx-padding: 2 6;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+.filter-combo .list-cell {
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 13px;
+}
+.filter-combo .arrow-button {
+    -fx-background-color: transparent;
+}
+.filter-combo .arrow {
+    -fx-background-color: #895737;
+}
+
+.btn-clear-filters {
+    -fx-background-color: transparent;
+    -fx-text-fill: #895737;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 6 10;
+}
+.btn-clear-filters:hover {
+    -fx-text-fill: #5E3023;
+    -fx-underline: true;
+}
+
+/* Modern Audit Table - No vertical lines, seamless clean layout */
+.modern-audit-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent;
+    -fx-table-header-border-color: transparent;
 }
 
 .modern-audit-table .column-header-background {
-    -fx-background-color: #FCFAF7;
-    -fx-background-radius: 12 12 0 0;
-}
-
-.modern-audit-table .column-header, .modern-audit-table .filler {
     -fx-background-color: transparent;
-    -fx-size: 46;
     -fx-border-color: transparent transparent #EFE5D6 transparent;
     -fx-border-width: 0 0 1 0;
+}
+
+.modern-audit-table .column-header, 
+.modern-audit-table .filler {
+    -fx-background-color: transparent;
+    -fx-size: 46;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
 }
 
 .modern-audit-table .column-header .label {
@@ -29,9 +100,10 @@
 
 .modern-audit-table .table-row-cell {
     -fx-background-color: #FFFFFF;
-    -fx-cell-size: 56px;
-    -fx-border-color: transparent transparent #F4ECE3 transparent;
+    -fx-cell-size: 58px;
+    -fx-border-color: transparent transparent #F5EFEB transparent;
     -fx-border-width: 0 0 1 0;
+    -fx-table-cell-border-color: transparent;
 }
 
 .modern-audit-table .table-row-cell:hover {
@@ -39,12 +111,14 @@
 }
 
 .modern-audit-table .table-row-cell:selected {
-    -fx-background-color: #F6EFE7;
+    -fx-background-color: #F8F2EA;
 }
 
 .modern-audit-table .table-cell {
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 0 10;
+    -fx-padding: 0 12;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
 }
 
 /* Specific Cells */
@@ -78,8 +152,12 @@
 
 /* Status Pill Badge */
 .status-pill {
-    -fx-padding: 4 12 4 8;
-    -fx-background-radius: 14;
+    -fx-padding: 2 10 2 8;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-min-height: 22px;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
     -fx-alignment: CENTER_LEFT;
     -fx-spacing: 6;
 }
@@ -122,8 +200,12 @@
 
 /* Payment Pill Badge */
 .payment-pill {
-    -fx-padding: 4 12;
-    -fx-background-radius: 14;
+    -fx-padding: 2 10;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-min-height: 22px;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
     -fx-alignment: CENTER;
     -fx-font-size: 11px;
     -fx-font-weight: bold;

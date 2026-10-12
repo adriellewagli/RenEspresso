@@ -4,7 +4,6 @@
 <?import javafx.scene.layout.*?>
 
 <VBox fx:id="orderRoot" spacing="20.0" styleClass="view-container"
-      stylesheets="@../../../../styles.user/om/ordermanagement.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.user.om.OrderManagementController">
@@ -12,17 +11,26 @@
     <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-header">
         <VBox spacing="4.0" HBox.hgrow="ALWAYS">
             <Label styleClass="page-title" text="Transaction History" />
-            <Label styleClass="page-subtitle" text="Review this shift's orders, payments, and staff records" />
+            <Label styleClass="page-subtitle" text="Review orders, staff records, and payment history" />
         </VBox>
+        <Label fx:id="lblHistorySummary" styleClass="card-subtitle" />
     </HBox>
 
-    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="card, toolbar-card">
-        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="search-box" HBox.hgrow="ALWAYS">
-            <Region styleClass="icon-search" />
-            <TextField fx:id="txtHistorySearch" promptText="Search by order ID, staff, payment or status…"
+    <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="card, filter-toolbar-card">
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="filter-search-box" prefWidth="280.0">
+            <Label text="🔍" style="-fx-text-fill: #A89B90; -fx-font-size: 13px;" />
+            <TextField fx:id="txtHistorySearch" promptText="Search Order ID or staff…"
                        styleClass="search-field" HBox.hgrow="ALWAYS" />
         </HBox>
-        <Label fx:id="lblHistorySummary" styleClass="card-subtitle" />
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <HBox alignment="CENTER_RIGHT" spacing="12.0">
+            <ComboBox fx:id="cmbDateFilter" promptText="Date: All Dates" styleClass="filter-combo" prefWidth="150.0" />
+            <ComboBox fx:id="cmbStatusFilter" promptText="Status: All States" styleClass="filter-combo" prefWidth="160.0" />
+            <ComboBox fx:id="cmbPaymentFilter" promptText="Payment: All" styleClass="filter-combo" prefWidth="140.0" />
+            <Button fx:id="btnClearFilters" onAction="#handleClearFilters" text="Clear Filters" styleClass="btn-clear-filters" />
+        </HBox>
     </HBox>
 
     <VBox styleClass="card, table-card" VBox.vgrow="ALWAYS">
