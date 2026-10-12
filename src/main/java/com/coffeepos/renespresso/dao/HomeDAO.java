@@ -16,14 +16,24 @@ import java.util.Map;
 
 public class HomeDAO {
 
-    public record DayTotal(LocalDate day, double total) {}
-    public record TopProduct(String name, int qty, double revenue) {}
-    public record RecentOrder(int id, String cashier, double total, String status, LocalDateTime time) {}
-    public record SalesData(double today, double yesterday, int ordersToday, int itemsToday,
-                            List<DayTotal> last7, List<TopProduct> top, List<RecentOrder> recent) {}
+    public record DayTotal(LocalDate day, double total) {
+    }
 
-    public record RoleCount(String role, int active, int total) {}
-    public record StaffData(int active, int total, List<RoleCount> roles) {}
+    public record TopProduct(String name, int qty, double revenue) {
+    }
+
+    public record RecentOrder(int id, String cashier, double total, String status, LocalDateTime time) {
+    }
+
+    public record SalesData(double today, double yesterday, int ordersToday, int itemsToday,
+            List<DayTotal> last7, List<TopProduct> top, List<RecentOrder> recent) {
+    }
+
+    public record RoleCount(String role, int active, int total) {
+    }
+
+    public record StaffData(int active, int total, List<RoleCount> roles) {
+    }
 
     // ------------------------------------------------------------------ SALES
 
@@ -47,7 +57,7 @@ public class HomeDAO {
             range(ps, from, to);
             try (ResultSet rs = ps.executeQuery()) {
                 rs.next();
-                return new double[]{rs.getDouble(1), rs.getInt(2)};
+                return new double[] { rs.getDouble(1), rs.getInt(2) };
             }
         }
     }
@@ -73,11 +83,12 @@ public class HomeDAO {
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             range(ps, start, today.plusDays(1));
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) byDay.put(rs.getDate("d").toLocalDate(), rs.getDouble("s"));
+                while (rs.next())
+                    byDay.put(rs.getDate("d").toLocalDate(), rs.getDouble("s"));
             }
         }
         List<DayTotal> out = new ArrayList<>();
-        for (int i = 0; i < 7; i++) {          // fill days with no sales as 0
+        for (int i = 0; i < 7; i++) { // fill days with no sales as 0
             LocalDate d = start.plusDays(i);
             out.add(new DayTotal(d, byDay.getOrDefault(d, 0.0)));
         }
@@ -110,7 +121,7 @@ public class HomeDAO {
                 + "ORDER BY t.created_at DESC LIMIT 8";
         List<RecentOrder> out = new ArrayList<>();
         try (PreparedStatement ps = c.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 out.add(new RecentOrder(
                         rs.getInt("transaction_id"),
@@ -132,12 +143,12 @@ public class HomeDAO {
 
     public static StaffData loadStaff() throws SQLException {
         String sql = "SELECT role, COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active FROM users "
-                + "GROUP BY role ORDER BY FIELD(role, 'ADMIN', 'MANAGER', 'SUPERVISOR', 'CASHIER')";
+                + "GROUP BY role ORDER BY FIELD(role, 'ADMIN', 'MANAGER', 'CASHIER')";
         List<RoleCount> roles = new ArrayList<>();
         int active = 0, total = 0;
         try (Connection c = DatabaseManager.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = c.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String r = rs.getString("role");
                 int a = rs.getInt("active"), t = rs.getInt("total");

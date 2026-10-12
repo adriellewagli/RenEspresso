@@ -102,7 +102,6 @@
 .pill { -fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 10px; -fx-font-weight: bold; }
 .role-admin      { -fx-background-color: #E1ECF7; -fx-text-fill: #2B6CB0; }
 .role-manager    { -fx-background-color: #EDE4F7; -fx-text-fill: #6B3FA0; }
-.role-supervisor { -fx-background-color: #FBF0D0; -fx-text-fill: #B7791F; }
 .role-cashier    { -fx-background-color: #EEEAE4; -fx-text-fill: #5A5148; }
 
 .status-completed { -fx-background-color: #DCEBE3; -fx-text-fill: #2F6F52; }

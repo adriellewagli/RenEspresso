@@ -124,12 +124,9 @@
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
-.role-manager    { -fx-background-color: #EDE4F7; -fx-text-fill: #6B3FA0; }
-.role-supervisor { -fx-background-color: #DDF1F0; -fx-text-fill: #1F7A78; }
-.role-cashier,
-.role-server     { -fx-background-color: #EEEAE4; -fx-text-fill: #5A5148; }
-.role-chef       { -fx-background-color: #FBF0D0; -fx-text-fill: #B7791F; }
 .role-admin      { -fx-background-color: #E1ECF7; -fx-text-fill: #2B6CB0; }
+.role-manager    { -fx-background-color: #EDE4F7; -fx-text-fill: #6B3FA0; }
+.role-cashier    { -fx-background-color: #EEEAE4; -fx-text-fill: #5A5148; }
 
 .status-active    { -fx-background-color: #DCEBE3; -fx-text-fill: #2F6F52; }
 .status-inactive  { -fx-background-color: #FCEBDD; -fx-text-fill: #D9731F; }

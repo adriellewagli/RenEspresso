@@ -28,7 +28,7 @@
                                 <Font name="System Bold" size="22.0" />
                             </font>
                         </Label>
-                        <Label style="-fx-text-fill: #5E3023; -fx-opacity: 0.75;" text="Admin or Superadmin authorization required to proceed.">
+                        <Label style="-fx-text-fill: #5E3023; -fx-opacity: 0.75;" text="Admin or Manager authorization required to proceed.">
                             <font>
                                 <Font size="12.0" />
                             </font>

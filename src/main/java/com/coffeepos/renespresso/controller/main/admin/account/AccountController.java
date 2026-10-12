@@ -38,23 +38,32 @@ import java.util.function.BooleanSupplier;
 
 public class AccountController {
 
-    @FXML private TextField searchField;
-    @FXML private ComboBox<String> roleFilter, statusFilter, lastLoginFilter;
-    @FXML private Button clearFiltersBtn, addAccountBtn;
+    @FXML
+    private TextField searchField;
+    @FXML
+    private ComboBox<String> roleFilter, statusFilter, lastLoginFilter;
+    @FXML
+    private Button clearFiltersBtn, addAccountBtn;
 
-    @FXML private TableView<AccountRow> accountTable;
-    @FXML private TableColumn<AccountRow, String> colName, colUsername, colRole, colStatus, colLastLogin, colCreated;
-    @FXML private TableColumn<AccountRow, AccountRow> colActions;
+    @FXML
+    private TableView<AccountRow> accountTable;
+    @FXML
+    private TableColumn<AccountRow, String> colName, colUsername, colRole, colStatus, colLastLogin, colCreated;
+    @FXML
+    private TableColumn<AccountRow, AccountRow> colActions;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH);
-    private static final String[] ROLES = {"Admin", "Manager", "Supervisor", "Cashier"};
+    private static final String[] ROLES = { "Admin", "Manager", "Cashier" };
 
     private final ObservableList<AccountRow> accounts = FXCollections.observableArrayList();
     private FilteredList<AccountRow> filtered;
 
     private int currentUserId = -1;
-    public void setCurrentUserId(int id) { this.currentUserId = id; }
+
+    public void setCurrentUserId(int id) {
+        this.currentUserId = id;
+    }
 
     @FXML
     public void initialize() {
@@ -91,7 +100,7 @@ public class AccountController {
 
     // ------------------------------------------------------------------ FILTERS
 
-    /** Combo box whose closed state reads "Role:  All Roles" like the design. */
+    /** Combo box whose closed state reads "Role: All Roles" like the design. */
     private void setupFilter(ComboBox<String> box, String label, String allLabel, String... items) {
         String[] all = new String[items.length + 1];
         all[0] = allLabel;
@@ -128,17 +137,22 @@ public class AccountController {
         filtered.setPredicate(r -> {
             if (!q.isEmpty()
                     && !r.name().toLowerCase().contains(q)
-                    && !r.username().toLowerCase().contains(q)) return false;
+                    && !r.username().toLowerCase().contains(q))
+                return false;
 
-            if (role != null && !role.equals("All Roles") && !r.role().equals(role)) return false;
-            if (status != null && !status.equals("All Statuses") && !r.status().equals(status)) return false;
+            if (role != null && !role.equals("All Roles") && !r.role().equals(role))
+                return false;
+            if (status != null && !status.equals("All Statuses") && !r.status().equals(status))
+                return false;
             return matchesLastLogin(r.lastLogin(), login);
         });
     }
 
     private boolean matchesLastLogin(LocalDateTime last, String option) {
-        if (option == null || option.equals("Anytime")) return true;
-        if (last == null) return false;
+        if (option == null || option.equals("Anytime"))
+            return true;
+        if (last == null)
+            return false;
         long days = ChronoUnit.DAYS.between(last.toLocalDate(), LocalDate.now());
         return switch (option) {
             case "Today" -> days == 0;
@@ -293,7 +307,8 @@ public class AccountController {
         }
 
         if (!AlertUtil.showYesNo("Delete Account",
-                "Delete the account for " + row.name() + "? This cannot be undone.")) return;
+                "Delete the account for " + row.name() + "? This cannot be undone."))
+            return;
 
         try {
             UserDAO.deleteAccount(row.id());
@@ -307,18 +322,21 @@ public class AccountController {
         }
     }
 
-    // ------------------------------------------------------------------ ADD / EDIT DIALOG
+    // ------------------------------------------------------------------ ADD / EDIT
+    // DIALOG
 
     private void showAccountDialog(AccountRow existing) {
         boolean edit = existing != null;
-        // No checkbox: new accounts are active, edited accounts keep their current status
+        // No checkbox: new accounts are active, edited accounts keep their current
+        // status
         final boolean active = !edit || "Active".equals(existing.status());
 
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(edit ? "Edit Account" : "Add Account");
         dialog.setHeaderText(null);
         dialog.setGraphic(null);
-        if (accountTable.getScene() != null) dialog.initOwner(accountTable.getScene().getWindow());
+        if (accountTable.getScene() != null)
+            dialog.initOwner(accountTable.getScene().getWindow());
 
         DialogPane pane = dialog.getDialogPane();
         pane.getStylesheets().addAll(ConfirmUtil.collectStylesheets(accountTable));
@@ -390,16 +408,16 @@ public class AccountController {
 
         // ---- unsaved-change detection
         final String name0 = nameField.getText(), user0 = userField.getText(), role0 = roleBox.getValue();
-        BooleanSupplier dirty = () ->
-                !nameField.getText().equals(name0)
-                        || !userField.getText().equals(user0)
-                        || !Objects.equals(roleBox.getValue(), role0)
-                        || !passField.getText().isEmpty()
-                        || !confirmField.getText().isEmpty();
+        BooleanSupplier dirty = () -> !nameField.getText().equals(name0)
+                || !userField.getText().equals(user0)
+                || !Objects.equals(roleBox.getValue(), role0)
+                || !passField.getText().isEmpty()
+                || !confirmField.getText().isEmpty();
 
         // ---- SAVE: validate -> confirm -> write to DB
         saveBtn.addEventFilter(ActionEvent.ACTION, ev -> {
-            if (edit && !dirty.getAsBoolean()) return;   // nothing changed, just close
+            if (edit && !dirty.getAsBoolean())
+                return; // nothing changed, just close
 
             String name = nameField.getText().trim();
             String username = userField.getText().trim();
@@ -410,7 +428,7 @@ public class AccountController {
                 String warning = validate(existing, name, username, pw, confirmField.getText(), role, active);
                 if (warning != null) {
                     AlertUtil.showWarning("Check your input", warning);
-                    ev.consume();                        // keep the dialog open
+                    ev.consume(); // keep the dialog open
                     return;
                 }
 
@@ -418,7 +436,7 @@ public class AccountController {
                         ? "Save the changes to " + name + "'s account?"
                         : "Create an account for " + name + " (" + role + ")?";
                 if (!ConfirmUtil.confirmSave(pane, question)) {
-                    ev.consume();                        // stay in the dialog
+                    ev.consume(); // stay in the dialog
                     return;
                 }
 
@@ -441,11 +459,13 @@ public class AccountController {
 
         // ---- CANCEL button + window X: warn only if something changed
         cancelBtn.addEventFilter(ActionEvent.ACTION, ev -> {
-            if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane)) ev.consume();
+            if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane))
+                ev.consume();
         });
         dialog.setOnShown(e -> pane.getScene().getWindow().addEventFilter(
                 WindowEvent.WINDOW_CLOSE_REQUEST, ev -> {
-                    if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane)) ev.consume();
+                    if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane))
+                        ev.consume();
                 }));
 
         dialog.showAndWait();
@@ -490,7 +510,8 @@ public class AccountController {
             hidden.setVisible(!show);
             hidden.setManaged(!show);
             if (show) {
-                if (!eye.getStyleClass().contains("icon-eye-off")) eye.getStyleClass().add("icon-eye-off");
+                if (!eye.getStyleClass().contains("icon-eye-off"))
+                    eye.getStyleClass().add("icon-eye-off");
             } else {
                 eye.getStyleClass().remove("icon-eye-off");
             }
@@ -507,7 +528,8 @@ public class AccountController {
         ChangeListener<Boolean> focusListener = (o, was, now) -> {
             boolean focused = hidden.isFocused() || visible.isFocused();
             if (focused) {
-                if (!box.getStyleClass().contains("box-focused")) box.getStyleClass().add("box-focused");
+                if (!box.getStyleClass().contains("box-focused"))
+                    box.getStyleClass().add("box-focused");
             } else {
                 box.getStyleClass().remove("box-focused");
             }
@@ -519,18 +541,22 @@ public class AccountController {
 
     /** Returns a warning message if the input is invalid, otherwise null. */
     private String validate(AccountRow existing, String name, String username, String pw,
-                            String confirm, String role, boolean active) throws SQLException {
+            String confirm, String role, boolean active) throws SQLException {
         boolean edit = existing != null;
 
-        if (name.isEmpty()) return "Full name is required.";
+        if (name.isEmpty())
+            return "Full name is required.";
         if (!username.matches("[A-Za-z0-9._-]{3,30}"))
             return "Username must be 3-30 characters (letters, numbers, . _ -).";
-        if (role == null) return "Please choose a role.";
+        if (role == null)
+            return "Please choose a role.";
 
         if (!edit || !pw.isEmpty()) {
             String problem = passwordProblem(pw);
-            if (problem != null) return problem;
-            if (!pw.equals(confirm)) return "Passwords do not match.";
+            if (problem != null)
+                return problem;
+            if (!pw.equals(confirm))
+                return "Passwords do not match.";
         }
 
         if (UserDAO.usernameExists(username, edit ? existing.id() : 0))
@@ -549,25 +575,36 @@ public class AccountController {
 
     /** Password rules: 8+ chars, upper, lower, digit and special character. */
     private String passwordProblem(String pw) {
-        if (pw.length() < 8) return "Password must be at least 8 characters.";
-        if (!pw.matches(".*[A-Z].*")) return "Password must include an uppercase letter.";
-        if (!pw.matches(".*[a-z].*")) return "Password must include a lowercase letter.";
-        if (!pw.matches(".*\\d.*")) return "Password must include a number.";
-        if (!pw.matches(".*[^A-Za-z0-9].*")) return "Password must include a special character (e.g. ! @ # $ %).";
+        if (pw.length() < 8)
+            return "Password must be at least 8 characters.";
+        if (!pw.matches(".*[A-Z].*"))
+            return "Password must include an uppercase letter.";
+        if (!pw.matches(".*[a-z].*"))
+            return "Password must include a lowercase letter.";
+        if (!pw.matches(".*\\d.*"))
+            return "Password must include a number.";
+        if (!pw.matches(".*[^A-Za-z0-9].*"))
+            return "Password must include a special character (e.g. ! @ # $ %).";
         return null;
     }
 
     // ------------------------------------------------------------------ FORMAT
 
     private String formatLastLogin(LocalDateTime t) {
-        if (t == null) return "Never";
+        if (t == null)
+            return "Never";
         long days = ChronoUnit.DAYS.between(t.toLocalDate(), LocalDate.now());
         String time = t.format(TIME_FMT);
-        if (days <= 0) return "Today, " + time;
-        if (days == 1) return "Yesterday, " + time;
-        if (days < 7) return days + " days ago";
-        if (days < 14) return "1 week ago";
-        if (days < 30) return (days / 7) + " weeks ago";
+        if (days <= 0)
+            return "Today, " + time;
+        if (days == 1)
+            return "Yesterday, " + time;
+        if (days < 7)
+            return days + " days ago";
+        if (days < 14)
+            return "1 week ago";
+        if (days < 30)
+            return (days / 7) + " weeks ago";
         return t.format(DATE_FMT);
     }
 }

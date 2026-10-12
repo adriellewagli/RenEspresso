@@ -56,11 +56,9 @@ public class RegisterController {
     private boolean isConfirmPasswordVisible = false;
 
     // Vector SVG paths
-    private static final String EYE_OPEN_PATH =
-            "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z";
+    private static final String EYE_OPEN_PATH = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z";
 
-    private static final String EYE_SLASHED_PATH =
-            "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zM11.84 9.02l3.15 3.15.02-.17c0-1.66-1.34-3-3-3l-.17.02z";
+    private static final String EYE_SLASHED_PATH = "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zM11.84 9.02l3.15 3.15.02-.17c0-1.66-1.34-3-3-3l-.17.02z";
 
     @FXML
     public void initialize() {
@@ -70,7 +68,7 @@ public class RegisterController {
 
         // Initialize and style Role ComboBox to match RenEspresso theme
         if (roleComboBox != null) {
-            roleComboBox.getItems().setAll("CASHIER", "MANAGER", "SUPERVISOR");
+            roleComboBox.getItems().setAll("CASHIER", "MANAGER", "ADMIN");
             roleComboBox.setValue("CASHIER");
             styleComboBoxPalette();
         }
@@ -98,7 +96,8 @@ public class RegisterController {
 
     /**
      * Styles the ComboBox cells, selected cell, and dropdown menu to match
-     * dark coffee (#5E3023) and warm cream (#F3E9DC) palette with normal font weight.
+     * dark coffee (#5E3023) and warm cream (#F3E9DC) palette with normal font
+     * weight.
      */
     private void styleComboBoxPalette() {
         // Custom cell renderer for items inside the dropdown list
@@ -111,14 +110,17 @@ public class RegisterController {
                     setStyle("-fx-background-color: transparent;");
                 } else {
                     setText(item);
-                    setStyle("-fx-text-fill: #5E3023; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #F3E9DC;");
+                    setStyle(
+                            "-fx-text-fill: #5E3023; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #F3E9DC;");
 
                     // Dynamic hover effect
                     hoverProperty().addListener((obs, wasHovered, isNowHovered) -> {
                         if (isNowHovered) {
-                            setStyle("-fx-text-fill: #F3E9DC; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #5E3023;");
+                            setStyle(
+                                    "-fx-text-fill: #F3E9DC; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #5E3023;");
                         } else {
-                            setStyle("-fx-text-fill: #5E3023; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #F3E9DC;");
+                            setStyle(
+                                    "-fx-text-fill: #5E3023; -fx-font-weight: normal; -fx-padding: 8 12; -fx-background-color: #F3E9DC;");
                         }
                     });
                 }
@@ -145,7 +147,8 @@ public class RegisterController {
                 Platform.runLater(() -> {
                     Node popup = roleComboBox.getScene().getWindow().getScene().getRoot();
                     if (popup != null) {
-                        popup.setStyle("-fx-background-color: #F3E9DC; -fx-border-color: #5E3023; -fx-border-radius: 6px;");
+                        popup.setStyle(
+                                "-fx-background-color: #F3E9DC; -fx-border-color: #5E3023; -fx-border-radius: 6px;");
                     }
                 });
             }
@@ -253,7 +256,8 @@ public class RegisterController {
 
         if (isCreated) {
             AlertUtil.showSuccess("Success", "Account created successfully as [" + selectedRole + "]! Please log in.");
-            NavigateUtil.navigateTo(event, "id/LoginView.fxml", "Renespresso - Login", NavigateUtil.WindowMode.AUTH_DIALOG);
+            NavigateUtil.navigateTo(event, "id/LoginView.fxml", "Renespresso - Login",
+                    NavigateUtil.WindowMode.AUTH_DIALOG);
         } else {
             AlertUtil.showError("Registration Error", "Could not create account. Username might already be taken.");
         }
@@ -272,7 +276,8 @@ public class RegisterController {
             }
 
             if (fxmlUrl == null) {
-                AlertUtil.showError("Resource Error", "AdminValidationView.fxml could not be found in views directory.");
+                AlertUtil.showError("Resource Error",
+                        "AdminValidationView.fxml could not be found in views directory.");
                 return false;
             }
 
