@@ -1,81 +1,139 @@
--- ==========================================
+-- ==============================================================================
+-- RenEspresso POS & Inventory Management System
+-- Database Schema & Query Sample Reference
+-- Target Engine: MariaDB / MySQL (utf8mb4)
+-- Database Name: coffee
+-- ==============================================================================
+
+-- ==============================================================================
 -- 1. DATABASE SETUP
--- ==========================================
+-- ==============================================================================
 CREATE DATABASE IF NOT EXISTS coffee;
 USE coffee;
 
--- ==========================================
--- 2. TABLE CREATION
--- ==========================================
+-- ==============================================================================
+-- 2. TABLE CREATION (DDL)
+-- ==============================================================================
 
--- USERS
+-- ------------------------------------------------------------------------------
+-- USERS TABLE
+-- Stores staff credentials, roles, and session login records
+-- ------------------------------------------------------------------------------
+DROP TABLE IF EXISTS transaction_items;
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS product_variants;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
     user_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    role ENUM('ADMIN', 'CASHIER', 'MANAGER') NOT NULL DEFAULT 'CASHIER',
+    role ENUM('ADMIN', 'CASHIER', 'SUPERVISOR', 'MANAGER', 'SERVER', 'CHEF') NOT NULL DEFAULT 'CASHIER',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     last_login DATETIME DEFAULT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp(),
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-);
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- CATEGORIES
+-- ------------------------------------------------------------------------------
+-- CATEGORIES TABLE
+-- Product classifications for POS navigation
+-- ------------------------------------------------------------------------------
 CREATE TABLE categories (
-    category_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    category_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
-    sort_order INT NOT NULL DEFAULT 0
-);
+    sort_order INT(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- PRODUCTS
--- Note: 'available' defaults to FALSE (0) since 'quantity' defaults to 0
+-- ------------------------------------------------------------------------------
+-- PRODUCTS TABLE
+-- Base product catalogue with stock level and availability
+-- ------------------------------------------------------------------------------
 CREATE TABLE products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    category_id INT NOT NULL,
-    description VARCHAR(255),
-    image_path TEXT,
-    available BOOLEAN NOT NULL DEFAULT FALSE,
+    category_id INT(11) NOT NULL,
+    description VARCHAR(255) DEFAULT NULL,
+    image_path TEXT DEFAULT NULL,
+    available TINYINT(1) NOT NULL DEFAULT 1,
     quantity INT(11) NOT NULL DEFAULT 0,
-    FOREIGN KEY (category_id) REFERENCES categories(category_id)
-);
+    INDEX idx_products_category (category_id),
+    CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- PRODUCT VARIANTS (Handles sizes and prices)
+-- ------------------------------------------------------------------------------
+-- PRODUCT VARIANTS TABLE
+-- Sizes (Small, Medium, Large, 1 pc) and prices per product
+-- ------------------------------------------------------------------------------
 CREATE TABLE product_variants (
-    variant_id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT NOT NULL,
+    variant_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    product_id INT(11) NOT NULL,
     size_name VARCHAR(50) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-);
+    INDEX idx_variants_product (product_id),
+    CONSTRAINT fk_variants_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- TRANSACTIONS
+-- ------------------------------------------------------------------------------
+-- TRANSACTIONS TABLE
+-- POS orders, sales records, payment details, and breakdown
+-- ------------------------------------------------------------------------------
 CREATE TABLE transactions (
-    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
-    cashier_id INT,
+    transaction_id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    cashier_id INT(11) DEFAULT NULL,
+    order_id VARCHAR(50) DEFAULT NULL,
+    ticket_number VARCHAR(50) DEFAULT NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) DEFAULT 0.00,
+    vat DECIMAL(10, 2) DEFAULT 0.00,
+    discount DECIMAL(10, 2) DEFAULT 0.00,
+    tendered DECIMAL(10, 2) DEFAULT 0.00,
+    payment_method VARCHAR(50) DEFAULT 'Cash',
+    payment_status VARCHAR(20) DEFAULT 'Paid',
     status VARCHAR(20) NOT NULL DEFAULT 'COMPLETED',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (cashier_id) REFERENCES users(user_id)
-);
+    receipt_text TEXT DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_transactions_cashier (cashier_id),
+    CONSTRAINT fk_transactions_cashier FOREIGN KEY (cashier_id) REFERENCES users (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- TRANSACTION ITEMS
+-- ------------------------------------------------------------------------------
+-- TRANSACTION ITEMS TABLE
+-- Line items associated with transactions
+-- ------------------------------------------------------------------------------
 CREATE TABLE transaction_items (
-    transaction_id INT NOT NULL,
-    variant_id INT NOT NULL,
-    quantity INT NOT NULL,
+    transaction_id INT(11) NOT NULL,
+    variant_id INT(11) NOT NULL,
+    quantity INT(11) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     PRIMARY KEY (transaction_id, variant_id),
-    FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id),
-    FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id)
-);
+    INDEX idx_items_variant (variant_id),
+    CONSTRAINT fk_items_transaction FOREIGN KEY (transaction_id) REFERENCES transactions (transaction_id),
+    CONSTRAINT fk_items_variant FOREIGN KEY (variant_id) REFERENCES product_variants (variant_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- ==========================================
--- 3. DATA INSERTION
--- ==========================================
 
--- Insert Categories
+-- ==============================================================================
+-- 3. INITIAL SEED DATA INSERTION
+-- ==============================================================================
+
+-- ------------------------------------------------------------------------------
+-- Default Seed Accounts (BCrypt Hashed Passwords)
+-- admin: admin123 | cashier: cashier123 | manager: manager123
+-- ------------------------------------------------------------------------------
+INSERT INTO users (user_id, username, password, full_name, role, is_active) VALUES
+(1, 'admin', '$2a$12$dldAFBdvx08u7PEiqMdfWORRlMLrr5cNuFJSVqHImpab6MiWtFNsu', 'System Administrator', 'ADMIN', 1),
+(2, 'Miguelle', '$2a$12$UOMZVb.4YlJobz4yAKU3luTW0frKJyeBpkjkNXO6ZJi3zIGy48uau', 'Allan Miguelle V. Oiga', 'CASHIER', 1),
+(3, 'cashier', '$2a$12$RYYNwBeoEuVqIgIikmNNiekRlO0PfjAI7DrjMHbr67QkBYV3Q/qdC', 'Default Cashier', 'CASHIER', 1),
+(4, 'manager', '$2a$12$Gus1V5hADAAO5wqmXf11kuT9w2tovNh.YWRF9Ghq71zgJmIzH/AWC', 'Default Manager', 'MANAGER', 1);
+
+-- ------------------------------------------------------------------------------
+-- Categories
+-- ------------------------------------------------------------------------------
 INSERT INTO categories (category_id, name, sort_order) VALUES
 (1, 'Milk Tea', 1),
 (2, 'Hot Coffee', 2),
@@ -84,100 +142,454 @@ INSERT INTO categories (category_id, name, sort_order) VALUES
 (5, 'Fruit Juice', 5),
 (6, 'Bread & Pastries', 6);
 
--- Insert Products
-INSERT INTO products (id, name, category_id) VALUES
--- Milk Teas
-(1, 'Classic Pearl Milk Tea', 1), (2, 'Wintermelon Milk Tea', 1), (3, 'Okinawa Brown Sugar', 1),
-(4, 'Taro Milk Tea', 1), (5, 'Thai Milk Tea', 1), (6, 'Matcha Green Tea', 1),
-(7, 'Chocolate Milk Tea', 1), (8, 'Salted Caramel Cream', 1), (9, 'Mango Coconut Tea', 1),
-(10, 'Hazelnut Milk Tea', 1),
--- Hot Coffees
-(11, 'Fresh Brew / Americano', 2), (12, 'Classic Caffe Latte', 2), (13, 'Cappuccino', 2),
-(14, 'Cafe Mocha', 2), (15, 'Caramel Macchiato', 2), (16, 'Spanish Latte', 2),
-(17, 'Vanilla Bean Latte', 2), (18, 'Hazelnut Cappuccino', 2), (19, 'White Chocolate Mocha', 2),
-(20, 'Cinnamon Oat Latte', 2),
--- Iced Coffees
-(21, 'Iced Americano', 3), (22, 'Iced Latte', 3), (23, 'Iced Caramel Macchiato', 3),
-(24, 'Iced Spanish Latte', 3), (25, 'Iced Mocha', 3), (26, 'Vanilla Sweet Cream Cold Brew', 3),
-(27, 'Salted Caramel Cold Brew', 3), (28, 'Iced Matchpresso', 3), (29, 'Iced Hazelnut Oat Latte', 3),
-(30, 'Iced Brown Sugar Latte', 3),
--- Shakes
-(31, 'Classic Chocolate Shake', 4), (32, 'Vanilla Bean Shake', 4), (33, 'Strawberry Cream Shake', 4),
-(34, 'Cookies & Cream (Oreo)', 4), (35, 'Mango Graham Float Shake', 4), (36, 'Nutella Hazelnut Shake', 4),
-(37, 'Salted Caramel Pretzel', 4), (38, 'Avocado Cream Shake', 4), (39, 'Strawberry Cheesecake', 4),
-(40, 'Taro Cheesecake Shake', 4),
--- Fruit Juices
-(41, 'Classic Lemonade', 5), (42, 'Cucumber Mint Lemonade', 5), (43, 'Fresh Watermelon Juice', 5),
-(44, 'Orange Mango Juice', 5), (45, 'Pineapple Cucumber Juice', 5), (46, 'Strawberry Lemonade', 5),
-(47, 'Green Detox Juice', 5), (48, 'Citrus Ginger Glow', 5), (49, 'Passion Fruit Cooler', 5),
-(50, 'Calamansi Honey Juice', 5),
--- Bread & Pastries
-(51, 'Garlic Butter Baguette', 6), (52, 'Classic Cheese Ensaymada', 6), (53, 'Milk Bread Roll / Bun', 6),
-(54, 'Butter Croissant', 6), (55, 'Chocolate Bun / Pan de Cacao', 6), (56, 'Cinnamon Roll', 6),
-(57, 'Banana Walnut Slice', 6), (58, 'Ube Cheese Pandesal', 6), (59, 'Cream Cheese Brioche', 6),
-(60, 'Garlic Bread Slice', 6);
+-- ------------------------------------------------------------------------------
+-- Products (60 items)
+-- ------------------------------------------------------------------------------
+INSERT INTO products (id, name, category_id, available, quantity) VALUES
+-- Milk Teas (Category 1)
+(1, 'Classic Pearl Milk Tea', 1, 1, 50),
+(2, 'Wintermelon Milk Tea', 1, 1, 50),
+(3, 'Okinawa Brown Sugar', 1, 1, 50),
+(4, 'Taro Milk Tea', 1, 1, 50),
+(5, 'Thai Milk Tea', 1, 1, 50),
+(6, 'Matcha Green Tea', 1, 1, 50),
+(7, 'Chocolate Milk Tea', 1, 1, 50),
+(8, 'Salted Caramel Cream', 1, 1, 50),
+(9, 'Mango Coconut Tea', 1, 1, 50),
+(10, 'Hazelnut Milk Tea', 1, 1, 50),
+-- Hot Coffees (Category 2)
+(11, 'Fresh Brew / Americano', 2, 1, 50),
+(12, 'Classic Caffe Latte', 2, 1, 50),
+(13, 'Cappuccino', 2, 1, 50),
+(14, 'Cafe Mocha', 2, 1, 50),
+(15, 'Caramel Macchiato', 2, 1, 50),
+(16, 'Spanish Latte', 2, 1, 50),
+(17, 'Vanilla Bean Latte', 2, 1, 50),
+(18, 'Hazelnut Cappuccino', 2, 1, 50),
+(19, 'White Chocolate Mocha', 2, 1, 50),
+(20, 'Cinnamon Oat Latte', 2, 1, 50),
+-- Iced Coffees (Category 3)
+(21, 'Iced Americano', 3, 1, 50),
+(22, 'Iced Latte', 3, 1, 50),
+(23, 'Iced Caramel Macchiato', 3, 1, 50),
+(24, 'Iced Spanish Latte', 3, 1, 50),
+(25, 'Iced Mocha', 3, 1, 50),
+(26, 'Vanilla Sweet Cream Cold Brew', 3, 1, 50),
+(27, 'Salted Caramel Cold Brew', 3, 1, 50),
+(28, 'Iced Matchpresso', 3, 1, 50),
+(29, 'Iced Hazelnut Oat Latte', 3, 1, 50),
+(30, 'Iced Brown Sugar Latte', 3, 1, 50),
+-- Shakes (Category 4)
+(31, 'Classic Chocolate Shake', 4, 1, 50),
+(32, 'Vanilla Bean Shake', 4, 1, 50),
+(33, 'Strawberry Cream Shake', 4, 1, 50),
+(34, 'Cookies & Cream (Oreo)', 4, 1, 50),
+(35, 'Mango Graham Float Shake', 4, 1, 50),
+(36, 'Nutella Hazelnut Shake', 4, 1, 50),
+(37, 'Salted Caramel Pretzel', 4, 1, 50),
+(38, 'Avocado Cream Shake', 4, 1, 50),
+(39, 'Strawberry Cheesecake', 4, 1, 50),
+(40, 'Taro Cheesecake Shake', 4, 1, 50),
+-- Fruit Juices (Category 5)
+(41, 'Classic Lemonade', 5, 1, 50),
+(42, 'Cucumber Mint Lemonade', 5, 1, 50),
+(43, 'Fresh Watermelon Juice', 5, 1, 50),
+(44, 'Orange Mango Juice', 5, 1, 50),
+(45, 'Pineapple Cucumber Juice', 5, 1, 50),
+(46, 'Strawberry Lemonade', 5, 1, 50),
+(47, 'Green Detox Juice', 5, 1, 50),
+(48, 'Citrus Ginger Glow', 5, 1, 50),
+(49, 'Passion Fruit Cooler', 5, 1, 50),
+(50, 'Calamansi Honey Juice', 5, 1, 50),
+-- Bread & Pastries (Category 6)
+(51, 'Garlic Butter Baguette', 6, 1, 50),
+(52, 'Classic Cheese Ensaymada', 6, 1, 50),
+(53, 'Milk Bread Roll / Bun', 6, 1, 50),
+(54, 'Butter Croissant', 6, 1, 50),
+(55, 'Chocolate Bun / Pan de Cacao', 6, 1, 50),
+(56, 'Cinnamon Roll', 6, 1, 50),
+(57, 'Banana Walnut Slice', 6, 1, 50),
+(58, 'Ube Cheese Pandesal', 6, 1, 50),
+(59, 'Cream Cheese Brioche', 6, 1, 50),
+(60, 'Garlic Bread Slice', 6, 1, 50);
 
--- Insert Product Variants (Sizes & Prices)
-INSERT INTO product_variants (product_id, size_name, price) VALUES
+-- ------------------------------------------------------------------------------
+-- Product Variants (160 items: Sizes & Pricing)
+-- ------------------------------------------------------------------------------
+INSERT INTO product_variants (variant_id, product_id, size_name, price) VALUES
 -- Milk Teas
-(1, 'Small', 65.00), (1, 'Medium', 85.00), (1, 'Large', 105.00),
-(2, 'Small', 65.00), (2, 'Medium', 85.00), (2, 'Large', 105.00),
-(3, 'Small', 75.00), (3, 'Medium', 95.00), (3, 'Large', 115.00),
-(4, 'Small', 70.00), (4, 'Medium', 90.00), (4, 'Large', 110.00),
-(5, 'Small', 70.00), (5, 'Medium', 90.00), (5, 'Large', 110.00),
-(6, 'Small', 75.00), (6, 'Medium', 95.00), (6, 'Large', 115.00),
-(7, 'Small', 70.00), (7, 'Medium', 90.00), (7, 'Large', 110.00),
-(8, 'Small', 80.00), (8, 'Medium', 100.00), (8, 'Large', 120.00),
-(9, 'Small', 75.00), (9, 'Medium', 95.00), (9, 'Large', 115.00),
-(10, 'Small', 70.00), (10, 'Medium', 90.00), (10, 'Large', 110.00),
+(1, 1, 'Small', 65.00), (2, 1, 'Medium', 85.00), (3, 1, 'Large', 105.00),
+(4, 2, 'Small', 65.00), (5, 2, 'Medium', 85.00), (6, 2, 'Large', 105.00),
+(7, 3, 'Small', 75.00), (8, 3, 'Medium', 95.00), (9, 3, 'Large', 115.00),
+(10, 4, 'Small', 70.00), (11, 4, 'Medium', 90.00), (12, 4, 'Large', 110.00),
+(13, 5, 'Small', 70.00), (14, 5, 'Medium', 90.00), (15, 5, 'Large', 110.00),
+(16, 6, 'Small', 75.00), (17, 6, 'Medium', 95.00), (18, 6, 'Large', 115.00),
+(19, 7, 'Small', 70.00), (20, 7, 'Medium', 90.00), (21, 7, 'Large', 110.00),
+(22, 8, 'Small', 80.00), (23, 8, 'Medium', 100.00), (24, 8, 'Large', 120.00),
+(25, 9, 'Small', 75.00), (26, 9, 'Medium', 95.00), (27, 9, 'Large', 115.00),
+(28, 10, 'Small', 70.00), (29, 10, 'Medium', 90.00), (30, 10, 'Large', 110.00),
 -- Hot Coffees
-(11, 'Small', 55.00), (11, 'Medium', 75.00), (11, 'Large', 95.00),
-(12, 'Small', 65.00), (12, 'Medium', 85.00), (12, 'Large', 105.00),
-(13, 'Small', 65.00), (13, 'Medium', 85.00), (13, 'Large', 105.00),
-(14, 'Small', 75.00), (14, 'Medium', 95.00), (14, 'Large', 115.00),
-(15, 'Small', 80.00), (15, 'Medium', 100.00), (15, 'Large', 120.00),
-(16, 'Small', 75.00), (16, 'Medium', 95.00), (16, 'Large', 115.00),
-(17, 'Small', 70.00), (17, 'Medium', 90.00), (17, 'Large', 110.00),
-(18, 'Small', 75.00), (18, 'Medium', 95.00), (18, 'Large', 115.00),
-(19, 'Small', 80.00), (19, 'Medium', 100.00), (19, 'Large', 120.00),
-(20, 'Small', 85.00), (20, 'Medium', 105.00), (20, 'Large', 125.00),
+(31, 11, 'Small', 55.00), (32, 11, 'Medium', 75.00), (33, 11, 'Large', 95.00),
+(34, 12, 'Small', 65.00), (35, 12, 'Medium', 85.00), (36, 12, 'Large', 105.00),
+(37, 13, 'Small', 65.00), (38, 13, 'Medium', 85.00), (39, 13, 'Large', 105.00),
+(40, 14, 'Small', 75.00), (41, 14, 'Medium', 95.00), (42, 14, 'Large', 115.00),
+(43, 15, 'Small', 80.00), (44, 15, 'Medium', 100.00), (45, 15, 'Large', 120.00),
+(44, 16, 'Small', 75.00), (47, 16, 'Medium', 95.00), (48, 16, 'Large', 115.00),
+(49, 17, 'Small', 70.00), (50, 17, 'Medium', 90.00), (51, 17, 'Large', 110.00),
+(52, 18, 'Small', 75.00), (53, 18, 'Medium', 95.00), (54, 18, 'Large', 115.00),
+(55, 19, 'Small', 80.00), (56, 19, 'Medium', 100.00), (57, 19, 'Large', 120.00),
+(58, 20, 'Small', 85.00), (59, 20, 'Medium', 105.00), (60, 20, 'Large', 125.00),
 -- Iced Coffees
-(21, 'Small', 65.00), (21, 'Medium', 85.00), (21, 'Large', 105.00),
-(22, 'Small', 75.00), (22, 'Medium', 95.00), (22, 'Large', 115.00),
-(23, 'Small', 90.00), (23, 'Medium', 110.00), (23, 'Large', 130.00),
-(24, 'Small', 85.00), (24, 'Medium', 105.00), (24, 'Large', 125.00),
-(25, 'Small', 85.00), (25, 'Medium', 105.00), (25, 'Large', 125.00),
-(26, 'Small', 90.00), (26, 'Medium', 110.00), (26, 'Large', 130.00),
-(27, 'Small', 95.00), (27, 'Medium', 115.00), (27, 'Large', 135.00),
-(28, 'Small', 95.00), (28, 'Medium', 115.00), (28, 'Large', 135.00),
-(29, 'Small', 95.00), (29, 'Medium', 115.00), (29, 'Large', 135.00),
-(30, 'Small', 85.00), (30, 'Medium', 105.00), (30, 'Large', 125.00),
+(61, 21, 'Small', 65.00), (62, 21, 'Medium', 85.00), (63, 21, 'Large', 105.00),
+(64, 22, 'Small', 75.00), (65, 22, 'Medium', 95.00), (66, 22, 'Large', 115.00),
+(67, 23, 'Small', 90.00), (68, 23, 'Medium', 110.00), (69, 23, 'Large', 130.00),
+(70, 24, 'Small', 85.00), (71, 24, 'Medium', 105.00), (72, 24, 'Large', 125.00),
+(73, 25, 'Small', 85.00), (74, 25, 'Medium', 105.00), (75, 25, 'Large', 125.00),
+(76, 26, 'Small', 90.00), (77, 26, 'Medium', 110.00), (78, 26, 'Large', 130.00),
+(79, 27, 'Small', 95.00), (80, 27, 'Medium', 115.00), (81, 27, 'Large', 135.00),
+(82, 28, 'Small', 95.00), (83, 28, 'Medium', 115.00), (84, 28, 'Large', 135.00),
+(85, 29, 'Small', 95.00), (86, 29, 'Medium', 115.00), (87, 29, 'Large', 135.00),
+(88, 30, 'Small', 85.00), (89, 30, 'Medium', 105.00), (90, 30, 'Large', 125.00),
 -- Shakes
-(31, 'Small', 70.00), (31, 'Medium', 90.00), (31, 'Large', 110.00),
-(32, 'Small', 70.00), (32, 'Medium', 90.00), (32, 'Large', 110.00),
-(33, 'Small', 80.00), (33, 'Medium', 100.00), (33, 'Large', 120.00),
-(34, 'Small', 80.00), (34, 'Medium', 100.00), (34, 'Large', 120.00),
-(35, 'Small', 85.00), (35, 'Medium', 105.00), (35, 'Large', 125.00),
-(36, 'Small', 90.00), (36, 'Medium', 110.00), (36, 'Large', 130.00),
-(37, 'Small', 85.00), (37, 'Medium', 105.00), (37, 'Large', 125.00),
-(38, 'Small', 90.00), (38, 'Medium', 110.00), (38, 'Large', 130.00),
-(39, 'Small', 95.00), (39, 'Medium', 115.00), (39, 'Large', 135.00),
-(40, 'Small', 90.00), (40, 'Medium', 110.00), (40, 'Large', 130.00),
+(91, 31, 'Small', 70.00), (92, 31, 'Medium', 90.00), (93, 31, 'Large', 110.00),
+(94, 32, 'Small', 70.00), (95, 32, 'Medium', 90.00), (96, 32, 'Large', 110.00),
+(97, 33, 'Small', 80.00), (98, 33, 'Medium', 100.00), (99, 33, 'Large', 120.00),
+(100, 34, 'Small', 80.00), (101, 34, 'Medium', 100.00), (102, 34, 'Large', 120.00),
+(103, 35, 'Small', 85.00), (104, 35, 'Medium', 105.00), (105, 35, 'Large', 125.00),
+(106, 36, 'Small', 90.00), (107, 36, 'Medium', 110.00), (108, 36, 'Large', 130.00),
+(109, 37, 'Small', 85.00), (110, 37, 'Medium', 105.00), (111, 37, 'Large', 125.00),
+(112, 38, 'Small', 90.00), (113, 38, 'Medium', 110.00), (114, 38, 'Large', 130.00),
+(115, 39, 'Small', 95.00), (116, 39, 'Medium', 115.00), (117, 39, 'Large', 135.00),
+(118, 40, 'Small', 90.00), (119, 40, 'Medium', 110.00), (120, 40, 'Large', 130.00),
 -- Fruit Juices
-(41, 'Small', 50.00), (41, 'Medium', 70.00), (41, 'Large', 90.00),
-(42, 'Small', 60.00), (42, 'Medium', 80.00), (42, 'Large', 100.00),
-(43, 'Small', 60.00), (43, 'Medium', 80.00), (43, 'Large', 100.00),
-(44, 'Small', 65.00), (44, 'Medium', 85.00), (44, 'Large', 105.00),
-(45, 'Small', 65.00), (45, 'Medium', 85.00), (45, 'Large', 105.00),
-(46, 'Small', 65.00), (46, 'Medium', 85.00), (46, 'Large', 105.00),
-(47, 'Small', 75.00), (47, 'Medium', 95.00), (47, 'Large', 115.00),
-(48, 'Small', 70.00), (48, 'Medium', 90.00), (48, 'Large', 110.00),
-(49, 'Small', 70.00), (49, 'Medium', 90.00), (49, 'Large', 110.00),
-(50, 'Small', 55.00), (50, 'Medium', 75.00), (50, 'Large', 95.00),
--- Bread & Pastries
-(51, '1 pc', 55.00), (52, '1 pc', 50.00), (53, '1 pc', 30.00),
-(54, '1 pc', 75.00), (55, '1 pc', 45.00), (56, '1 pc', 80.00),
-(57, '1 pc', 65.00), (58, '1 pc', 25.00), (59, '1 pc', 85.00),
-(60, '1 pc', 30.00);
+(121, 41, 'Small', 50.00), (122, 41, 'Medium', 70.00), (123, 41, 'Large', 90.00),
+(124, 42, 'Small', 60.00), (125, 42, 'Medium', 80.00), (126, 42, 'Large', 100.00),
+(127, 43, 'Small', 60.00), (128, 43, 'Medium', 80.00), (129, 43, 'Large', 100.00),
+(130, 44, 'Small', 65.00), (131, 44, 'Medium', 85.00), (132, 44, 'Large', 105.00),
+(133, 45, 'Small', 65.00), (134, 45, 'Medium', 85.00), (135, 45, 'Large', 105.00),
+(136, 46, 'Small', 65.00), (137, 46, 'Medium', 85.00), (138, 46, 'Large', 105.00),
+(139, 47, 'Small', 75.00), (140, 47, 'Medium', 95.00), (141, 47, 'Large', 115.00),
+(142, 48, 'Small', 70.00), (143, 48, 'Medium', 90.00), (144, 48, 'Large', 110.00),
+(145, 49, 'Small', 70.00), (146, 49, 'Medium', 90.00), (147, 49, 'Large', 110.00),
+(148, 50, 'Small', 55.00), (149, 50, 'Medium', 75.00), (150, 50, 'Large', 95.00),
+-- Bread & Pastries (Single-unit items)
+(151, 51, '1 pc', 55.00),
+(152, 52, '1 pc', 50.00),
+(153, 53, '1 pc', 30.00),
+(154, 54, '1 pc', 75.00),
+(155, 55, '1 pc', 45.00),
+(156, 56, '1 pc', 80.00),
+(157, 57, '1 pc', 65.00),
+(158, 58, '1 pc', 25.00),
+(159, 59, '1 pc', 85.00),
+(160, 60, '1 pc', 30.00);
 
-UPDATE products SET quantity = 50, available = TRUE;
+-- ------------------------------------------------------------------------------
+-- Sample Transactions & Transaction Items
+-- ------------------------------------------------------------------------------
+INSERT INTO transactions (transaction_id, cashier_id, order_id, ticket_number, total_amount, subtotal, vat, discount, tendered, payment_method, payment_status, status, receipt_text, created_at, updated_at) VALUES
+(1, 4, 'TXN-8396', '#001', 180.00, 160.71, 19.29, 0.00, 200.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8396\nTotal: 180.00', '2026-10-11 15:51:26', '2026-10-11 15:51:26'),
+(2, 3, 'TXN-8397', '#002', 380.00, 339.29, 40.71, 0.00, 500.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8397\nTotal: 380.00', '2026-10-11 15:51:26', '2026-10-11 15:51:26'),
+(3, 4, 'TXN-8398', '#003', 320.00, 285.71, 34.29, 0.00, 320.00, 'GCash', 'Refunded', 'CANCELLED', 'RenEspresso Receipt\nOrder: TXN-8398\nTotal: 320.00', '2026-10-12 11:51:26', '2026-10-12 11:51:26'),
+(4, 2, 'TXN-8399', '#004', 610.00, 544.64, 65.36, 0.00, 1000.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8399\nTotal: 610.00', '2026-10-12 12:51:26', '2026-10-12 12:51:26'),
+(5, 3, 'TXN-8400', '#005', 250.00, 223.21, 26.79, 0.00, 250.00, 'Card', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8400\nTotal: 250.00', '2026-10-12 13:51:26', '2026-10-12 13:51:26'),
+(6, 2, 'TXN-8401', '#006', 240.00, 214.29, 25.71, 0.00, 0.00, 'Cash', 'Unpaid', 'PENDING', 'RenEspresso Receipt\nOrder: TXN-8401\nTotal: 240.00', '2026-10-12 14:51:26', '2026-10-12 14:51:26'),
+(7, 3, 'TXN-8402', '#007', 440.00, 392.86, 47.14, 0.00, 500.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8402\nTotal: 440.00', '2026-10-12 15:31:26', '2026-10-12 15:55:41');
+
+INSERT INTO transaction_items (transaction_id, variant_id, quantity, price) VALUES
+(1, 1, 2, 65.00),
+(1, 2, 1, 50.00),
+(2, 2, 2, 85.00),
+(2, 3, 2, 105.00),
+(3, 1, 1, 110.00),
+(3, 3, 2, 105.00),
+(4, 2, 2, 85.00),
+(4, 3, 3, 105.00),
+(4, 4, 2, 62.50),
+(5, 1, 1, 80.00),
+(5, 2, 2, 85.00),
+(6, 1, 2, 65.00),
+(6, 4, 1, 110.00),
+(7, 1, 1, 60.00),
+(7, 2, 2, 85.00),
+(7, 3, 2, 105.00);
+
+
+-- ==============================================================================
+-- 4. APPLICATION QUERIES REFERENCE (RENESPRESSO DAOs)
+-- ==============================================================================
+
+-- ------------------------------------------------------------------------------
+-- 4.1 USER & AUTHENTICATION QUERIES (UserDAO, DatabaseSeeder)
+-- ------------------------------------------------------------------------------
+
+-- Authenticate User Login
+-- Source: UserDAO.authenticate(username, plainPassword)
+SELECT user_id, username, password, full_name, role, is_active 
+FROM users 
+WHERE LOWER(username) = LOWER(?) AND is_active = 1;
+
+-- Update Last Login Timestamp
+-- Source: UserDAO.touchLastLogin(userId)
+UPDATE users SET last_login = NOW() WHERE user_id = ?;
+
+-- Admin/Manager Elevation Authorization Modal
+-- Source: UserDAO.validateAdminCredentials(username, plainPassword)
+SELECT password, role FROM users 
+WHERE username = ? AND role IN ('ADMIN', 'MANAGER') AND is_active = 1;
+
+-- Register New User Account
+-- Source: UserDAO.registerUser(user, plainPassword)
+INSERT INTO users (username, password, full_name, role, is_active) 
+VALUES (?, ?, ?, ?, ?);
+
+-- List All Accounts for User Management Table
+-- Source: UserDAO.getAllAccounts()
+SELECT user_id, full_name, username, role, is_active, last_login, created_at 
+FROM users 
+ORDER BY created_at DESC;
+
+-- Validate Duplicate Username (Excluding Current User ID)
+-- Source: UserDAO.usernameExists(username, excludeId)
+SELECT 1 FROM users 
+WHERE LOWER(username) = LOWER(?) AND user_id <> ?;
+
+-- Count Remaining Active Admins (Prevent Self-Lockout)
+-- Source: UserDAO.countOtherActiveAdmins(excludeId)
+SELECT COUNT(*) FROM users 
+WHERE role = 'ADMIN' AND is_active = 1 AND user_id <> ?;
+
+-- Update Account Information (With or Without Password Hash)
+-- Source: UserDAO.updateAccount(id, fullName, username, role, active, newPlainPassword)
+UPDATE users 
+SET full_name = ?, username = ?, role = ?, is_active = ? [, password = ?] 
+WHERE user_id = ?;
+
+-- Delete Account
+-- Source: UserDAO.deleteAccount(id)
+DELETE FROM users WHERE user_id = ?;
+
+-- Check User Existence for Seeder
+-- Source: DatabaseSeeder.seedAccountIfNotExists(username, plainPassword, fullName, role)
+SELECT COUNT(*) FROM users WHERE username = ?;
+
+
+-- ------------------------------------------------------------------------------
+-- 4.2 MENU & INVENTORY MANAGEMENT QUERIES (MenuDAO, ProductVariantDAO)
+-- ------------------------------------------------------------------------------
+
+-- Get All Active Categories Ordered by Custom Sort
+-- Source: MenuDAO.getCategories()
+SELECT category_id, name 
+FROM categories 
+ORDER BY sort_order, name;
+
+-- Add New Category with Auto-Incremented Sort Order
+-- Source: MenuDAO.addCategory(name)
+INSERT INTO categories (name, sort_order) 
+VALUES (?, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM (SELECT sort_order FROM categories) t));
+
+-- Delete Category
+-- Source: MenuDAO.deleteCategory(id)
+DELETE FROM categories WHERE category_id = ?;
+
+-- Get All Products with Category and Minimum Variant Starting Price
+-- Source: MenuDAO.getProducts()
+SELECT p.id, p.name, p.category_id, c.name AS category, 
+       (SELECT COALESCE(MIN(price), 0) FROM product_variants WHERE product_id = p.id) AS price, 
+       p.description, p.image_path, p.available, p.quantity 
+FROM products p 
+JOIN categories c ON c.category_id = p.category_id 
+ORDER BY c.sort_order, p.name;
+
+-- Add New Product
+-- Source: MenuDAO.addProduct(name, categoryId, description, imagePath, available, quantity)
+INSERT INTO products (name, category_id, description, image_path, available, quantity) 
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Update Product Details and Stock Quantity
+-- Source: MenuDAO.updateProduct(id, name, categoryId, description, imagePath, available, quantity)
+UPDATE products 
+SET name = ?, category_id = ?, description = ?, image_path = ?, available = ?, quantity = ? 
+WHERE id = ?;
+
+-- Quick-Toggle Product Availability Switch
+-- Source: MenuDAO.setAvailable(id, available)
+UPDATE products SET available = ? WHERE id = ?;
+
+-- Delete Product
+-- Source: MenuDAO.deleteProduct(id)
+DELETE FROM products WHERE id = ?;
+
+-- Get All Variants Across All Products
+-- Source: MenuDAO.getAllVariants()
+SELECT variant_id, product_id, size_name, price 
+FROM product_variants 
+ORDER BY price ASC;
+
+-- Get Product Variants for a Specific Product ID
+-- Source: ProductVariantDAO.getVariantsByProductId(productId)
+SELECT variant_id, product_id, size_name, price 
+FROM product_variants 
+WHERE product_id = ? 
+ORDER BY price ASC;
+
+-- Add Product Variant (Size & Price)
+-- Source: ProductVariantDAO.addVariant(productId, sizeName, price)
+INSERT INTO product_variants (product_id, size_name, price) 
+VALUES (?, ?, ?);
+
+-- Update Product Variant Size or Price
+-- Source: ProductVariantDAO.updateVariant(variantId, sizeName, price)
+UPDATE product_variants 
+SET size_name = ?, price = ? 
+WHERE variant_id = ?;
+
+-- Delete Product Variant
+-- Source: ProductVariantDAO.deleteVariant(variantId)
+DELETE FROM product_variants WHERE variant_id = ?;
+
+
+-- ------------------------------------------------------------------------------
+-- 4.3 TRANSACTION & POS CHECKOUT QUERIES (TransactionDAO)
+-- ------------------------------------------------------------------------------
+
+-- Save Transaction Header Record (Inside DB Transaction)
+-- Source: TransactionDAO.saveTransaction(...)
+INSERT INTO transactions (
+    cashier_id, order_id, ticket_number, total_amount, subtotal, vat,
+    discount, tendered, payment_method, payment_status, status, receipt_text, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Insert or Accumulate Transaction Line Items (Batch execution)
+-- Source: TransactionDAO.saveTransaction(...)
+INSERT INTO transaction_items (transaction_id, variant_id, quantity, price)
+VALUES (?, ?, ?, ?)
+ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity);
+
+-- Update Formatted Order ID (e.g. TXN-84xx)
+-- Source: TransactionDAO.saveTransaction(...)
+UPDATE transactions SET order_id = ? WHERE transaction_id = ?;
+
+-- Update Order Status (PREPARING -> COMPLETED or CANCELLED)
+-- Source: TransactionDAO.updateStatus(transactionId, status)
+UPDATE transactions 
+SET status = ?, updated_at = CURRENT_TIMESTAMP 
+WHERE transaction_id = ?;
+
+-- Load All Transactions with Cashier Information (Admin Sales View)
+-- Source: TransactionDAO.loadAllTransactions()
+SELECT t.*, u.full_name AS staff_name, u.role AS staff_role 
+FROM transactions t 
+LEFT JOIN users u ON u.user_id = t.cashier_id 
+ORDER BY t.created_at DESC;
+
+-- Load Today's Transactions for Active Cashier
+-- Source: TransactionDAO.loadTodayTransactions()
+SELECT t.*, u.full_name AS staff_name, u.role AS staff_role 
+FROM transactions t 
+LEFT JOIN users u ON u.user_id = t.cashier_id 
+WHERE DATE(t.created_at) = CURDATE() 
+ORDER BY t.created_at DESC;
+
+-- Load Line Items for an Order with Product and Variant Info
+-- Source: TransactionDAO.loadTransactionLines(conn, txId)
+SELECT ti.quantity, ti.price, p.name AS product_name, pv.size_name
+FROM transaction_items ti
+JOIN product_variants pv ON pv.variant_id = ti.variant_id
+JOIN products p ON p.id = pv.product_id
+WHERE ti.transaction_id = ?;
+
+
+-- ------------------------------------------------------------------------------
+-- 4.4 REPORTING, DASHBOARD & ANALYTICS QUERIES (TransactionDAO, HomeDAO)
+-- ------------------------------------------------------------------------------
+
+-- Sales Aggregates Summary: Today, This Week, and This Month
+-- Source: TransactionDAO.getSalesSummary()
+SELECT 
+    COALESCE(SUM(CASE WHEN DATE(created_at) = CURDATE() THEN total_amount ELSE 0 END), 0) AS today_sales,
+    COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) AS today_orders,
+    COALESCE(SUM(CASE WHEN YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) THEN total_amount ELSE 0 END), 0) AS week_sales,
+    COUNT(CASE WHEN YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) THEN 1 END) AS week_orders,
+    COALESCE(SUM(CASE WHEN YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE()) THEN total_amount ELSE 0 END), 0) AS month_sales,
+    COUNT(CASE WHEN YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE()) THEN 1 END) AS month_orders
+FROM transactions
+WHERE status != 'CANCELLED';
+
+-- Last 14 Days Sales Trend for Charts
+-- Source: TransactionDAO.getLast14DaysSales()
+SELECT DATE_FORMAT(d.dt, '%b %d') AS lbl, COALESCE(SUM(t.total_amount), 0) AS total
+FROM (
+    SELECT CURDATE() - INTERVAL (a.a + (10 * b.a)) DAY AS dt
+    FROM (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 
+          UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 
+          UNION ALL SELECT 8 UNION ALL SELECT 9) AS a
+    CROSS JOIN (SELECT 0 AS a UNION ALL SELECT 1) AS b
+    WHERE (a.a + (10 * b.a)) < 14
+) d
+LEFT JOIN transactions t ON DATE(t.created_at) = d.dt AND t.status != 'CANCELLED'
+GROUP BY d.dt, lbl
+ORDER BY d.dt ASC;
+
+-- Dashboard Sales Total and Order Count for Specific Date Range
+-- Source: HomeDAO.totals(conn, fromDate, toDate)
+SELECT COALESCE(SUM(total_amount), 0), COUNT(*) 
+FROM transactions 
+WHERE status != 'CANCELLED' AND created_at >= ? AND created_at < ?;
+
+-- Dashboard Quantity of Items Sold in Date Range
+-- Source: HomeDAO.itemsSold(conn, fromDate, toDate)
+SELECT COALESCE(SUM(ti.quantity), 0) 
+FROM transaction_items ti 
+JOIN transactions t ON t.transaction_id = ti.transaction_id 
+WHERE t.status != 'CANCELLED' AND t.created_at >= ? AND t.created_at < ?;
+
+-- Dashboard 7-Day Revenue Trend Grouped by Date
+-- Source: HomeDAO.last7Days(conn, today)
+SELECT DATE(created_at) AS d, SUM(total_amount) AS s 
+FROM transactions 
+WHERE status != 'CANCELLED' AND created_at >= ? AND created_at < ? 
+GROUP BY DATE(created_at);
+
+-- Top 5 Best Selling Products by Volume and Revenue
+-- Source: HomeDAO.topProducts(conn, fromDate, toDate)
+SELECT p.name, SUM(ti.quantity) AS qty, SUM(ti.quantity * ti.price) AS revenue 
+FROM transaction_items ti 
+JOIN transactions t ON t.transaction_id = ti.transaction_id 
+JOIN product_variants pv ON pv.variant_id = ti.variant_id 
+JOIN products p ON p.id = pv.product_id 
+WHERE t.status != 'CANCELLED' AND t.created_at >= ? AND t.created_at < ? 
+GROUP BY p.id, p.name 
+ORDER BY qty DESC 
+LIMIT 5;
+
+-- Recent Orders Activity Feed (Admin Home Dashboard)
+-- Source: HomeDAO.recentOrders(conn)
+SELECT t.transaction_id, COALESCE(u.full_name, '-') AS cashier, 
+       t.total_amount, t.status, t.created_at 
+FROM transactions t 
+LEFT JOIN users u ON u.user_id = t.cashier_id 
+ORDER BY t.created_at DESC 
+LIMIT 8;
+
+-- Staff Active & Total Count Grouped by Role
+-- Source: HomeDAO.loadStaff()
+SELECT role, COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active 
+FROM users 
+GROUP BY role 
+ORDER BY FIELD(role, 'ADMIN', 'MANAGER', 'CASHIER');
+
+
+-- ------------------------------------------------------------------------------
+-- 4.5 DATABASE EXPORT & BACKUP QUERIES (ExcelBackupUtil)
+-- ------------------------------------------------------------------------------
+
+-- Export Full Table Data to Individual Excel Sheets
+-- Source: ExcelBackupUtil.backupToExcel(conn, outFile)
+SELECT * FROM `categories`;
+SELECT * FROM `products`;
+SELECT * FROM `product_variants`;
+SELECT * FROM `users`;
+SELECT * FROM `transactions`;
+SELECT * FROM `transaction_items`;
