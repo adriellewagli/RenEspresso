@@ -39,6 +39,9 @@ import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 public class PosController {
 
     private static final double PHOTO = 96;
+    private static final double VAT_RATE = 0.12;          // menu prices already include this VAT
+    private static final double CARD_MIN_W = 188;         // smallest a menu card may get before the grid drops a column
+    private double cardWidth = CARD_MIN_W;
 
     // --- FXML bindings ---
     @FXML private StackPane posRoot;
@@ -77,6 +80,9 @@ public class PosController {
     @FXML
     public void initialize() {
         txtMenuSearch.textProperty().addListener((obs, o, n) -> renderMenu());
+
+        // Stretch the menu cards so the grid always fills the space up to the Current Order panel.
+        menuGrid.widthProperty().addListener((obs, o, n) -> resizeCards());
 
         chipGroup.selectedToggleProperty().addListener((o, old, now) -> {
             if (rebuildingChips) return;
@@ -170,6 +176,32 @@ public class PosController {
             return;
         }
         for (Product p : shown) menuGrid.getChildren().add(buildCard(p));
+        resizeCards();
+    }
+
+    /**
+     * Works out how many columns fit, then widens every card so the columns use the whole row
+     * (no empty strip left between the last card and the Current Order panel).
+     */
+    private void resizeCards() {
+        double gap = menuGrid.getHgap();
+        double avail = menuGrid.getWidth() - menuGrid.getInsets().getLeft() - menuGrid.getInsets().getRight();
+        if (avail <= 0) return;
+
+        int cols = Math.max(1, (int) Math.floor((avail + gap) / (CARD_MIN_W + gap)));
+        double w = Math.floor((avail - gap * (cols - 1)) / cols);
+        if (w < CARD_MIN_W) w = CARD_MIN_W;
+        cardWidth = w;
+
+        for (javafx.scene.Node n : menuGrid.getChildren()) {
+            if (n instanceof VBox card && card.getStyleClass().contains("menu-card")) applyCardWidth(card);
+        }
+    }
+
+    /** Inline style wins over the shared .menu-card rule (which pins the width at 188). */
+    private void applyCardWidth(VBox card) {
+        String w = String.format("%.0f", cardWidth);
+        card.setStyle("-fx-min-width: " + w + "; -fx-pref-width: " + w + "; -fx-max-width: " + w + ";");
     }
 
     private VBox buildCard(Product p) {
@@ -193,12 +225,12 @@ public class PosController {
         name.getStyleClass().add("dish-name");
         name.setWrapText(true);
         name.setAlignment(Pos.TOP_CENTER);
-        name.setMaxWidth(156);
+        name.setMaxWidth(Double.MAX_VALUE);
         name.setMinHeight(38);
 
         FlowPane sizes = new FlowPane(6, 6);
         sizes.setAlignment(Pos.CENTER);
-        sizes.setMaxWidth(156);
+        sizes.setMaxWidth(Double.MAX_VALUE);
         List<ProductVariant> vars = variantMap.getOrDefault(p.id(), List.of());
         for (ProductVariant v : vars) {
             String size = v.getSizeName() == null ? "" : v.getSizeName().trim();
@@ -221,6 +253,7 @@ public class PosController {
         card.setAlignment(Pos.TOP_CENTER);
         card.getStyleClass().add("menu-card");
         if (!sellable) card.getStyleClass().add("menu-card-off");
+        applyCardWidth(card);
         return card;
     }
 
@@ -315,19 +348,31 @@ public class PosController {
     public void handleDiscountToggle() { updateTotals(); }
 
     private void updateTotals() {
-        double rawSubtotal = cartItems.stream().mapToDouble(CartItem::getLineTotal).sum();
+        // Menu prices are VAT-INCLUSIVE: what the cashier sees on the menu (e.g. 80.00) is what the customer pays.
+        // VAT is therefore carved OUT of the price, not added on top of it.
+        double menuTotal = cartItems.stream().mapToDouble(CartItem::getLineTotal).sum();
         boolean isDiscounted = chkDiscount.isSelected();
 
-        double vat = isDiscounted ? 0 : rawSubtotal * 0.12;
-        double discountAmount = isDiscounted ? rawSubtotal * 0.20 : 0.0;
-        double finalTotal = (rawSubtotal + vat) - discountAmount;
+        double vatableSales = round2(menuTotal / (1 + VAT_RATE));   // 80.00 -> 71.43
+        double vat, discountAmount, finalTotal;
 
-        currentSubtotal = rawSubtotal;
+        if (isDiscounted) {
+            // Senior/PWD: VAT-exempt, and the 20% is taken off the VAT-exclusive price.
+            vat = 0.0;
+            discountAmount = round2(vatableSales * 0.20);
+            finalTotal = round2(vatableSales - discountAmount);
+        } else {
+            vat = round2(menuTotal - vatableSales);                  // 80.00 - 71.43 = 8.57
+            discountAmount = 0.0;
+            finalTotal = round2(menuTotal);                          // stays 80.00
+        }
+
+        currentSubtotal = vatableSales;   // saved to DB as "subtotal" = VATable sales
         currentVat = vat;
         currentDiscount = discountAmount;
         currentTotal = finalTotal;
 
-        lblSubtotal.setText(peso(rawSubtotal));
+        lblSubtotal.setText(peso(vatableSales));
         lblVat.setText(peso(vat));
         rowDiscount.setVisible(isDiscounted);
         rowDiscount.setManaged(isDiscounted);
@@ -335,6 +380,8 @@ public class PosController {
         lblTotal.setText(peso(finalTotal));
         lblCartTicket.setText("Next ticket " + session.ticketLabel());
     }
+
+    private static double round2(double v) { return Math.round(v * 100.0) / 100.0; }
 
     // =====================================================================
     //  PAYMENT MODAL
@@ -513,7 +560,7 @@ public class PosController {
         }
 
         sb.append(line).append('\n');
-        sb.append(row("Subtotal", peso(currentSubtotal), w)).append('\n');
+        sb.append(row("VATable Sales", peso(currentSubtotal), w)).append('\n');
         sb.append(row("VAT (12%)", peso(currentVat), w)).append('\n');
         if (currentDiscount > 0) sb.append(row("Senior/PWD (20%)", "-" + peso(currentDiscount), w)).append('\n');
         sb.append(row("TOTAL", peso(currentTotal), w)).append('\n');
