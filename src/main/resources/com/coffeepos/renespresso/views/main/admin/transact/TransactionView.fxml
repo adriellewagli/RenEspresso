@@ -40,13 +40,13 @@
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
             </columnResizePolicy>
             <columns>
-                <TableColumn fx:id="colOrderId" prefWidth="120.0" text="ORDER ID" />
-                <TableColumn fx:id="colStaff" prefWidth="180.0" text="STAFF" />
-                <TableColumn fx:id="colCreated" prefWidth="180.0" text="CREATED / LAST EDIT" />
-                <TableColumn fx:id="colTotal" prefWidth="120.0" text="TOTAL" />
-                <TableColumn fx:id="colStatus" prefWidth="140.0" text="STATUS" />
-                <TableColumn fx:id="colPayment" prefWidth="110.0" text="PAYMENT" />
-                <TableColumn fx:id="colActions" prefWidth="130.0" text="ACTIONS" />
+                <TableColumn fx:id="colOrderId" prefWidth="120.0" text="ORDER ID" style="-fx-alignment: CENTER;" />
+                <TableColumn fx:id="colStaff" prefWidth="180.0" text="STAFF" styleClass="col-staff-cell" />
+                <TableColumn fx:id="colCreated" prefWidth="180.0" text="CREATED / LAST EDIT" style="-fx-alignment: CENTER;" />
+                <TableColumn fx:id="colTotal" prefWidth="120.0" text="TOTAL" style="-fx-alignment: CENTER;" />
+                <TableColumn fx:id="colStatus" prefWidth="140.0" text="STATUS" style="-fx-alignment: CENTER;" />
+                <TableColumn fx:id="colPayment" prefWidth="110.0" text="PAYMENT" style="-fx-alignment: CENTER;" />
+                <TableColumn fx:id="colActions" prefWidth="130.0" text="ACTIONS" style="-fx-alignment: CENTER;" />
             </columns>
         </TableView>
     </VBox>

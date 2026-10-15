@@ -85,7 +85,7 @@
     -fx-border-width: 0 0 1 0;
 }
 
-.modern-audit-table .column-header, 
+.modern-audit-table .column-header,
 .modern-audit-table .filler {
     -fx-background-color: transparent;
     -fx-size: 46;
@@ -97,6 +97,8 @@
     -fx-text-fill: #895737;
     -fx-font-weight: bold;
     -fx-font-size: 11px;
+    -fx-alignment: CENTER;
+    -fx-content-display: TEXT_ONLY;
 }
 
 .modern-audit-table .table-row-cell {
@@ -115,11 +117,17 @@
     -fx-background-color: #F8F2EA;
 }
 
+/* Global Default: Center align all cells and their container layouts */
 .modern-audit-table .table-cell {
-    -fx-alignment: CENTER_LEFT;
+    -fx-alignment: CENTER;
     -fx-padding: 0 12;
     -fx-border-color: transparent;
     -fx-border-width: 0;
+}
+
+.modern-audit-table .table-cell > VBox,
+.modern-audit-table .table-cell > HBox {
+    -fx-alignment: CENTER;
 }
 
 /* Specific Cells */
@@ -127,6 +135,7 @@
     -fx-font-weight: bold;
     -fx-text-fill: #2B2523;
     -fx-font-size: 13px;
+    -fx-alignment: CENTER;
 }
 
 .staff-name {
@@ -138,6 +147,14 @@
 .staff-role {
     -fx-text-fill: #8C7E77;
     -fx-font-size: 11px;
+}
+
+/* Exclusive Left Alignment Override for Staff Column */
+.col-staff-cell {
+    -fx-alignment: CENTER_LEFT !important;
+}
+.col-staff-cell > VBox {
+    -fx-alignment: CENTER_LEFT !important;
 }
 
 .col-created {
@@ -159,7 +176,7 @@
     -fx-min-height: 22px;
     -fx-pref-height: 22px;
     -fx-max-height: 22px;
-    -fx-alignment: CENTER_LEFT;
+    -fx-alignment: CENTER;
     -fx-spacing: 6;
 }
 
@@ -191,7 +208,7 @@
 }
 
 .status-pill-cancelled {
-    -fx-background-color: #FDE8E8;
+    -fx-background-color: #F8D7DA;
 }
 .status-pill-cancelled .status-text {
     -fx-text-fill: #9B1C1C;
@@ -218,7 +235,7 @@
 }
 
 .payment-unpaid {
-    -fx-background-color: #FDE8E8;
+    -fx-background-color: #F8D7DA;
     -fx-text-fill: #9B1C1C;
 }
 
