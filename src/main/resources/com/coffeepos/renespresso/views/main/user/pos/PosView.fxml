@@ -49,7 +49,7 @@
             <VBox spacing="8.0" styleClass="totals-box">
                 <Separator styleClass="totals-separator" />
                 <HBox>
-                    <Label styleClass="total-label-muted" text="Subtotal" />
+                    <Label styleClass="total-label-muted" text="VATable Sales" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblSubtotal" styleClass="total-value-dark" text="₱0.00" />
                 </HBox>

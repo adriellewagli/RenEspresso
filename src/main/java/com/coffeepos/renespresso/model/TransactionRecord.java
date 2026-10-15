@@ -35,6 +35,28 @@ public class TransactionRecord {
     private final String receiptText;
     private final ObjectProperty<OrderStatus> status = new SimpleObjectProperty<>(OrderStatus.PREPARING);
 
+    /**
+     * Factory Helper for POS Order Creation (VAT-Inclusive Strategy):
+     * Takes the gross menu total (e.g., ₱80.00) and automatically extracts:
+     * - Vatable Sales (Subtotal) = Total / 1.12  (e.g., ₱71.43)
+     * - 12% VAT Amount           = Total - Subtotal (e.g., ₱8.57)
+     */
+    public static TransactionRecord createVatInclusiveTransaction(
+            String ticketNumber, String cashier, String paymentMethod,
+            List<OrderLine> lines, double grossTotal, double discountAmount,
+            double tendered, String receiptText) {
+
+        double netTotal = Math.max(0, grossTotal - discountAmount);
+        double vatableSales = Math.round((netTotal / 1.12) * 100.0) / 100.0; // Base Price (71.43)
+        double vatAmount = Math.round((netTotal - vatableSales) * 100.0) / 100.0;  // 12% VAT (8.57)
+
+        return new TransactionRecord(
+                0, null, ticketNumber, LocalDateTime.now(), LocalDateTime.now(),
+                cashier, "Cashier", paymentMethod, "Paid", OrderStatus.PREPARING,
+                lines, vatableSales, vatAmount, discountAmount, netTotal, tendered, receiptText
+        );
+    }
+
     /** Constructor for new transactions placed at POS */
     public TransactionRecord(String ticketNumber, LocalDateTime createdAt, String cashier, String paymentMethod,
                              List<OrderLine> lines, double subtotal, double vat, double discount,
@@ -106,9 +128,7 @@ public class TransactionRecord {
     public String getStaffName() {
         return staffName != null && !staffName.isBlank() ? staffName : cashier;
     }
-    public void setStaffName(String staffName) {
-        this.staffName = staffName;
-    }
+    public void setStaffName(String staffName) { this.staffName = staffName; }
 
     public String getStaffRole() {
         if (staffRole == null || staffRole.isBlank()) return "Cashier";
@@ -127,10 +147,10 @@ public class TransactionRecord {
     public String getItems() { return items; }
     public boolean isDiscounted() { return discounted; }
     public String getDiscountApplied() { return discountApplied; }
-    public double getSubtotal() { return subtotal; }
-    public double getVat() { return vat; }
+    public double getSubtotal() { return subtotal; } // Vatable Sales (71.43)
+    public double getVat() { return vat; }           // 12% VAT Amount (8.57)
     public double getDiscount() { return discount; }
-    public double getTotal() { return total; }
+    public double getTotal() { return total; }       // Gross Menu Price (80.00)
     public double getTendered() { return tendered; }
     public String getTotalPaid() { return totalPaid; }
     public String getReceiptText() { return receiptText; }

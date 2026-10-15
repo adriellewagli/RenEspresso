@@ -221,7 +221,7 @@ public class OrderQueueController {
             row++;
         }
 
-        VBox totals = new VBox(8, infoRow("Subtotal", peso(r.getSubtotal())));
+        VBox totals = new VBox(8, infoRow("VATable Sales", peso(r.getSubtotal())));
         if (r.isDiscounted()) totals.getChildren().add(infoRow("Senior/PWD (20%)", "-" + peso(r.getDiscount())));
         totals.getChildren().add(infoRow("VAT (12%)", peso(r.getVat())));
 

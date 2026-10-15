@@ -3,12 +3,15 @@ package com.coffeepos.renespresso.util;
 import com.coffeepos.renespresso.controller.util.AlertController;
 import com.coffeepos.renespresso.controller.util.ConfirmAlertController;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import java.io.IOException;
 import java.net.URL;
@@ -122,7 +125,30 @@ public class AlertUtil {
         scene.setFill(Color.TRANSPARENT);
 
         stage.setScene(scene);
-        stage.centerOnScreen();
+
+        // centerOnScreen() before the stage is shown has no size to work with, so the box landed off-center.
+        // Position it using its real size: once from the preferred size (so it never flashes in the wrong
+        // spot) and once more after it is shown (exact size).
+        stage.setOnShowing(e -> {
+            root.applyCss();
+            double w = root.prefWidth(-1);
+            double h = root.prefHeight(w);
+            centerStage(stage, w, h);
+        });
+        stage.setOnShown(e -> centerStage(stage, stage.getWidth(), stage.getHeight()));
         return stage;
+    }
+
+    /** Centers the stage over its owner window; falls back to the middle of the screen if there is no owner. */
+    private static void centerStage(Stage stage, double w, double h) {
+        Window owner = stage.getOwner();
+        if (owner != null && owner.getWidth() > 0 && owner.getHeight() > 0) {
+            stage.setX(owner.getX() + (owner.getWidth() - w) / 2);
+            stage.setY(owner.getY() + (owner.getHeight() - h) / 2);
+        } else {
+            Rectangle2D b = Screen.getPrimary().getVisualBounds();
+            stage.setX(b.getMinX() + (b.getWidth() - w) / 2);
+            stage.setY(b.getMinY() + (b.getHeight() - h) / 2);
+        }
     }
 }

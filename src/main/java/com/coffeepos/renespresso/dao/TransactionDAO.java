@@ -15,14 +15,10 @@ import java.util.List;
 public class TransactionDAO {
 
     public record SalesSummary(double todaySales, double weekSales, double monthSales,
-                              int todayOrders, int weekOrders, int monthOrders) {}
+                               int todayOrders, int weekOrders, int monthOrders) {}
 
     public record DailySale(String dateLabel, double totalAmount) {}
 
-    /**
-     * Persists an order and its line items to MariaDB/MySQL inside a single transaction.
-     * Generates a TXN-84xx orderId if one is not already provided.
-     */
     public static int saveTransaction(TransactionRecord record, List<CartItem> cartItems, int cashierId) throws SQLException {
         String insertTxSQL = """
             INSERT INTO transactions (
@@ -51,9 +47,9 @@ public class TransactionDAO {
                     }
                     ps.setString(2, orderId);
                     ps.setString(3, record.getTicketNumber());
-                    ps.setBigDecimal(4, BigDecimal.valueOf(record.getTotal()));
-                    ps.setBigDecimal(5, BigDecimal.valueOf(record.getSubtotal()));
-                    ps.setBigDecimal(6, BigDecimal.valueOf(record.getVat()));
+                    ps.setBigDecimal(4, BigDecimal.valueOf(record.getTotal()));    // 80.00 Gross
+                    ps.setBigDecimal(5, BigDecimal.valueOf(record.getSubtotal())); // 71.43 Vatable Sales
+                    ps.setBigDecimal(6, BigDecimal.valueOf(record.getVat()));      // 8.57  VAT Amount
                     ps.setBigDecimal(7, BigDecimal.valueOf(record.getDiscount()));
                     ps.setBigDecimal(8, BigDecimal.valueOf(record.getTendered()));
                     ps.setString(9, record.getPaymentMethod());
@@ -74,7 +70,6 @@ public class TransactionDAO {
 
                 if (txId > 0) {
                     record.setTransactionId(txId);
-                    // Formats orderId sequentially as TXN-84xx
                     if (orderId == null || orderId.isBlank() || orderId.startsWith("TXN-0") || orderId.equals("TXN-8401")) {
                         String generatedOrderId = "TXN-" + (8400 + txId);
                         record.setOrderId(generatedOrderId);
@@ -85,7 +80,6 @@ public class TransactionDAO {
                         }
                     }
 
-                    // Insert line items into transaction_items
                     if (cartItems != null && !cartItems.isEmpty()) {
                         try (PreparedStatement itemPs = conn.prepareStatement(insertItemSQL)) {
                             for (CartItem ci : cartItems) {
@@ -113,9 +107,6 @@ public class TransactionDAO {
         }
     }
 
-    /**
-     * Updates order status in the database (PREPARING -> COMPLETED or CANCELLED).
-     */
     public static boolean updateStatus(int transactionId, OrderStatus status) {
         if (transactionId <= 0) return false;
         String sql = "UPDATE transactions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE transaction_id = ?";
@@ -130,23 +121,17 @@ public class TransactionDAO {
         }
     }
 
-    /**
-     * Loads all transactions for Admin view.
-     */
     public static List<TransactionRecord> loadAllTransactions() {
         return loadTransactions("SELECT t.*, u.full_name AS staff_name, u.role AS staff_role " +
-                                "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
-                                "ORDER BY t.created_at DESC");
+                "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
+                "ORDER BY t.created_at DESC");
     }
 
-    /**
-     * Loads today's transactions for the active Cashier session.
-     */
     public static List<TransactionRecord> loadTodayTransactions() {
         return loadTransactions("SELECT t.*, u.full_name AS staff_name, u.role AS staff_role " +
-                                "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
-                                "WHERE DATE(t.created_at) = CURDATE() " +
-                                "ORDER BY t.created_at DESC");
+                "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
+                "WHERE DATE(t.created_at) = CURDATE() " +
+                "ORDER BY t.created_at DESC");
     }
 
     private static List<TransactionRecord> loadTransactions(String sql) {
@@ -189,9 +174,9 @@ public class TransactionDAO {
                 List<OrderLine> lines = loadTransactionLines(conn, txId);
 
                 TransactionRecord record = new TransactionRecord(
-                    txId, orderId, ticketNumber, createdAt, updatedAt,
-                    staffName, staffRole, paymentMethod, paymentStatus,
-                    status, lines, subtotal, vat, discount, total, tendered, receiptText
+                        txId, orderId, ticketNumber, createdAt, updatedAt,
+                        staffName, staffRole, paymentMethod, paymentStatus,
+                        status, lines, subtotal, vat, discount, total, tendered, receiptText
                 );
                 list.add(record);
             }
@@ -219,7 +204,8 @@ public class TransactionDAO {
                     String size = rs.getString("size_name");
                     int qty = rs.getInt("quantity");
                     double price = rs.getDouble("price");
-                    lines.add(new OrderLine(name, size != null ? size : "", qty, price * qty));
+                    double itemTotal = price * qty;
+                    lines.add(new OrderLine(name, size != null ? size : "", qty, itemTotal));
                 }
             }
         } catch (SQLException e) {
@@ -228,9 +214,6 @@ public class TransactionDAO {
         return lines;
     }
 
-    /**
-     * Gets sales aggregates across today, this week, and this month (excluding cancelled orders).
-     */
     public static SalesSummary getSalesSummary() {
         double todaySales = 0, weekSales = 0, monthSales = 0;
         int todayOrders = 0, weekOrders = 0, monthOrders = 0;
@@ -265,9 +248,6 @@ public class TransactionDAO {
         return new SalesSummary(todaySales, weekSales, monthSales, todayOrders, weekOrders, monthOrders);
     }
 
-    /**
-     * Gets daily sales over the last 14 days for trends and charts.
-     */
     public static List<DailySale> getLast14DaysSales() {
         List<DailySale> list = new ArrayList<>();
         String sql = """
