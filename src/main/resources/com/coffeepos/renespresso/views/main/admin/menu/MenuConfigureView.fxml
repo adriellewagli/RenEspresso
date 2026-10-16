@@ -9,20 +9,17 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.menu.MenuConfigureController">
 
-    <!-- HEADER -->
     <VBox spacing="4.0">
         <Label styleClass="menu-title" text="Menu Management" />
         <Label styleClass="menu-subtitle" text="Configure your dishes, pricing tiers, and categorizations" />
     </VBox>
 
-    <!-- BODY: scaled to fit the window; a scrollbar only shows if the form hits MIN_SCALE -->
-    <ScrollPane fx:id="formScroll" hbarPolicy="NEVER" minHeight="0.0" prefHeight="0.0"
+    <ScrollPane fx:id="formScroll" hbarPolicy="NEVER" vbarPolicy="NEVER" minHeight="0.0" prefHeight="0.0"
                 styleClass="menu-scroll" VBox.vgrow="ALWAYS">
         <content>
             <Group>
                 <HBox fx:id="formBox" alignment="TOP_LEFT" spacing="22.0">
 
-                    <!-- LEFT CARD: Add / Edit item -->
                     <VBox maxWidth="Infinity" spacing="18.0" styleClass="card, form-card" HBox.hgrow="ALWAYS">
                         <Label fx:id="formTitle" styleClass="form-card-title" text="Add Menu Item" />
                         <Separator />
@@ -104,7 +101,6 @@
                         </VBox>
                     </VBox>
 
-                    <!-- RIGHT CARD: Dish Category Creator -->
                     <VBox maxWidth="340.0" minWidth="340.0" prefWidth="340.0" spacing="16.0" styleClass="card, form-card">
                         <Label styleClass="form-card-title" text="Dish Category Creator" />
                         <Label styleClass="form-help" wrapText="true"
@@ -127,7 +123,6 @@
                             <Label fx:id="countBadge" styleClass="count-badge" />
                         </HBox>
 
-                        <!-- scrolls inside the card when the list gets long -->
                         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minHeight="120.0" prefHeight="0.0"
                                     styleClass="category-scroll" VBox.vgrow="ALWAYS">
                             <content>
@@ -140,7 +135,6 @@
         </content>
     </ScrollPane>
 
-    <!-- FOOTER -->
     <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="form-footer">
         <Button onAction="#handleCancel" styleClass="btn-secondary" text="Cancel" />
         <Button fx:id="saveBtn" defaultButton="true" onAction="#handleSave" styleClass="btn-primary"

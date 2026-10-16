@@ -10,17 +10,20 @@ import com.coffeepos.renespresso.util.ImageStore;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.image.Image;
-import javafx.scene.shape.Rectangle;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,9 +52,12 @@ public class MenuConfigureController {
 
     private static final BigDecimal MAX_PRICE = new BigDecimal("999999.99");
 
-    // smallest the form may shrink; below this the scrollbar comes back
-    private static final double MIN_SCALE = 0.6;
+    // smallest the form may shrink; below this the outer page may scroll again
+    private static final double MIN_SCALE = 0.5;
     private final Scale formScale = new Scale(1, 1, 0, 0);
+
+    // true while the form fits the window: the outer page must not scroll at all
+    private boolean scrollLocked = true;
 
     private Product existing;
     private List<Category> categories = new ArrayList<>();
@@ -76,9 +82,21 @@ public class MenuConfigureController {
 
         // scale-to-fit: re-fit on window resize and whenever a size row is added or removed
         formBox.getTransforms().add(formScale);
-        formScroll.widthProperty().addListener((o, a, b) -> fitForm());
-        formScroll.heightProperty().addListener((o, a, b) -> fitForm());
+        formScroll.viewportBoundsProperty().addListener((o, a, b) -> fitForm());
         variantsBox.getChildren().addListener((Observable o) -> Platform.runLater(this::fitForm));
+
+        // Block wheel/touchpad scrolling of the outer page (the category list keeps its own)
+        formScroll.addEventFilter(ScrollEvent.SCROLL, e -> {
+            if (scrollLocked && !insideCategoryScroll(e.getTarget())) e.consume();
+        });
+
+        // Snap back to the top if anything still manages to scroll it
+        formScroll.vvalueProperty().addListener((o, a, b) -> {
+            if (scrollLocked && b.doubleValue() != 0) formScroll.setVvalue(0);
+        });
+        formScroll.hvalueProperty().addListener((o, a, b) -> {
+            if (b.doubleValue() != 0) formScroll.setHvalue(0);
+        });
     }
 
     public void init(Product existing, List<Category> allCategories, Runnable onClose) {
@@ -129,10 +147,12 @@ public class MenuConfigureController {
         Platform.runLater(this::fitForm);
     }
 
-    /** Shrinks the form (never enlarges it) so it fits the window without scrolling. */
+    /** Shrinks the form (never enlarges it) so it always fits the window without scrolling. */
     private void fitForm() {
-        double w = formScroll.getWidth() - 4;
-        double h = formScroll.getHeight() - 4;
+        Bounds vb = formScroll.getViewportBounds();
+        if (vb == null) return;
+        double w = vb.getWidth() - 2;
+        double h = vb.getHeight() - 2;
         if (w <= 0 || h <= 0) return;
 
         formBox.applyCss();
@@ -148,6 +168,23 @@ public class MenuConfigureController {
         formBox.setMaxWidth(w / s);
         formScale.setX(s);
         formScale.setY(s);
+
+        // Only allow outer scrolling if the form is so tall it hit the minimum scale
+        scrollLocked = s > MIN_SCALE + 0.001;
+        if (scrollLocked) {
+            formScroll.setVvalue(0);
+            formScroll.setHvalue(0);
+        }
+    }
+
+    /** True if the scroll event happened over the category list, which scrolls on its own. */
+    private boolean insideCategoryScroll(Object target) {
+        if (!(target instanceof Node n)) return false;
+        while (n != null) {
+            if (n.getStyleClass().contains("category-scroll")) return true;
+            n = n.getParent();
+        }
+        return false;
     }
 
     @FXML private void handleUpload(MouseEvent e) {
