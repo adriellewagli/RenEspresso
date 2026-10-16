@@ -17,15 +17,15 @@
     </HBox>
 
     <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="card, filter-toolbar-card">
-        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="filter-search-box" prefWidth="280.0">
+        <!-- search box now fills all the free space; the spacer Region is gone -->
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="filter-search-box"
+              minWidth="280.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
             <Label text="🔍" style="-fx-text-fill: #A89B90; -fx-font-size: 13px;" />
             <TextField fx:id="txtSearch" promptText="Search Order ID or staff…"
                        styleClass="search-field" HBox.hgrow="ALWAYS" />
         </HBox>
 
-        <Region HBox.hgrow="ALWAYS" />
-
-        <HBox alignment="CENTER_RIGHT" spacing="12.0">
+        <HBox alignment="CENTER_RIGHT" spacing="12.0" minWidth="-Infinity">
             <ComboBox fx:id="cmbDateFilter" promptText="Date: All Dates" styleClass="filter-combo" prefWidth="150.0" />
             <ComboBox fx:id="cmbStatusFilter" promptText="Status: All States" styleClass="filter-combo" prefWidth="160.0" />
             <ComboBox fx:id="cmbPaymentFilter" promptText="Payment: All" styleClass="filter-combo" prefWidth="140.0" />

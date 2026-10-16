@@ -20,21 +20,21 @@
 .panel-subtitle { -fx-text-fill: #895737; -fx-font-size: 12px; }
 .empty-note { -fx-text-fill: #9A8878; -fx-font-size: 14px; }
 
+.header-date    { -fx-text-fill: #2F2118; -fx-font-size: 15px; -fx-font-weight: bold; }
+.header-updated { -fx-text-fill: #9A8878; -fx-font-size: 13px; }
+
 .btn-refresh {
-    -fx-background-color: #F8F4EF;
-    -fx-border-color: #E6DDD4;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-text-fill: #5E3023;
+    -fx-background-color: #895737;
+    -fx-background-radius: 10;
+    -fx-text-fill: #F8EFE4;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-padding: 6 14;
+    -fx-padding: 12 28;
     -fx-cursor: hand;
 }
-.btn-refresh:hover {
-    -fx-background-color: #EBDDCF;
-}
+.btn-refresh:hover    { -fx-background-color: #724629; }
+.btn-refresh:disabled { -fx-opacity: 0.6; }
 
-/* Bar Chart styling */
 .chart-bar {
     -fx-bar-fill: #895737;
     -fx-background-radius: 4 4 0 0;

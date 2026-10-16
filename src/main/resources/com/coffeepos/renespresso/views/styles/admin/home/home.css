@@ -6,17 +6,17 @@
 .kpi-card   { -fx-padding: 18 22; -fx-spacing: 6; }
 .panel-card { -fx-padding: 20 24; -fx-spacing: 4; }
 
-.date-label    { -fx-text-fill: #5E3023; -fx-font-size: 13px; -fx-font-weight: bold; }
-.updated-label { -fx-text-fill: #9A8878; -fx-font-size: 11px; }
+.date-label    { -fx-text-fill: #2F2118; -fx-font-size: 15px; -fx-font-weight: bold; }
+.updated-label { -fx-text-fill: #9A8878; -fx-font-size: 13px; }
 
 .refresh-button {
-    -fx-background-color: #895737;
-    -fx-text-fill: #F3E9DC;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-background-radius: 8px;
-    -fx-padding: 10 22;
-    -fx-cursor: hand;
+      -fx-background-color: #895737;
+       -fx-background-radius: 10;
+       -fx-text-fill: #F8EFE4;
+       -fx-font-size: 15px;
+       -fx-font-weight: bold;
+       -fx-padding: 12 28;
+       -fx-cursor: hand;
 }
 
 .refresh-button:hover {

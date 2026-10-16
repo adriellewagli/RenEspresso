@@ -15,11 +15,13 @@ import javafx.scene.control.Label;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 
 public class SalesController {
 
+    @FXML private Label lblDate;
     @FXML private Label lblUpdated;
     @FXML private Button btnRefresh;
 
@@ -32,12 +34,15 @@ public class SalesController {
     @FXML private NumberAxis yAxis;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a");
+    private static final DateTimeFormatter DATE_FMT =
+            DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.ENGLISH);
 
     private record SalesResult(SalesSummary summary, List<DailySale> chartData) {}
 
     @FXML
     public void initialize() {
         if (salesChart != null) salesChart.setAnimated(false);
+        if (lblDate != null) lblDate.setText(LocalDateTime.now().format(DATE_FMT));
         loadSales();
     }
 
@@ -76,6 +81,9 @@ public class SalesController {
                 salesChart.getData().setAll(series);
             }
 
+            if (lblDate != null) {
+                lblDate.setText(LocalDateTime.now().format(DATE_FMT));
+            }
             if (lblUpdated != null) {
                 lblUpdated.setText("Updated " + LocalDateTime.now().format(TIME_FMT));
             }

@@ -147,7 +147,6 @@ public class MenuConfigureController {
         Platform.runLater(this::fitForm);
     }
 
-    /** Shrinks the form (never enlarges it) so it always fits the window without scrolling. */
     private void fitForm() {
         Bounds vb = formScroll.getViewportBounds();
         if (vb == null) return;
@@ -169,7 +168,6 @@ public class MenuConfigureController {
         formScale.setX(s);
         formScale.setY(s);
 
-        // Only allow outer scrolling if the form is so tall it hit the minimum scale
         scrollLocked = s > MIN_SCALE + 0.001;
         if (scrollLocked) {
             formScroll.setVvalue(0);
@@ -177,7 +175,6 @@ public class MenuConfigureController {
         }
     }
 
-    /** True if the scroll event happened over the category list, which scrolls on its own. */
     private boolean insideCategoryScroll(Object target) {
         if (!(target instanceof Node n)) return false;
         while (n != null) {

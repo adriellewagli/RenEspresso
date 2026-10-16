@@ -169,7 +169,7 @@
 .page-subtitle { -fx-text-fill: #895737; -fx-font-size: 15px; }
 
 .add-account-button {
-    -fx-background-color: #5E3023;
+    -fx-background-color: #895737;
     -fx-text-fill: #F3E9DC;
     -fx-font-size: 14px;
     -fx-font-weight: bold;

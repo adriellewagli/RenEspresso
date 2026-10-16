@@ -16,18 +16,17 @@
 .status-text   { -fx-text-fill: #C08552; -fx-font-size: 13px; }
 .card-sep .line { -fx-border-color: #EFE5D6; -fx-border-width: 1 0 0 0; }
 
-/* ===== Scroll area ===== */
 .settings-scroll,
 .settings-scroll > .viewport {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-padding: 0;
 }
+
 .settings-scroll { -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
 .settings-scroll .scroll-bar:vertical { -fx-pref-width: 8; }
 .section-stack { -fx-padding: 2 4 16 2; }
 
-/* ===== Left menu ===== */
 .nav-card { -fx-padding: 14; }
 .nav-button {
     -fx-background-color: transparent;
@@ -73,7 +72,6 @@
 .field-combo .arrow-button { -fx-background-color: transparent; -fx-padding: 0 10 0 4; }
 .field-combo .arrow { -fx-background-color: #6B5444; }
 
-/* ===== Option rows (title + description + switch) ===== */
 .option-row {
     -fx-padding: 14 0;
     -fx-border-color: transparent transparent #F1E8DA transparent;
@@ -83,7 +81,6 @@
 .row-desc    { -fx-text-fill: #8C7A6A; -fx-font-size: 12.5px; }
 .method-icon { -fx-font-size: 22px; -fx-min-width: 36; -fx-alignment: CENTER; }
 
-/* ===== Toggle switch (the knob is built in the controller) ===== */
 .switch {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
@@ -98,7 +95,7 @@
 
 /* ===== Buttons ===== */
 .primary-button {
-    -fx-background-color: #5E3023;
+    -fx-background-color: #895737;;
     -fx-text-fill: #F3E9DC;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -107,7 +104,7 @@
     -fx-cursor: hand;
 }
 .primary-button:hover   { -fx-background-color: #7A4130; }
-.primary-button:pressed { -fx-background-color: #4A241A; }
+.primary-button:pressed { -fx-background-color:#895737;; }
 
 .secondary-button {
     -fx-background-color: #FFFFFF;
