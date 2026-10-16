@@ -181,6 +181,16 @@
 .add-account-button:pressed { -fx-background-color: #4A241A; }
 
 /* ===== Add / Edit dialog + confirm alerts ===== */
+.account-dialog {
+    -fx-background-color: #FFFDFA;
+    -fx-background-radius: 16;
+    -fx-border-color: #EFE5D6;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-font-size: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.15), 20, 0, 0, 4);
+}
+
 .account-dialog,
 .confirm-dialog {
     -fx-background-color: #FFFDFA;

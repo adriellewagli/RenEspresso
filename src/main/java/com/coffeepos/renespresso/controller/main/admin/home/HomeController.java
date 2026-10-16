@@ -17,7 +17,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

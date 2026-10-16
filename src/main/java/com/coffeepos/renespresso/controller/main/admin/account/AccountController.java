@@ -325,28 +325,35 @@ public class AccountController {
     // ------------------------------------------------------------------ ADD / EDIT
     // DIALOG
 
+    // ------------------------------------------------------------------ ADD / EDIT DIALOG
+
     private void showAccountDialog(AccountRow existing) {
         boolean edit = existing != null;
-        // No checkbox: new accounts are active, edited accounts keep their current
-        // status
         final boolean active = !edit || "Active".equals(existing.status());
 
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(edit ? "Edit Account" : "Add Account");
+        dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
         dialog.setHeaderText(null);
         dialog.setGraphic(null);
         if (accountTable.getScene() != null)
             dialog.initOwner(accountTable.getScene().getWindow());
 
         DialogPane pane = dialog.getDialogPane();
+        pane.setHeader(null);
         pane.getStylesheets().addAll(ConfirmUtil.collectStylesheets(accountTable));
         pane.getStyleClass().add("account-dialog");
+
+        if (pane.getScene() != null) {
+            pane.getScene().setFill(javafx.scene.paint.Color.TRANSPARENT);
+        } else {
+            dialog.setOnShown(e -> pane.getScene().setFill(javafx.scene.paint.Color.TRANSPARENT));
+        }
 
         ButtonType saveType = new ButtonType(edit ? "Save Changes" : "Create Account",
                 ButtonBar.ButtonData.OK_DONE);
         pane.getButtonTypes().addAll(saveType, ButtonType.CANCEL);
 
-        // ---- fields
         TextField nameField = new TextField(edit ? existing.name() : "");
         TextField userField = new TextField(edit ? existing.username() : "");
         PasswordField passField = new PasswordField();
@@ -363,18 +370,16 @@ public class AccountController {
         userField.getStyleClass().add("form-field");
         roleBox.getStyleClass().add("form-combo");
 
-        // ---- header
-        Label title = new Label(edit ? "Edit Account" : "Create a new account");
+        Label title = new Label(edit ? "Edit Account" : "Add New Account");
         title.getStyleClass().add("dialog-title");
         Label subtitle = new Label(edit ? "Update the details for " + existing.name()
-                : "Fill in the details below to add a staff account");
+                : "Fill in the details below to create a staff account");
         subtitle.getStyleClass().add("dialog-subtitle");
-        VBox header = new VBox(6, title, subtitle);
+        VBox headerBox = new VBox(4, title, subtitle);
 
         Region divider = new Region();
         divider.getStyleClass().add("dialog-divider");
 
-        // ---- form grid
         GridPane grid = new GridPane();
         grid.setHgap(20);
         grid.setVgap(18);
@@ -395,18 +400,16 @@ public class AccountController {
         hint.setWrapText(true);
         grid.add(hint, 0, 3, 2, 1);
 
-        VBox content = new VBox(22, header, divider, grid);
+        VBox content = new VBox(20, headerBox, divider, grid);
         content.setPadding(new Insets(32, 36, 14, 36));
         content.setPrefWidth(680);
         pane.setContent(content);
 
-        // ---- buttons
         Button saveBtn = (Button) pane.lookupButton(saveType);
         Button cancelBtn = (Button) pane.lookupButton(ButtonType.CANCEL);
         saveBtn.getStyleClass().add("dialog-primary");
         cancelBtn.getStyleClass().add("dialog-secondary");
 
-        // ---- unsaved-change detection
         final String name0 = nameField.getText(), user0 = userField.getText(), role0 = roleBox.getValue();
         BooleanSupplier dirty = () -> !nameField.getText().equals(name0)
                 || !userField.getText().equals(user0)
@@ -414,10 +417,9 @@ public class AccountController {
                 || !passField.getText().isEmpty()
                 || !confirmField.getText().isEmpty();
 
-        // ---- SAVE: validate -> confirm -> write to DB
         saveBtn.addEventFilter(ActionEvent.ACTION, ev -> {
             if (edit && !dirty.getAsBoolean())
-                return; // nothing changed, just close
+                return;
 
             String name = nameField.getText().trim();
             String username = userField.getText().trim();
@@ -428,7 +430,7 @@ public class AccountController {
                 String warning = validate(existing, name, username, pw, confirmField.getText(), role, active);
                 if (warning != null) {
                     AlertUtil.showWarning("Check your input", warning);
-                    ev.consume(); // keep the dialog open
+                    ev.consume();
                     return;
                 }
 
@@ -436,7 +438,7 @@ public class AccountController {
                         ? "Save the changes to " + name + "'s account?"
                         : "Create an account for " + name + " (" + role + ")?";
                 if (!ConfirmUtil.confirmSave(pane, question)) {
-                    ev.consume(); // stay in the dialog
+                    ev.consume();
                     return;
                 }
 
@@ -457,7 +459,6 @@ public class AccountController {
             loadAccounts();
         });
 
-        // ---- CANCEL button + window X: warn only if something changed
         cancelBtn.addEventFilter(ActionEvent.ACTION, ev -> {
             if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane))
                 ev.consume();
@@ -471,7 +472,6 @@ public class AccountController {
         dialog.showAndWait();
     }
 
-    /** Label-above-control block used by the dialog form. */
     private VBox field(String label, Region control) {
         Label l = new Label(label);
         l.getStyleClass().add("form-label");
@@ -481,7 +481,6 @@ public class AccountController {
         return box;
     }
 
-    /** Password field with an eye button that shows / hides the text. */
     private HBox passwordField(PasswordField hidden) {
         TextField visible = new TextField();
         visible.promptTextProperty().bind(hidden.promptTextProperty());
@@ -524,7 +523,6 @@ public class AccountController {
         box.setAlignment(Pos.CENTER_LEFT);
         box.getStyleClass().add("form-field-box");
 
-        // highlight the whole box while either inner field is focused
         ChangeListener<Boolean> focusListener = (o, was, now) -> {
             boolean focused = hidden.isFocused() || visible.isFocused();
             if (focused) {
@@ -539,7 +537,6 @@ public class AccountController {
         return box;
     }
 
-    /** Returns a warning message if the input is invalid, otherwise null. */
     private String validate(AccountRow existing, String name, String username, String pw,
             String confirm, String role, boolean active) throws SQLException {
         boolean edit = existing != null;
@@ -573,7 +570,6 @@ public class AccountController {
         return null;
     }
 
-    /** Password rules: 8+ chars, upper, lower, digit and special character. */
     private String passwordProblem(String pw) {
         if (pw.length() < 8)
             return "Password must be at least 8 characters.";
