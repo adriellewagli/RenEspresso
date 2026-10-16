@@ -10,11 +10,93 @@
     -fx-border-radius: 16;
     -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
 }
-.settings-card { -fx-padding: 22 24; }
+.settings-card { -fx-padding: 24 28; }
 .card-title    { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
 .card-desc     { -fx-text-fill: #895737; -fx-font-size: 13px; }
 .status-text   { -fx-text-fill: #C08552; -fx-font-size: 13px; }
+.card-sep .line { -fx-border-color: #EFE5D6; -fx-border-width: 1 0 0 0; }
 
+/* ===== Scroll area ===== */
+.settings-scroll,
+.settings-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+.settings-scroll { -fx-focus-color: transparent; -fx-faint-focus-color: transparent; }
+.settings-scroll .scroll-bar:vertical { -fx-pref-width: 8; }
+.section-stack { -fx-padding: 2 4 16 2; }
+
+/* ===== Left menu ===== */
+.nav-card { -fx-padding: 14; }
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-text-fill: #6B5444;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 14 16;
+    -fx-alignment: CENTER-LEFT;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.nav-button:hover    { -fx-background-color: #FBF6EE; }
+.nav-button:selected { -fx-background-color: #F6E7D5; -fx-text-fill: #5E3023; }
+
+/* ===== Form fields ===== */
+.field-label { -fx-text-fill: #6B5444; -fx-font-size: 13px; -fx-font-weight: bold; }
+.field-hint  { -fx-text-fill: #9A8878; -fx-font-size: 12.5px; }
+
+.field-input,
+.field-combo {
+    -fx-background-color: #F8F2E8;
+    -fx-background-radius: 12;
+    -fx-border-color: #E7DCCB;
+    -fx-border-radius: 12;
+    -fx-min-height: 48;
+    -fx-pref-height: 48;
+    -fx-padding: 0 14;
+    -fx-font-size: 14px;
+    -fx-text-fill: #3B2A20;
+    -fx-prompt-text-fill: #9A8878;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.field-input:focused,
+.field-combo:focused {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #895737;
+}
+.field-combo { -fx-padding: 0 4 0 4; -fx-cursor: hand; }
+.field-combo .list-cell { -fx-background-color: transparent; -fx-text-fill: #3B2A20; -fx-font-size: 14px; }
+.field-combo .arrow-button { -fx-background-color: transparent; -fx-padding: 0 10 0 4; }
+.field-combo .arrow { -fx-background-color: #6B5444; }
+
+/* ===== Option rows (title + description + switch) ===== */
+.option-row {
+    -fx-padding: 14 0;
+    -fx-border-color: transparent transparent #F1E8DA transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.row-title   { -fx-text-fill: #2F2118; -fx-font-size: 14px; -fx-font-weight: bold; }
+.row-desc    { -fx-text-fill: #8C7A6A; -fx-font-size: 12.5px; }
+.method-icon { -fx-font-size: 22px; -fx-min-width: 36; -fx-alignment: CENTER; }
+
+/* ===== Toggle switch (the knob is built in the controller) ===== */
+.switch {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.switch:selected, .switch:hover, .switch:armed { -fx-background-color: transparent; }
+.switch-track { -fx-background-color: #D9CDBB; -fx-background-radius: 13; }
+.switch-track:on { -fx-background-color: #5E3023; }
+
+/* ===== Buttons ===== */
 .primary-button {
     -fx-background-color: #5E3023;
     -fx-text-fill: #F3E9DC;
@@ -26,3 +108,76 @@
 }
 .primary-button:hover   { -fx-background-color: #7A4130; }
 .primary-button:pressed { -fx-background-color: #4A241A; }
+
+.secondary-button {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-border-color: #E7DCCB;
+    -fx-border-radius: 12;
+    -fx-padding: 12 22;
+    -fx-cursor: hand;
+}
+.secondary-button:hover { -fx-background-color: #FBF6EE; }
+
+.danger-button {
+    -fx-background-color: #FBE3DF;
+    -fx-text-fill: #C0392B;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-padding: 13 24;
+    -fx-cursor: hand;
+}
+.danger-button:hover { -fx-background-color: #F6CFC9; }
+
+/* ===== Logo + preview ===== */
+.logo-box {
+    -fx-background-color: #F8F2E8;
+    -fx-background-radius: 16;
+    -fx-border-color: #E7DCCB;
+    -fx-border-radius: 16;
+    -fx-border-style: dashed;
+    -fx-min-width: 96; -fx-min-height: 96;
+    -fx-pref-width: 96; -fx-pref-height: 96;
+}
+.logo-placeholder { -fx-font-size: 38px; }
+.preview-chip {
+    -fx-background-color: #F6EDE0;
+    -fx-background-radius: 10;
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 18;
+}
+
+/* ===== Activity log table ===== */
+.empty-note { -fx-text-fill: #9A8878; -fx-font-size: 14px; }
+.log-table {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.log-table .column-header-background {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #E7DCCB transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.log-table .column-header,
+.log-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-size: 44;
+}
+.log-table .column-header .label {
+    -fx-text-fill: #895737;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER-LEFT;
+}
+.log-table .table-row-cell { -fx-background-color: transparent; -fx-cell-size: 50; }
+.log-table .table-cell { -fx-text-fill: #6B5444; -fx-font-size: 13px; -fx-padding: 0 8; }

@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
 
 <VBox fx:id="settingsRoot" spacing="20.0" styleClass="settings-root"
       stylesheets="@../../../styles/admin/settings/settings.css"
@@ -9,25 +10,213 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.settings.SettingsController">
 
-    <VBox spacing="4.0" styleClass="page-header">
-        <Label styleClass="settings-title" text="Settings" />
-        <Label styleClass="settings-subtitle" text="Application preferences and configuration" />
-    </VBox>
+    <fx:define>
+        <ToggleGroup fx:id="navGroup" />
+    </fx:define>
 
-    <!-- BACKUP DATABASE CARD -->
-    <VBox maxWidth="640.0" spacing="10.0" styleClass="card, settings-card">
-        <Label styleClass="card-title" text="Backup Database" />
-        <Label styleClass="card-desc" wrapText="true"
-               text="Export all store data (menu, transactions, accounts) so you can keep a safe copy." />
+    <!-- ============ HEADER ============ -->
+    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="page-header">
+        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+            <Label styleClass="settings-title" text="Settings" />
+            <Label styleClass="settings-subtitle" text="Application preferences and configuration" />
+        </VBox>
+        <Label fx:id="lblSaveNote" styleClass="status-text" />
+        <Button onAction="#handleSaveSettings" styleClass="primary-button" text="Save Changes" />
+    </HBox>
 
-        <Separator style="-fx-opacity: 0.3;" />
+    <HBox spacing="20.0" VBox.vgrow="ALWAYS">
 
-        <HBox alignment="CENTER_LEFT" spacing="14.0">
-            <Button fx:id="btnBackupExcel" onAction="#handleBackupExcel"
-                    styleClass="primary-button" text="📊  Backup Database into Excel" />
-            <ProgressIndicator fx:id="progress" managed="false" prefHeight="24.0" prefWidth="24.0" visible="false" />
-        </HBox>
+        <!-- ============ LEFT MENU ============ -->
+        <VBox maxHeight="-Infinity" minWidth="250.0" prefWidth="250.0" spacing="6.0" styleClass="card, nav-card">
+            <ToggleButton maxWidth="Infinity" selected="true" styleClass="nav-button" text="🏪   Store Information" toggleGroup="$navGroup" userData="secStore" />
+            <ToggleButton maxWidth="Infinity" styleClass="nav-button" text="💾   Backup &amp; Restore" toggleGroup="$navGroup" userData="secBackup" />
+            <ToggleButton maxWidth="Infinity" styleClass="nav-button" text="🔒   Security" toggleGroup="$navGroup" userData="secSecurity" />
+        </VBox>
 
-        <Label fx:id="lblStatus" styleClass="status-text" wrapText="true" />
-    </VBox>
+        <!-- ============ RIGHT CONTENT ============ -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="settings-scroll" HBox.hgrow="ALWAYS">
+            <StackPane fx:id="sectionStack" alignment="TOP_LEFT" styleClass="section-stack">
+
+                <!-- ========== STORE INFORMATION ========== -->
+                <VBox id="secStore" spacing="20.0">
+                    <VBox spacing="16.0" styleClass="card, settings-card">
+                        <VBox spacing="4.0">
+                            <Label styleClass="card-title" text="Store Information" />
+                            <Label styleClass="card-desc" wrapText="true" text="Shown on receipts and in the app header." />
+                        </VBox>
+                        <Separator styleClass="card-sep" />
+                        <GridPane hgap="20.0" vgap="18.0">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50.0" />
+                                <ColumnConstraints percentWidth="50.0" />
+                            </columnConstraints>
+                            <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label styleClass="field-label" text="Shop name" />
+                                <TextField fx:id="txtShopName" promptText="e.g. RenEspresso" styleClass="field-input" />
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                <Label styleClass="field-label" text="Tagline" />
+                                <TextField fx:id="txtTagline" promptText="e.g. Coffee Shop" styleClass="field-input" />
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                                <Label styleClass="field-label" text="Address" />
+                                <TextField fx:id="txtAddress" promptText="Street, Barangay, City" styleClass="field-input" />
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                <Label styleClass="field-label" text="Contact number" />
+                                <TextField fx:id="txtContact" promptText="e.g. 0917 123 4567" styleClass="field-input" />
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                <Label styleClass="field-label" text="TIN" />
+                                <TextField fx:id="txtTin" promptText="000-000-000-000" styleClass="field-input" />
+                            </VBox>
+                        </GridPane>
+                    </VBox>
+
+                    <VBox spacing="16.0" styleClass="card, settings-card">
+                        <VBox spacing="4.0">
+                            <Label styleClass="card-title" text="Store Logo" />
+                            <Label styleClass="card-desc" wrapText="true" text="Appears at the top of printed and on-screen receipts." />
+                        </VBox>
+                        <Separator styleClass="card-sep" />
+                        <HBox alignment="CENTER_LEFT" spacing="20.0">
+                            <StackPane styleClass="logo-box">
+                                <Label fx:id="lblLogoPlaceholder" styleClass="logo-placeholder" text="☕" />
+                                <ImageView fx:id="imgLogo" fitHeight="84.0" fitWidth="84.0" preserveRatio="true" visible="false" />
+                            </StackPane>
+                            <VBox spacing="8.0">
+                                <HBox spacing="12.0">
+                                    <Button onAction="#handleUploadLogo" styleClass="secondary-button" text="Upload Logo" />
+                                    <Button onAction="#handleRemoveLogo" styleClass="secondary-button" text="Remove" />
+                                </HBox>
+                                <Label styleClass="field-hint" text="PNG or JPG, square, up to 2 MB. Click Save Changes to apply." />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- ========== BACKUP & RESTORE ========== -->
+                <VBox id="secBackup" spacing="20.0" visible="false" managed="false">
+                    <VBox spacing="16.0" styleClass="card, settings-card">
+                        <VBox spacing="4.0">
+                            <Label styleClass="card-title" text="Backup Database" />
+                            <Label styleClass="card-desc" wrapText="true" text="Export all store data (menu, transactions, accounts) so you can keep a safe copy." />
+                        </VBox>
+                        <Separator styleClass="card-sep" />
+                        <HBox alignment="CENTER_LEFT" spacing="14.0">
+                            <Button fx:id="btnBackupExcel" onAction="#handleBackupExcel" styleClass="primary-button" text="📊  Backup Database into Excel" />
+                            <ProgressIndicator fx:id="progress" managed="false" prefHeight="24.0" prefWidth="24.0" visible="false" />
+                        </HBox>
+                        <Label fx:id="lblStatus" styleClass="status-text" wrapText="true" />
+                    </VBox>
+
+                    <VBox spacing="16.0" styleClass="card, settings-card">
+                        <VBox spacing="4.0">
+                            <Label styleClass="card-title" text="Backup Preferences" />
+                            <Label styleClass="card-desc" wrapText="true" text="Where backups are saved and how often they run automatically." />
+                        </VBox>
+                        <Separator styleClass="card-sep" />
+                        <VBox spacing="8.0">
+                            <Label styleClass="field-label" text="Default backup folder" />
+                            <HBox spacing="12.0">
+                                <TextField fx:id="txtBackupFolder" editable="false" promptText="No folder selected" styleClass="field-input" HBox.hgrow="ALWAYS" />
+                                <Button onAction="#handleBrowseBackupFolder" styleClass="secondary-button" text="Browse" />
+                            </HBox>
+                        </VBox>
+                        <GridPane hgap="20.0" vgap="18.0">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50.0" />
+                                <ColumnConstraints percentWidth="50.0" />
+                            </columnConstraints>
+                            <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label styleClass="field-label" text="Automatic backup" />
+                                <ComboBox maxWidth="Infinity" promptText="Select schedule" styleClass="field-combo" userData="Off|Daily|Weekly|Monthly" />
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                <Label styleClass="field-label" text="Keep last backups" />
+                                <TextField promptText="e.g. 10" styleClass="field-input" />
+                            </VBox>
+                        </GridPane>
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="option-row">
+                            <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="row-title" text="Back up when closing the app" />
+                                <Label styleClass="row-desc" text="Creates a backup every time the admin logs out." />
+                            </VBox>
+                            <ToggleButton styleClass="switch" />
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="16.0" styleClass="card, settings-card">
+                        <VBox spacing="4.0">
+                            <Label styleClass="card-title" text="Restore" />
+                            <Label styleClass="card-desc" wrapText="true" text="Restore store data from a backup file. Current data will be replaced." />
+                        </VBox>
+                        <Separator styleClass="card-sep" />
+                        <HBox alignment="CENTER_LEFT" spacing="14.0">
+                            <Button onAction="#handleRestore" styleClass="danger-button" text="Restore from Excel" />
+                            <Label styleClass="field-hint" text="Make a backup first before restoring." />
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- ========== SECURITY ========== -->
+                <VBox id="secSecurity" spacing="20.0" visible="false" managed="false">
+                    <VBox spacing="16.0" styleClass="card, settings-card">
+                        <VBox spacing="4.0">
+                            <Label styleClass="card-title" text="Session &amp; Login" />
+                            <Label styleClass="card-desc" wrapText="true" text="Protect the system when a terminal is left unattended or someone guesses passwords." />
+                        </VBox>
+                        <Separator styleClass="card-sep" />
+                        <GridPane hgap="20.0" vgap="18.0">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50.0" />
+                                <ColumnConstraints percentWidth="50.0" />
+                            </columnConstraints>
+                            <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label styleClass="field-label" text="Auto-logout after inactivity" />
+                                <ComboBox maxWidth="Infinity" promptText="Select time" styleClass="field-combo" userData="Never|5 minutes|10 minutes|15 minutes|30 minutes|1 hour" />
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                <Label styleClass="field-label" text="Lock account after failed logins" />
+                                <TextField promptText="e.g. 5 attempts" styleClass="field-input" />
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                <Label styleClass="field-label" text="Lockout duration" />
+                                <ComboBox maxWidth="Infinity" promptText="Select duration" styleClass="field-combo" userData="5 minutes|15 minutes|30 minutes|Until an admin unlocks" />
+                            </VBox>
+                        </GridPane>
+                    </VBox>
+
+                    <VBox spacing="6.0" styleClass="card, settings-card">
+                        <VBox spacing="4.0">
+                            <Label styleClass="card-title" text="Password Policy" />
+                            <Label styleClass="card-desc" wrapText="true" text="Rules for new passwords when creating or editing accounts." />
+                        </VBox>
+                        <Separator styleClass="card-sep" />
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="option-row">
+                            <VBox spacing="3.0" HBox.hgrow="ALWAYS"><Label styleClass="row-title" text="Minimum length" /><Label styleClass="row-desc" text="Number of characters required." /></VBox>
+                            <TextField prefWidth="90.0" promptText="8" styleClass="field-input" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="option-row">
+                            <VBox spacing="3.0" HBox.hgrow="ALWAYS"><Label styleClass="row-title" text="Uppercase letter" /><Label styleClass="row-desc" text="At least one A–Z." /></VBox>
+                            <ToggleButton selected="true" styleClass="switch" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="option-row">
+                            <VBox spacing="3.0" HBox.hgrow="ALWAYS"><Label styleClass="row-title" text="Lowercase letter" /><Label styleClass="row-desc" text="At least one a–z." /></VBox>
+                            <ToggleButton selected="true" styleClass="switch" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="option-row">
+                            <VBox spacing="3.0" HBox.hgrow="ALWAYS"><Label styleClass="row-title" text="Number" /><Label styleClass="row-desc" text="At least one 0–9." /></VBox>
+                            <ToggleButton selected="true" styleClass="switch" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="option-row">
+                            <VBox spacing="3.0" HBox.hgrow="ALWAYS"><Label styleClass="row-title" text="Special character" /><Label styleClass="row-desc" text="At least one symbol such as ! @ # $ %." /></VBox>
+                            <ToggleButton selected="true" styleClass="switch" />
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+            </StackPane>
+        </ScrollPane>
+    </HBox>
 </VBox>
