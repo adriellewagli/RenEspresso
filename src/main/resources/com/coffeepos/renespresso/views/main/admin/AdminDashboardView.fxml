@@ -4,9 +4,8 @@
 <?import javafx.scene.layout.*?>
 <?import io.github.palexdev.materialfx.controls.*?>
 
-<StackPane prefHeight="768.0" prefWidth="1280.0"
+<StackPane fx:id="rootPane" prefHeight="768.0" prefWidth="1280.0"
            style="-fx-background-color: #F3E9DC;"
-           stylesheets="@../../styles/admin/dashboard.css"
            xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.coffeepos.renespresso.controller.main.admin.AdminDashboardController">
@@ -76,7 +75,7 @@
             <fx:include fx:id="salesView"       source="sales/SalesView.fxml" />
             <fx:include fx:id="transactionView" source="transact/TransactionView.fxml" />
             <fx:include fx:id="accountsView"    source="account/AccountView.fxml" />
-            <fx:include fx:id="settingsView" source="settings/SettingsView.fxml" />
+            <fx:include fx:id="settingsView"    source="settings/SettingsView.fxml" />
         </StackPane>
     </HBox>
 </StackPane>

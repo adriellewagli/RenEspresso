@@ -32,8 +32,8 @@ public class MenuController {
     @FXML private TextField searchField;
     @FXML private ComboBox<String> availabilityFilter;
     @FXML private FlowPane categoryChips, dishGrid;
-    @FXML private Label countLabel, pageLabel;
-    @FXML private Button addDishBtn, prevBtn, nextBtn;
+    @FXML private Label countLabel;
+    @FXML private Button addDishBtn;
 
     private static final DecimalFormat MONEY = new DecimalFormat("\u20B1#,##0.00");
     private static final double PHOTO = 106;
@@ -47,10 +47,6 @@ public class MenuController {
     private boolean rebuildingChips = false;
     private boolean loading = false;
 
-    // Pagination variables
-    private int currentPage = 0;
-    private final int itemsPerPage = 14;
-
     private record Loaded(List<Category> categories, List<Product> products, Map<Integer, List<ProductVariant>> variants) {}
 
     @FXML
@@ -58,8 +54,8 @@ public class MenuController {
         availabilityFilter.setItems(FXCollections.observableArrayList("All items", "Available", "Unavailable"));
         availabilityFilter.getSelectionModel().selectFirst();
 
-        searchField.textProperty().addListener((o, a, b) -> { currentPage = 0; render(); });
-        availabilityFilter.valueProperty().addListener((o, a, b) -> { currentPage = 0; render(); });
+        searchField.textProperty().addListener((o, a, b) -> render());
+        availabilityFilter.valueProperty().addListener((o, a, b) -> render());
 
         chipGroup.selectedToggleProperty().addListener((o, old, now) -> {
             if (rebuildingChips) return;
@@ -68,7 +64,6 @@ public class MenuController {
                 return;
             }
             selectedCategoryId = (Integer) now.getUserData();
-            currentPage = 0;
             render();
         });
 
@@ -146,48 +141,20 @@ public class MenuController {
 
         dishGrid.getChildren().clear();
 
-        int totalItems = shown.size();
-        int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
-        if (totalPages == 0) totalPages = 1;
-        if (currentPage >= totalPages) currentPage = totalPages - 1;
-
         if (shown.isEmpty()) {
             Label empty = new Label(allProducts.isEmpty()
                     ? "No dishes yet. Click \"Add New Dish\" to create your first one."
                     : "No dishes match your search or filters.");
             empty.getStyleClass().add("empty-state");
             dishGrid.getChildren().add(empty);
-            pageLabel.setText("Page 1 of 1");
-            prevBtn.setDisable(true);
-            nextBtn.setDisable(true);
         } else {
-            int start = currentPage * itemsPerPage;
-            int end = Math.min(start + itemsPerPage, totalItems);
-            List<Product> pageItems = shown.subList(start, end);
-
-            for (Product p : pageItems) dishGrid.getChildren().add(buildCard(p));
-
-            pageLabel.setText("Page " + (currentPage + 1) + " of " + totalPages);
-            prevBtn.setDisable(currentPage == 0);
-            nextBtn.setDisable(currentPage >= totalPages - 1);
+            for (Product p : shown) dishGrid.getChildren().add(buildCard(p));
         }
 
         long availableCount = allProducts.stream().filter(Product::available).count();
         countLabel.setText(shown.size() == allProducts.size()
                 ? allProducts.size() + " dishes  \u00B7  " + availableCount + " available"
                 : "Showing " + shown.size() + " of " + allProducts.size() + " dishes");
-    }
-
-    @FXML private void handlePrev() {
-        if (currentPage > 0) {
-            currentPage--;
-            render();
-        }
-    }
-
-    @FXML private void handleNext() {
-        currentPage++;
-        render();
     }
 
     private StackPane buildCard(Product p) {
@@ -230,12 +197,12 @@ public class MenuController {
         variantsPane.setMaxWidth(156);
 
         List<ProductVariant> vars = variantMap.getOrDefault(p.id(), new ArrayList<>());
-        for(ProductVariant v : vars) {
+        for (ProductVariant v : vars) {
             Label vLbl = new Label(v.getSizeName() + " " + MONEY.format(v.getPrice()));
             vLbl.getStyleClass().add("variant-pill");
             variantsPane.getChildren().add(vLbl);
         }
-        if(vars.isEmpty()) {
+        if (vars.isEmpty()) {
             Label noPrice = new Label("No prices set");
             noPrice.getStyleClass().add("variant-pill");
             variantsPane.getChildren().add(noPrice);

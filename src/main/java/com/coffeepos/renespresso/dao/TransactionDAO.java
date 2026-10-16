@@ -134,6 +134,19 @@ public class TransactionDAO {
                 "ORDER BY t.created_at DESC");
     }
 
+    /**
+     * Every transaction (all days) rung up by one cashier, newest first.
+     * Filtered in the database by transactions.cashier_id, so staff with the same name never get mixed up.
+     * (cashierId is a primitive int, so concatenating it into the SQL is safe from injection.)
+     */
+    public static List<TransactionRecord> loadTransactionsByCashier(int cashierId) {
+        if (cashierId <= 0) return new ArrayList<>();
+        return loadTransactions("SELECT t.*, u.full_name AS staff_name, u.role AS staff_role " +
+                "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
+                "WHERE t.cashier_id = " + cashierId + " " +
+                "ORDER BY t.created_at DESC");
+    }
+
     private static List<TransactionRecord> loadTransactions(String sql) {
         List<TransactionRecord> list = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection();

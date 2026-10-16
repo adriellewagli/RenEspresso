@@ -5,7 +5,6 @@
 <?import javafx.scene.layout.*?>
 
 <VBox spacing="20.0" styleClass="home-root"
-      stylesheets="@../../../styles/admin/home/home.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.home.HomeController">

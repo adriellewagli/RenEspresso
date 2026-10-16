@@ -28,6 +28,8 @@ public final class UserSession {
 
     // --- cashier / shift (setCashierName() in the shell fills the real name at login) ---
     public String cashierName = "Cashier";
+    /** users.user_id of the logged-in user (set by LoginController). Used to find "my" transactions. */
+    public int userId = 0;
     public int ticketNumber = 1;
     public int ordersCount = 0;
     public double salesTotal = 0.0;
@@ -88,6 +90,15 @@ public final class UserSession {
             System.err.println("Error loading session transactions from DB: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * All transactions (every day) rung up by the logged-in cashier, newest first.
+     * Filtered in the database by transactions.cashier_id, so two staff with the same name
+     * never see each other's orders. Blocking call: run it off the FX thread.
+     */
+    public List<TransactionRecord> loadMyTransactions() {
+        return TransactionDAO.loadTransactionsByCashier(userId);
     }
 
     /** Called by POS after an order is paid. The order starts in the queue as PREPARING. */

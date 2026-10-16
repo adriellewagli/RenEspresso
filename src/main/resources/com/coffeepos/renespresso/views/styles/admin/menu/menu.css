@@ -285,7 +285,11 @@
 .status-toggle:hover { -fx-background-color: #FBF6EE; }
 .status-toggle:selected { -fx-background-color: #5E3023; -fx-border-color: #5E3023; -fx-text-fill: #F3E9DC; -fx-font-weight: bold; }
 
-/* category list */
+/* category list (scrolls inside its card) */
+.category-scroll { -fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0; }
+.category-scroll > .viewport { -fx-background-color: transparent; }
+.category-list { -fx-padding: 0 8 0 0; }
+
 .category-row {
     -fx-background-color: #FBF6EE;
     -fx-background-radius: 10;
@@ -336,32 +340,4 @@
     -fx-text-fill: #895737;
     -fx-font-size: 11px;
     -fx-padding: 4 0 0 0;
-}
-
-/* ===== Pagination UI ===== */
-.pagination-box {
-    -fx-padding: 16 0 0 0;
-}
-.page-btn {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #E7DCCB;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 6 16;
-    -fx-text-fill: #5E3023;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
-}
-.page-btn:hover {
-    -fx-background-color: #F8F2E8;
-}
-.page-btn:disabled {
-    -fx-opacity: 0.4;
-    -fx-cursor: default;
-}
-.page-label {
-    -fx-text-fill: #895737;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
 }

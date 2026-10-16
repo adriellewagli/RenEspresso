@@ -9,7 +9,6 @@ import com.coffeepos.renespresso.util.SessionManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.shape.SVGPath;
@@ -32,13 +31,7 @@ public class LoginController {
     private SVGPath eyeIconPath;
 
     @FXML
-    private Hyperlink forgotPasswordLink;
-
-    @FXML
     private Button loginButton;
-
-    @FXML
-    private Hyperlink registerLink;
 
     private boolean isPasswordVisible = false;
 
@@ -67,8 +60,6 @@ public class LoginController {
         visiblePasswordField.setOnAction(this::handleLogin);
 
         loginButton.setOnAction(this::handleLogin);
-        registerLink.setOnAction(this::handleRegisterNavigation);
-        forgotPasswordLink.setOnAction(this::handleForgotPasswordNavigation);
     }
 
     // TOGGLE SHOW/HIDE PASSWORD
@@ -92,7 +83,7 @@ public class LoginController {
             passwordField.requestFocus();
             passwordField.selectEnd();
             eyeIconPath.setContent(EYE_SLASHED_PATH);
-            eyeIconPath.setOpacity(0.55);
+            eyeIconPath.setOpacity(0.85);
         }
     }
 
@@ -112,6 +103,7 @@ public class LoginController {
         if (user != null) {
             SessionManager.login(user);     // remember who is logged in (used by Account screen, sidebar, etc.)
             UserSession.get().cashierName = user.getFullName();
+            UserSession.get().userId = user.getUserId();
 
             AlertUtil.showSuccess("Welcome", "Login successful! Logging in as " + user.getFullName());
 
@@ -124,16 +116,5 @@ public class LoginController {
         } else {
             AlertUtil.showError("Authentication Failed", "Invalid username or password, or account is inactive.");
         }
-    }
-
-    // NAVIGATIONS
-    @FXML
-    private void handleRegisterNavigation(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "id/RegisterView.fxml", "Renespresso - Register Account", NavigateUtil.WindowMode.AUTH_DIALOG);
-    }
-
-    @FXML
-    private void handleForgotPasswordNavigation(ActionEvent event) {
-        NavigateUtil.navigateTo(event, "id/ForgotPasswordView.fxml", "Renespresso - Reset Password", NavigateUtil.WindowMode.AUTH_DIALOG);
     }
 }

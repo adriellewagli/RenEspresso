@@ -18,6 +18,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
@@ -25,15 +26,35 @@ import java.time.format.DateTimeFormatter;
 
 public class AdminDashboardController {
 
+    private static final String ADMIN_CSS  = "/com/coffeepos/renespresso/views/styles/admin/dashboard.css";
+    private static final String MODERN_CSS = "/com/coffeepos/renespresso/views/styles/common/modern.css";
+
+    private static final String BASE = "/com/coffeepos/renespresso/views/styles/";
+    private static final String[] CSS = {
+            BASE + "admin/dashboard.css",
+            BASE + "admin/home/home.css",
+            BASE + "admin/menu/menu.css",
+            BASE + "admin/account/account.css",
+            BASE + "admin/sales/sales.css",
+            BASE + "admin/settings/settings.css",
+            BASE + "admin/transact/transact.css",
+            BASE + "common/modern.css"          // keep last
+    };
+
+
+    private static final double COLLAPSED_WIDTH = 85.0;
+    private static final double EXPANDED_WIDTH = 310.0;
+    private static final double ICON_BOX = 37.0;
+
     private boolean isExpanded = false; // Start minimized
 
+    @FXML private StackPane rootPane;
     @FXML private VBox sidebar;
     @FXML private Label lblBrandText;
     @FXML private VBox userInfoBox;
 
     @FXML private Node homeView, menuView, salesView, transactionView, accountsView, settingsView;
 
-    // Injected automatically by JavaFX for <fx:include fx:id="homeView" .../> (fx:id + "Controller")
     @FXML private HomeController homeViewController;
     @FXML private MenuController menuViewController;
     @FXML private AccountController accountsViewController;
@@ -45,16 +66,16 @@ public class AdminDashboardController {
 
     @FXML private Label dateLabel;
 
-    private static final double COLLAPSED_WIDTH = 85.0;
-    private static final double EXPANDED_WIDTH = 310.0;
-    private static final double ICON_BOX = 37.0;
-
     private Button[] navButtons;
     private String[] navIcons;
     private String[] navLabels;
 
     @FXML
     public void initialize() {
+        for (String path : CSS) attachCss(path);
+        attachCss(ADMIN_CSS);
+        attachCss(MODERN_CSS);
+
         navButtons = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings};
         navIcons   = new String[]{"🏠", "📋", "📈", "🕒", "👥", "\uD83D\uDD27"};
         navLabels  = new String[]{"HOME", "MENU MANAGEMENT", "SALES", "TRANSACTION HISTORY", "ACCOUNT MANAGEMENT", "SETTINGS"};
@@ -70,6 +91,22 @@ public class AdminDashboardController {
         showHome();
     }
 
+    // =====================================================================
+    //  CSS
+    // =====================================================================
+    private void attachCss(String path) {
+        var url = getClass().getResource(path);
+        if (url == null) {
+            System.err.println("CSS not found: " + path);
+            return;
+        }
+        String css = url.toExternalForm();
+        if (!rootPane.getStylesheets().contains(css)) rootPane.getStylesheets().add(css);
+    }
+
+    // =====================================================================
+    //  SIDEBAR
+    // =====================================================================
     /** Icon lives in a fixed-width graphic so it never moves when the text appears/disappears. */
     private void setupIconButton(Button btn, String icon) {
         Label iconLabel = new Label(icon);
@@ -130,6 +167,9 @@ public class AdminDashboardController {
         btnLogout.setText(isExpanded ? "LOGOUT" : "");
     }
 
+    // =====================================================================
+    //  VIEW SWITCHING
+    // =====================================================================
     private void setShown(Node node, boolean shown) {
         node.setVisible(shown);
         node.setManaged(shown);
@@ -191,7 +231,7 @@ public class AdminDashboardController {
         if (accountsViewController != null) accountsViewController.loadAccounts();
     }
 
-    @FXML public void showSettings()     { show(settingsView, btnSettings); }
+    @FXML public void showSettings() { show(settingsView, btnSettings); }
 
     @FXML
     public void handleLogout(ActionEvent event) {

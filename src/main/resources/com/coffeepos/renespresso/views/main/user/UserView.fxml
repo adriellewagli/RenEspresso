@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<!-- NOTE: adjust the three fx:include "source" paths to where your included FXMLs live. -->
+<!-- NOTE: adjust the fx:include "source" paths to where your included FXMLs live. -->
 <StackPane fx:id="rootPane" styleClass="user-root"
            xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
@@ -112,11 +112,12 @@
                 </HBox>
             </VBox>
 
-            <!-- INCLUDED VIEWS -->
-            <!-- INCLUDED VIEWS -->
+
             <fx:include fx:id="posView" source="pos/PosView.fxml" />
             <fx:include fx:id="queueView" source="queue/OrderQueueView.fxml" />
             <fx:include fx:id="orderView" source="om/OrderManagementView.fxml" />
+            <fx:include fx:id="transactView" source="transact/TransactionHistoryView.fxml" />
+
 
         </StackPane>
     </HBox>

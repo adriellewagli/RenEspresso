@@ -7,12 +7,15 @@ import com.coffeepos.renespresso.model.Product;
 import com.coffeepos.renespresso.model.ProductVariant;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.ImageStore;
+import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.transform.Scale;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import javafx.geometry.Rectangle2D;
@@ -41,8 +44,14 @@ public class MenuConfigureController {
     @FXML private ToggleGroup statusGroup;
     @FXML private ToggleButton availableBtn, unavailableBtn;
     @FXML private Button saveBtn;
+    @FXML private ScrollPane formScroll;
+    @FXML private HBox formBox;
 
     private static final BigDecimal MAX_PRICE = new BigDecimal("999999.99");
+
+    // smallest the form may shrink; below this the scrollbar comes back
+    private static final double MIN_SCALE = 0.6;
+    private final Scale formScale = new Scale(1, 1, 0, 0);
 
     private Product existing;
     private List<Category> categories = new ArrayList<>();
@@ -64,6 +73,12 @@ public class MenuConfigureController {
         statusGroup.selectedToggleProperty().addListener((o, old, now) -> {
             if (now == null && old != null) old.setSelected(true);
         });
+
+        // scale-to-fit: re-fit on window resize and whenever a size row is added or removed
+        formBox.getTransforms().add(formScale);
+        formScroll.widthProperty().addListener((o, a, b) -> fitForm());
+        formScroll.heightProperty().addListener((o, a, b) -> fitForm());
+        variantsBox.getChildren().addListener((Observable o) -> Platform.runLater(this::fitForm));
     }
 
     public void init(Product existing, List<Category> allCategories, Runnable onClose) {
@@ -111,6 +126,28 @@ public class MenuConfigureController {
 
         if (variantRows.isEmpty()) addVariantRow(null);
         refreshPreview();
+        Platform.runLater(this::fitForm);
+    }
+
+    /** Shrinks the form (never enlarges it) so it fits the window without scrolling. */
+    private void fitForm() {
+        double w = formScroll.getWidth() - 4;
+        double h = formScroll.getHeight() - 4;
+        if (w <= 0 || h <= 0) return;
+
+        formBox.applyCss();
+        double s = 1.0;
+        for (int i = 0; i < 8; i++) {
+            double contentH = formBox.prefHeight(w / s);
+            double next = Math.max(MIN_SCALE, Math.min(1.0, h / contentH));
+            if (Math.abs(next - s) < 0.005) { s = next; break; }
+            s = next;
+        }
+        formBox.setMinWidth(w / s);
+        formBox.setPrefWidth(w / s);
+        formBox.setMaxWidth(w / s);
+        formScale.setX(s);
+        formScale.setY(s);
     }
 
     @FXML private void handleUpload(MouseEvent e) {

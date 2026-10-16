@@ -1,0 +1,78 @@
+/* ===== Modern scrollbar: thumb only ===== */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.scroll-bar:vertical   { -fx-pref-width: 12;  -fx-min-width: 12;  -fx-max-width: 12; }
+.scroll-bar:horizontal { -fx-pref-height: 12; -fx-min-height: 12; -fx-max-height: 12; }
+
+.scroll-bar:vertical > .track,
+.scroll-bar:horizontal > .track,
+.scroll-bar:vertical > .track-background,
+.scroll-bar:horizontal > .track-background {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.scroll-bar:vertical > .thumb,
+.scroll-bar:horizontal > .thumb {
+    -fx-background-color: #D9C3A5;
+    -fx-background-insets: 3;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+.scroll-bar:vertical:hover > .thumb,
+.scroll-bar:horizontal:hover > .thumb   { -fx-background-color: #C08552; }
+.scroll-bar > .thumb:pressed            { -fx-background-color: #895737; }
+
+/* kill the arrow buttons */
+.scroll-bar > .increment-button,
+.scroll-bar > .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-min-width: 0;  -fx-pref-width: 0;  -fx-max-width: 0;
+    -fx-min-height: 0; -fx-pref-height: 0; -fx-max-height: 0;
+    -fx-opacity: 0;
+}
+.scroll-bar > .increment-button > .increment-arrow,
+.scroll-bar > .decrement-button > .decrement-arrow {
+    -fx-padding: 0;
+    -fx-shape: "M0 0";
+}
+
+.scroll-pane > .corner { -fx-background-color: transparent; }
+
+/* ===== Checkbox (no blue) ===== */
+.check-box {
+    -fx-text-fill: #5E3023;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.check-box > .box {
+    -fx-background-color: #FBF6EE;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6;
+    -fx-border-color: #E3CBA8;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 6;
+    -fx-padding: 4;
+    -fx-effect: null;
+}
+.check-box:hover > .box    { -fx-background-color: #F3E9DC; -fx-border-color: #C08552; }
+.check-box:focused > .box  { -fx-border-color: #895737; }
+.check-box:selected > .box,
+.check-box:selected:focused > .box { -fx-background-color: #5E3023; -fx-border-color: #5E3023; }
+.check-box > .box > .mark {
+    -fx-background-color: transparent;
+    -fx-shape: "M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z";
+    -fx-padding: 0.45em 0.5em 0.45em 0.5em;
+}
+.check-box:selected > .box > .mark { -fx-background-color: #F3E9DC; }
