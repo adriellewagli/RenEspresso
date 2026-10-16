@@ -30,8 +30,9 @@ import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 public class UserViewController {
 
     private static final String ADMIN_CSS = "/com/coffeepos/renespresso/views/styles/admin/dashboard.css";
-    private static final String USER_CSS = "/com/coffeepos/renespresso/views/styles.user/user-dashboard.css";
-    private static final String ORDER_CSS = "/com/coffeepos/renespresso/views/styles.user/om/ordermanagement.css";
+    private static final String USER_CSS = "/com/coffeepos/renespresso/views/styles/user/user-dashboard.css";
+    private static final String ORDER_CSS = "/com/coffeepos/renespresso/views/styles/user/om/ordermanagement.css";
+    private static final String MODERN_CSS = "/com/coffeepos/renespresso/views/styles/common/modern.css";
 
     // --- Shell FXML bindings ---
     @FXML private StackPane rootPane;
@@ -78,6 +79,7 @@ public class UserViewController {
         UserUi.attachCss(rootPane, ADMIN_CSS);
         UserUi.attachCss(rootPane, USER_CSS);
         UserUi.attachCss(rootPane, ORDER_CSS);
+        UserUi.attachCss(rootPane, MODERN_CSS);
 
         User cur = SessionManager.getCurrentUser();
         if (cur != null && cur.getFullName() != null && !cur.getFullName().isBlank()) {

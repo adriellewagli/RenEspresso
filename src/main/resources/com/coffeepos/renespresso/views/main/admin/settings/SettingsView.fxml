@@ -4,7 +4,6 @@
 <?import javafx.scene.layout.*?>
 
 <VBox fx:id="settingsRoot" spacing="20.0" styleClass="settings-root"
-      stylesheets="@../../../styles/admin/settings/settings.css"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.settings.SettingsController">
