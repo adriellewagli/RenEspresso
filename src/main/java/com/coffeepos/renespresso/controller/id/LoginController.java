@@ -43,7 +43,10 @@ public class LoginController {
 
     @FXML
     public void initialize() {
+        // Keep masked and visible password synchronized
         visiblePasswordField.textProperty().bindBidirectional(passwordField.textProperty());
+
+        // Press Enter in Username -> Move focus to Active Password Field
         usernameField.setOnAction(e -> {
             if (isPasswordVisible) {
                 visiblePasswordField.requestFocus();
@@ -52,6 +55,7 @@ public class LoginController {
             }
         });
 
+        // Press Enter in Password Fields -> Trigger Login
         passwordField.setOnAction(this::handleLogin);
         visiblePasswordField.setOnAction(this::handleLogin);
 
@@ -97,11 +101,13 @@ public class LoginController {
         User user = UserDAO.authenticate(username, password);
 
         if (user != null) {
-            SessionManager.login(user);
+            SessionManager.login(user);     // remember who is logged in (used by Account screen, sidebar, etc.)
             UserSession.get().cashierName = user.getFullName();
+            UserSession.get().userId = user.getUserId();
 
             AlertUtil.showSuccess("Welcome", "Login successful! Logging in as " + user.getFullName());
 
+            // Route user depending on role
             if ("admin".equalsIgnoreCase(user.getRole()) || "manager".equalsIgnoreCase(user.getRole())) {
                 NavigateUtil.navigateTo(event, "main/admin/AdminDashboardView.fxml", "Renespresso - Admin Dashboard", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
             } else {

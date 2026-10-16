@@ -3,6 +3,7 @@ package com.coffeepos.renespresso.controller.main.user;
 import com.coffeepos.renespresso.controller.main.user.om.OrderManagementController;
 import com.coffeepos.renespresso.controller.main.user.pos.PosController;
 import com.coffeepos.renespresso.controller.main.user.queue.OrderQueueController;
+import com.coffeepos.renespresso.controller.main.user.transact.TransactionHistoryController;
 import com.coffeepos.renespresso.model.TransactionRecord;
 import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
@@ -42,10 +43,11 @@ public class UserViewController {
     @FXML private VBox homeView;
 
     // Included views (fx:include fx:id="posView" -> posView + posViewController, etc.)
-    @FXML private Node posView, queueView, orderView;
+    @FXML private Node posView, queueView, orderView, transactView;
     @FXML private PosController posViewController;
     @FXML private OrderQueueController queueViewController;
     @FXML private OrderManagementController orderViewController;
+    @FXML private TransactionHistoryController transactViewController;
 
     // Home dashboard
     @FXML private Label lblDashSales, lblDashLast, lblDashOrders, lblDashItems, lblDashQueue,
@@ -134,7 +136,6 @@ public class UserViewController {
 
     private boolean modalOpen() { return posViewController != null && posViewController.isModalOpen(); }
 
-    /** F1 Home, F2 Menu, F3 Orders, F4 History, F5 Settings, Esc closes the payment modal. */
     private void handleShortcut(KeyEvent event) {
         switch (event.getCode()) {
             case ESCAPE -> {
@@ -159,7 +160,6 @@ public class UserViewController {
         applySidebarState();
     }
 
-    /** Vector icon in a fixed 37x37 box; the glyph itself is sized in CSS (.nav-svg = 20x20). */
     private void setupIconButton(Button btn, String iconClass) {
         Region glyph = new Region();
         glyph.getStyleClass().addAll("nav-svg", iconClass);
@@ -205,7 +205,11 @@ public class UserViewController {
     }
 
     private void hideAllViews() {
-        for (Node view : List.of(homeView, posView, queueView, orderView)) setShown(view, false);
+        if (homeView != null) setShown(homeView, false);
+        if (posView != null) setShown(posView, false);
+        if (queueView != null) setShown(queueView, false);
+        if (orderView != null) setShown(orderView, false);
+        if (transactView != null) setShown(transactView, false);
 
         for (Button btn : List.of(btnHome, btnMenu, btnOrders, btnTransactionHistory)) {
             btn.getStyleClass().remove("nav-button-active");
@@ -234,9 +238,9 @@ public class UserViewController {
     @FXML public void showOrders() { show(queueView, btnOrders); }
 
     @FXML public void showTransactionHistory() {
-        show(orderView, btnTransactionHistory);
-        if (orderViewController != null) {
-            orderViewController.loadTransactions();
+        show(transactView, btnTransactionHistory);
+        if (transactViewController != null) {
+            transactViewController.loadTransactions();
         }
     }
 

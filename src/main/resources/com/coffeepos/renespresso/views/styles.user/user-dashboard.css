@@ -550,3 +550,127 @@
 .btn-action-receipt:hover {
     -fx-background-color: #EBDDCF;
 }
+
+.tx-container {
+    -fx-background-color: #F3E9DC;
+    -fx-padding: 24 32 24 32;
+}
+
+.tx-container .tx-title    { -fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #5E3023; }
+.tx-container .tx-subtitle { -fx-font-size: 13px; -fx-text-fill: #895737; }
+.tx-container .tx-summary  { -fx-font-size: 12px; -fx-text-fill: #5E3023; }
+
+.tx-container .filter-card,
+.tx-container .table-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(94,48,35,0.08), 14, 0, 0, 3);
+}
+.tx-container .filter-card { -fx-padding: 14 18 14 18; }
+.tx-container .table-card  { -fx-padding: 14 18 10 18; }
+
+.tx-container .tx-search {
+    -fx-background-color: #FBF7F1;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E3D9CD;
+    -fx-border-radius: 10px;
+    -fx-pref-height: 40px;
+    -fx-padding: 0 14 0 14;
+    -fx-text-fill: #5E3023;
+    -fx-prompt-text-fill: #A08C80;
+    -fx-font-size: 13px;
+}
+.tx-container .tx-search:focused { -fx-border-color: #C08552; -fx-faint-focus-color: transparent; -fx-focus-color: transparent; }
+
+.tx-container .combo-box {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E3D9CD;
+    -fx-border-radius: 10px;
+    -fx-pref-height: 40px;
+    -fx-font-size: 13px;
+}
+.tx-container .combo-box:focused { -fx-border-color: #C08552; -fx-faint-focus-color: transparent; -fx-focus-color: transparent; }
+.tx-container .combo-box .list-cell { -fx-text-fill: #5E3023; -fx-background-color: transparent; }
+.tx-container .combo-box .arrow { -fx-background-color: #5E3023; }
+
+.tx-container .btn-clear {
+    -fx-background-color: transparent;
+    -fx-text-fill: #5E3023;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+.tx-container .btn-clear:hover { -fx-underline: true; }
+
+.tx-container .tx-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.tx-container .tx-table .column-header-background { -fx-background-color: transparent; }
+.tx-container .tx-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #E3D9CD transparent;
+    -fx-size: 44px;
+}
+.tx-container .tx-table .column-header .label {
+    -fx-text-fill: #895737;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+.tx-container .tx-table .filler { -fx-background-color: transparent; }
+
+.tx-container .tx-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #F1E8DC transparent;
+    -fx-cell-size: 56px;
+}
+.tx-container .tx-table .table-row-cell:hover    { -fx-background-color: #FBF7F1; }
+.tx-container .tx-table .table-row-cell:selected { -fx-background-color: #F3E9DC; }
+
+.tx-container .tx-table .table-cell {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #2D1810;
+    -fx-font-size: 13px;
+    -fx-border-color: transparent;
+}
+.tx-container .tx-table .table-cell:selected { -fx-text-fill: #2D1810; }
+
+.tx-container .col-order-id { -fx-font-weight: bold; }
+.tx-container .col-created  { -fx-text-fill: #5E4A3D; }
+.tx-container .col-items    { -fx-text-fill: #5E4A3D; }
+.tx-container .col-total    { -fx-font-weight: bold; -fx-text-fill: #5E3023; }
+
+.tx-container .empty-note { -fx-text-fill: #895737; -fx-font-size: 13px; }
+
+.tx-container .status-pill { -fx-background-radius: 11px; -fx-padding: 0 10 0 10; }
+.tx-container .status-text { -fx-font-size: 12px; -fx-font-weight: bold; }
+
+.tx-container .status-pill-completed { -fx-background-color: #D1FAE5; }
+.tx-container .status-pill-completed .status-text { -fx-text-fill: #065F46; }
+.tx-container .status-pill-preparing { -fx-background-color: #FEF3C7; }
+.tx-container .status-pill-preparing .status-text { -fx-text-fill: #92400E; }
+.tx-container .status-pill-pending   { -fx-background-color: #E5E7EB; }
+.tx-container .status-pill-pending .status-text   { -fx-text-fill: #374151; }
+.tx-container .status-pill-cancelled { -fx-background-color: #FEE2E2; }
+.tx-container .status-pill-cancelled .status-text { -fx-text-fill: #991B1B; }
+
+.tx-container .payment-pill { -fx-background-radius: 11px; -fx-padding: 0 12 0 12; -fx-font-size: 12px; -fx-font-weight: bold; -fx-alignment: CENTER; }
+.tx-container .payment-paid     { -fx-background-color: #D1FAE5; -fx-text-fill: #065F46; }
+.tx-container .payment-unpaid   { -fx-background-color: #FEF3C7; -fx-text-fill: #92400E; }
+.tx-container .payment-refunded { -fx-background-color: #E5E7EB; -fx-text-fill: #374151; }
+
+.tx-container .btn-action-receipt {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8px;
+    -fx-border-color: #E3D9CD;
+    -fx-border-radius: 8px;
+    -fx-text-fill: #5E3023;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 14 0 14;
+    -fx-cursor: hand;
+}
+.tx-container .btn-action-receipt:hover { -fx-background-color: #F3E9DC; -fx-border-color: #C08552; }

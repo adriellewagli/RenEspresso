@@ -8,13 +8,6 @@
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
-<!--
-  Palette
-    Cream    #F3E9DC
-    Caramel  #C08552
-    Coffee   #895737
-    Brownie  #5E3023
--->
 <AnchorPane prefHeight="580.0" prefWidth="850.0" style="-fx-background-color: #F3E9DC;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.coffeepos.renespresso.controller.id.LoginController">
     <children>
 
@@ -113,7 +106,7 @@
                                 <Font name="Georgia Bold" size="28.0" />
                             </font>
                         </Label>
-                        <Label style="-fx-text-fill: #895737;" text="Please login to your cashier account">
+                        <Label style="-fx-text-fill: #895737;" text="Please login to your account to proceed.">
                             <font>
                                 <Font size="12.0" />
                             </font>
