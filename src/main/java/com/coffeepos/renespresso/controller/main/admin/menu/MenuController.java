@@ -6,18 +6,19 @@ import com.coffeepos.renespresso.model.Product;
 import com.coffeepos.renespresso.model.ProductVariant;
 import com.coffeepos.renespresso.util.ImageStore;
 import com.coffeepos.renespresso.util.NavigateUtil;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import com.coffeepos.renespresso.util.AlertUtil;
-
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.text.DecimalFormat;
@@ -37,6 +38,10 @@ public class MenuController {
 
     private static final DecimalFormat MONEY = new DecimalFormat("\u20B1#,##0.00");
     private static final double PHOTO = 106;
+
+    private static final double MIN_CARD_WIDTH = 190;
+    private static final double CARD_SIDE_PADDING = 32;
+    private double cardWidth = MIN_CARD_WIDTH;
 
     private final ToggleGroup chipGroup = new ToggleGroup();
     private List<Product> allProducts = new ArrayList<>();
@@ -66,6 +71,9 @@ public class MenuController {
             selectedCategoryId = (Integer) now.getUserData();
             render();
         });
+
+        dishGrid.widthProperty().addListener((o, a, b) -> relayoutCards());
+        dishGrid.paddingProperty().addListener((o, a, b) -> relayoutCards());
 
         loadData();
     }
@@ -141,6 +149,8 @@ public class MenuController {
 
         dishGrid.getChildren().clear();
 
+        cardWidth = computeCardWidth();
+
         if (shown.isEmpty()) {
             Label empty = new Label(allProducts.isEmpty()
                     ? "No dishes yet. Click \"Add New Dish\" to create your first one."
@@ -155,7 +165,42 @@ public class MenuController {
         countLabel.setText(shown.size() == allProducts.size()
                 ? allProducts.size() + " dishes  \u00B7  " + availableCount + " available"
                 : "Showing " + shown.size() + " of " + allProducts.size() + " dishes");
+
+        Platform.runLater(this::relayoutCards);
     }
+
+
+    private double computeCardWidth() {
+        double w = dishGrid.getWidth();
+        if (w <= 0) return MIN_CARD_WIDTH;
+
+        Insets in = dishGrid.getInsets();
+        double avail = w - in.getLeft() - in.getRight();
+        double gap = dishGrid.getHgap();
+
+        int cols = Math.max(1, (int) Math.floor((avail + gap) / (MIN_CARD_WIDTH + gap)));
+        return Math.floor((avail - (cols - 1) * gap) / cols);
+    }
+
+    private void relayoutCards() {
+        double w = computeCardWidth();
+        if (w <= 0) return;
+        cardWidth = w;
+        for (Node node : dishGrid.getChildren()) {
+            if (node instanceof StackPane sp && sp.getStyleClass().contains("dish-card")) {
+                applyCardWidth(sp);
+            }
+        }
+    }
+
+    private void applyCardWidth(StackPane card) {
+        card.setMinWidth(cardWidth);
+        card.setPrefWidth(cardWidth);
+        card.setMaxWidth(cardWidth);
+        int w = (int) cardWidth;
+        card.setStyle("-fx-min-width:" + w + "; -fx-pref-width:" + w + "; -fx-max-width:" + w + ";");
+    }
+
 
     private StackPane buildCard(Product p) {
         StackPane photo = new StackPane();
@@ -178,7 +223,6 @@ public class MenuController {
         name.setWrapText(true);
         name.setTextAlignment(TextAlignment.CENTER);
         name.setAlignment(Pos.TOP_CENTER);
-        name.setMaxWidth(156);
         name.setMinHeight(38);
 
         String desc = p.description() == null ? "" : p.description().trim();
@@ -187,14 +231,12 @@ public class MenuController {
         description.setWrapText(true);
         description.setTextAlignment(TextAlignment.CENTER);
         description.setAlignment(Pos.TOP_CENTER);
-        description.setMaxWidth(156);
         description.setMinHeight(30);
         description.setPrefHeight(30);
         description.setMaxHeight(30);
 
         FlowPane variantsPane = new FlowPane(4, 4);
         variantsPane.setAlignment(Pos.TOP_CENTER);
-        variantsPane.setMaxWidth(156);
 
         List<ProductVariant> vars = variantMap.getOrDefault(p.id(), new ArrayList<>());
         for (ProductVariant v : vars) {
@@ -237,6 +279,12 @@ public class MenuController {
         StackPane card = new StackPane(body, actions);
         card.getStyleClass().add("dish-card");
         if (!p.available()) card.getStyleClass().add("dish-off");
+        applyCardWidth(card);
+
+        name.maxWidthProperty().bind(card.widthProperty().subtract(CARD_SIDE_PADDING));
+        description.maxWidthProperty().bind(card.widthProperty().subtract(CARD_SIDE_PADDING));
+        variantsPane.maxWidthProperty().bind(card.widthProperty().subtract(CARD_SIDE_PADDING));
+
         actions.visibleProperty().bind(card.hoverProperty());
         card.setOnMouseClicked(e -> { if (e.getClickCount() == 2) showDishDialog(p); });
 
