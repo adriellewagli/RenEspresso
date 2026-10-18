@@ -71,6 +71,16 @@ public class TransactionRecord {
                              String staffName, String staffRole, String paymentMethod, String paymentStatus,
                              OrderStatus orderStatus, List<OrderLine> lines, double subtotal, double vat,
                              double discount, double total, double tendered, String receiptText) {
+        this(transactionId, orderId, ticketNumber, createdAt, updatedAt, staffName, staffRole, paymentMethod, paymentStatus,
+             orderStatus, lines, subtotal, vat, discount, total, tendered, receiptText,
+             discount > 0 ? "Senior/PWD (20%)" : "None");
+    }
+
+    public TransactionRecord(int transactionId, String orderId, String ticketNumber,
+                             LocalDateTime createdAt, LocalDateTime updatedAt,
+                             String staffName, String staffRole, String paymentMethod, String paymentStatus,
+                             OrderStatus orderStatus, List<OrderLine> lines, double subtotal, double vat,
+                             double discount, double total, double tendered, String receiptText, String discountApplied) {
         this.transactionId = transactionId;
         this.orderId = (orderId != null && !orderId.isBlank()) ? orderId : (transactionId > 0 ? "TXN-" + (8400 + transactionId) : "TXN-8401");
         this.ticketNumber = ticketNumber != null ? ticketNumber : (transactionId > 0 ? String.format("#%03d", transactionId) : "#001");
@@ -94,7 +104,9 @@ public class TransactionRecord {
         String first = this.lines.isEmpty() ? "" : this.lines.get(0).name();
         this.items = itemCount + " item(s)" + (first.isEmpty() ? "" : " (" + first + (this.lines.size() > 1 ? ", ..." : "") + ")");
         this.discounted = discount > 0;
-        this.discountApplied = discounted ? "Senior/PWD (20%)" : "None";
+        this.discountApplied = (discountApplied != null && !discountApplied.isBlank())
+                ? discountApplied
+                : (discounted ? "Senior/PWD (20%)" : "None");
         this.totalPaid = String.format("\u20B1%.2f", total);
         if (orderStatus != null) {
             this.status.set(orderStatus);

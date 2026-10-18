@@ -10,7 +10,9 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TransactionDAO {
 
@@ -31,6 +33,13 @@ public class TransactionDAO {
             INSERT INTO transaction_items (transaction_id, variant_id, quantity, price)
             VALUES (?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
+        """;
+
+        String updateStockSQL = """
+            UPDATE products 
+            SET quantity = GREATEST(0, quantity - ?),
+                available = IF(quantity - ? <= 0, 0, available)
+            WHERE id = ?
         """;
 
         try (Connection conn = DatabaseManager.getConnection()) {
@@ -92,6 +101,26 @@ public class TransactionDAO {
                                 }
                             }
                             itemPs.executeBatch();
+                        }
+
+                        // Atomic stock deduction inside the same transaction
+                        Map<Integer, Integer> productQuantities = new HashMap<>();
+                        for (CartItem ci : cartItems) {
+                            if (ci.getProductId() > 0 && ci.getQuantity() > 0) {
+                                productQuantities.merge(ci.getProductId(), ci.getQuantity(), Integer::sum);
+                            }
+                        }
+
+                        if (!productQuantities.isEmpty()) {
+                            try (PreparedStatement stockPs = conn.prepareStatement(updateStockSQL)) {
+                                for (Map.Entry<Integer, Integer> entry : productQuantities.entrySet()) {
+                                    stockPs.setInt(1, entry.getValue());
+                                    stockPs.setInt(2, entry.getValue());
+                                    stockPs.setInt(3, entry.getKey());
+                                    stockPs.addBatch();
+                                }
+                                stockPs.executeBatch();
+                            }
                         }
                     }
                 }

@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,12 @@ public class PosController {
     @FXML private Label lblCartTicket, lblSubtotal, lblVat, lblDiscount, lblTotal;
     @FXML private CheckBox chkDiscount;
     @FXML private HBox rowDiscount;
+    @FXML private Label lblDiscountTitle;
+    @FXML private HBox boxSeniorCount;
+    @FXML private Button btnSeniorMinus, btnSeniorPlus;
+    @FXML private Label lblSeniorCount, lblSeniorNote;
+
+    private int seniorCount = 1;
 
     @FXML private StackPane modalOverlay;
     @FXML private Label lblModalTicket, lblModalTotal, lblChange;
@@ -340,42 +347,117 @@ public class PosController {
         if (!AlertUtil.showYesNo("Clear Order", "Remove all items from the current order?")) return;
         cartItems.clear();
         chkDiscount.setSelected(false);
+        seniorCount = 1;
         refreshCartUI();
         updateTotals();
     }
 
     @FXML
-    public void handleDiscountToggle() { updateTotals(); }
+    public void handleDiscountToggle() {
+        if (chkDiscount.isSelected()) {
+            if (seniorCount < 1) seniorCount = 1;
+            int totalItems = getTotalCartQuantity();
+            if (totalItems > 0 && seniorCount > totalItems) seniorCount = totalItems;
+        }
+        updateTotals();
+    }
+
+    @FXML
+    public void handleSeniorMinus() {
+        if (seniorCount > 1) {
+            seniorCount--;
+        } else {
+            chkDiscount.setSelected(false);
+        }
+        updateTotals();
+    }
+
+    @FXML
+    public void handleSeniorPlus() {
+        int totalItems = getTotalCartQuantity();
+        if (seniorCount < totalItems) {
+            seniorCount++;
+            updateTotals();
+        }
+    }
+
+    private int getTotalCartQuantity() {
+        return cartItems.stream().mapToInt(CartItem::getQuantity).sum();
+    }
 
     private void updateTotals() {
-        // Menu prices are VAT-INCLUSIVE: what the cashier sees on the menu (e.g. 80.00) is what the customer pays.
-        // VAT is therefore carved OUT of the price, not added on top of it.
-        double menuTotal = cartItems.stream().mapToDouble(CartItem::getLineTotal).sum();
-        boolean isDiscounted = chkDiscount.isSelected();
+        int totalItems = getTotalCartQuantity();
+        boolean isDiscounted = chkDiscount.isSelected() && totalItems > 0;
 
-        double vatableSales = round2(menuTotal / (1 + VAT_RATE));   // 80.00 -> 71.43
-        double vat, discountAmount, finalTotal;
-
-        if (isDiscounted) {
-            // Senior/PWD: VAT-exempt, and the 20% is taken off the VAT-exclusive price.
-            vat = 0.0;
-            discountAmount = round2(vatableSales * 0.20);
-            finalTotal = round2(vatableSales - discountAmount);
-        } else {
-            vat = round2(menuTotal - vatableSales);                  // 80.00 - 71.43 = 8.57
-            discountAmount = 0.0;
-            finalTotal = round2(menuTotal);                          // stays 80.00
+        if (boxSeniorCount != null) {
+            boxSeniorCount.setVisible(isDiscounted);
+            boxSeniorCount.setManaged(isDiscounted);
+        }
+        if (lblSeniorNote != null) {
+            lblSeniorNote.setVisible(isDiscounted);
+            lblSeniorNote.setManaged(isDiscounted);
         }
 
-        currentSubtotal = vatableSales;   // saved to DB as "subtotal" = VATable sales
+        if (isDiscounted) {
+            if (seniorCount < 1) seniorCount = 1;
+            if (seniorCount > totalItems) seniorCount = totalItems;
+            if (lblSeniorCount != null) lblSeniorCount.setText(String.valueOf(seniorCount));
+            if (btnSeniorPlus != null) btnSeniorPlus.setDisable(seniorCount >= totalItems);
+            if (btnSeniorMinus != null) btnSeniorMinus.setDisable(seniorCount <= 1);
+
+            if (lblSeniorNote != null) {
+                lblSeniorNote.setText(seniorCount == 1
+                        ? "Applies 20% + VAT-exempt to highest-priced meal"
+                        : "Applies 20% + VAT-exempt to " + seniorCount + " highest-priced meals");
+            }
+            if (lblDiscountTitle != null) {
+                lblDiscountTitle.setText(seniorCount == 1 ? "Senior/PWD (1 meal)" : "Senior/PWD (" + seniorCount + " meals)");
+            }
+        }
+
+        // Expand all cart items into individual unit prices
+        List<Double> unitPrices = new ArrayList<>();
+        for (CartItem ci : cartItems) {
+            for (int i = 0; i < ci.getQuantity(); i++) {
+                unitPrices.add(ci.getPrice());
+            }
+        }
+        unitPrices.sort(Collections.reverseOrder());
+
+        int countToDiscount = isDiscounted ? Math.min(seniorCount, unitPrices.size()) : 0;
+
+        double seniorGross = 0.0;
+        for (int i = 0; i < countToDiscount; i++) {
+            seniorGross += unitPrices.get(i);
+        }
+
+        double regularGross = 0.0;
+        for (int i = countToDiscount; i < unitPrices.size(); i++) {
+            regularGross += unitPrices.get(i);
+        }
+
+        // Philippine Tax Calculation:
+        // Regular items: VAT-inclusive, extract 12% VAT
+        double vatableSales = round2(regularGross / (1 + VAT_RATE));
+        double vat = round2(regularGross - vatableSales);
+
+        // Senior items: VAT-exempt, 20% discount on VAT-exclusive base price
+        double vatExemptSales = round2(seniorGross / (1 + VAT_RATE));
+        double discountAmount = round2(vatExemptSales * 0.20);
+        double seniorPayable = round2(vatExemptSales - discountAmount);
+
+        double finalTotal = round2(regularGross + seniorPayable);
+        double totalSubtotal = round2(vatableSales + vatExemptSales);
+
+        currentSubtotal = totalSubtotal;
         currentVat = vat;
         currentDiscount = discountAmount;
         currentTotal = finalTotal;
 
-        lblSubtotal.setText(peso(vatableSales));
+        lblSubtotal.setText(peso(totalSubtotal));
         lblVat.setText(peso(vat));
-        rowDiscount.setVisible(isDiscounted);
-        rowDiscount.setManaged(isDiscounted);
+        rowDiscount.setVisible(isDiscounted && discountAmount > 0);
+        rowDiscount.setManaged(isDiscounted && discountAmount > 0);
         lblDiscount.setText("-" + peso(discountAmount));
         lblTotal.setText(peso(finalTotal));
         lblCartTicket.setText("Next ticket " + session.ticketLabel());
@@ -478,14 +560,6 @@ public class PosController {
     }
 
     private void processOrder(String paymentMethod, double tendered) {
-        try {
-            deductStock();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            AlertUtil.showError("Could not update stock", ex.getMessage());
-            return;
-        }
-
         String ticket = session.ticketLabel();
         List<OrderLine> lines = cartItems.stream()
                 .map(c -> new OrderLine(c.getName(), c.getSize(), c.getQuantity(), c.getLineTotal()))
@@ -497,11 +571,15 @@ public class PosController {
         String staffName = cur != null ? cur.getFullName() : session.cashierName;
         String staffRole = cur != null ? cur.getRole() : "Cashier";
 
+        String discountApplied = currentDiscount > 0
+                ? (seniorCount > 1 ? "Senior/PWD (" + seniorCount + "x)" : "Senior/PWD (20%)")
+                : "None";
+
         TransactionRecord record = new TransactionRecord(
                 0, null, ticket, LocalDateTime.now(), LocalDateTime.now(),
                 staffName, staffRole, paymentMethod, "Paid",
                 OrderStatus.PREPARING, lines, currentSubtotal, currentVat, currentDiscount,
-                currentTotal, tendered, receipt
+                currentTotal, tendered, receipt, discountApplied
         );
 
         try {
@@ -515,26 +593,16 @@ public class PosController {
         session.recordOrder(record);
 
         cartItems.clear();
-        if (session.autoClearDiscount) chkDiscount.setSelected(false);
+        if (session.autoClearDiscount) {
+            chkDiscount.setSelected(false);
+            seniorCount = 1;
+        }
         refreshCartUI();
         updateTotals();
         closeConfirmationModal();
         reload();
 
         AlertUtil.showSuccess("Order Processed", "Order " + record.getOrderId() + " (" + ticket + ") was added to the queue.");
-    }
-
-    /** Takes the sold quantities out of stock (uses the same MenuDAO call as the admin menu editor). */
-    private void deductStock() throws SQLException {
-        Map<Integer, Integer> sold = new HashMap<>();
-        for (CartItem ci : cartItems) sold.merge(ci.getProductId(), ci.getQuantity(), Integer::sum);
-
-        for (Map.Entry<Integer, Integer> e : sold.entrySet()) {
-            Product p = products.stream().filter(x -> x.id() == e.getKey()).findFirst().orElse(null);
-            if (p == null) continue;
-            int left = Math.max(0, p.quantity() - e.getValue());
-            MenuDAO.updateProduct(p.id(), p.name(), p.categoryId(), p.description(), p.imagePath(), left > 0, left);
-        }
     }
 
     // =====================================================================
@@ -560,9 +628,12 @@ public class PosController {
         }
 
         sb.append(line).append('\n');
-        sb.append(row("VATable Sales", peso(currentSubtotal), w)).append('\n');
+        sb.append(row("Subtotal", peso(currentSubtotal), w)).append('\n');
         sb.append(row("VAT (12%)", peso(currentVat), w)).append('\n');
-        if (currentDiscount > 0) sb.append(row("Senior/PWD (20%)", "-" + peso(currentDiscount), w)).append('\n');
+        if (currentDiscount > 0) {
+            String discLabel = seniorCount > 1 ? "Senior/PWD (" + seniorCount + "x 20%)" : "Senior/PWD (20%)";
+            sb.append(row(discLabel, "-" + peso(currentDiscount), w)).append('\n');
+        }
         sb.append(row("TOTAL", peso(currentTotal), w)).append('\n');
         sb.append(line).append('\n');
         sb.append(row("Payment", paymentMethod, w)).append('\n');

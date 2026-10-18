@@ -234,7 +234,7 @@ INSERT INTO product_variants (variant_id, product_id, size_name, price) VALUES
 (37, 13, 'Small', 65.00), (38, 13, 'Medium', 85.00), (39, 13, 'Large', 105.00),
 (40, 14, 'Small', 75.00), (41, 14, 'Medium', 95.00), (42, 14, 'Large', 115.00),
 (43, 15, 'Small', 80.00), (44, 15, 'Medium', 100.00), (45, 15, 'Large', 120.00),
-(44, 16, 'Small', 75.00), (47, 16, 'Medium', 95.00), (48, 16, 'Large', 115.00),
+(46, 16, 'Small', 75.00), (47, 16, 'Medium', 95.00), (48, 16, 'Large', 115.00),
 (49, 17, 'Small', 70.00), (50, 17, 'Medium', 90.00), (51, 17, 'Large', 110.00),
 (52, 18, 'Small', 75.00), (53, 18, 'Medium', 95.00), (54, 18, 'Large', 115.00),
 (55, 19, 'Small', 80.00), (56, 19, 'Medium', 100.00), (57, 19, 'Large', 120.00),
@@ -466,6 +466,13 @@ INSERT INTO transactions (
 INSERT INTO transaction_items (transaction_id, variant_id, quantity, price)
 VALUES (?, ?, ?, ?)
 ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity);
+
+-- Atomic Inventory Stock Deduction (Inside DB Transaction)
+-- Source: TransactionDAO.saveTransaction(...)
+UPDATE products 
+SET quantity = GREATEST(0, quantity - ?),
+    available = IF(quantity - ? <= 0, 0, available)
+WHERE id = ?;
 
 -- Update Formatted Order ID (e.g. TXN-84xx)
 -- Source: TransactionDAO.saveTransaction(...)

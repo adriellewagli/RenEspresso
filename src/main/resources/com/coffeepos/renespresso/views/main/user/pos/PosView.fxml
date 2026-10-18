@@ -41,10 +41,20 @@
 
             <ListView fx:id="cartListView" styleClass="transparent-listview" VBox.vgrow="ALWAYS" />
 
-            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="discount-banner">
-                <CheckBox fx:id="chkDiscount" onAction="#handleDiscountToggle" styleClass="discount-checkbox"
-                          text="Senior / PWD discount" />
-            </HBox>
+            <VBox spacing="6.0" styleClass="discount-banner">
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <CheckBox fx:id="chkDiscount" onAction="#handleDiscountToggle" styleClass="discount-checkbox"
+                              text="Senior / PWD discount" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <HBox fx:id="boxSeniorCount" alignment="CENTER" spacing="4.0" managed="false" visible="false">
+                        <Label styleClass="discount-tag" text="IDs:" />
+                        <Button fx:id="btnSeniorMinus" onAction="#handleSeniorMinus" styleClass="qty-btn" text="−" />
+                        <Label fx:id="lblSeniorCount" alignment="CENTER" minWidth="18.0" styleClass="cart-item-title" text="1" />
+                        <Button fx:id="btnSeniorPlus" onAction="#handleSeniorPlus" styleClass="qty-btn" text="+" />
+                    </HBox>
+                </HBox>
+                <Label fx:id="lblSeniorNote" managed="false" styleClass="discount-tag" text="Applies 20% + VAT-exempt to highest-priced meal" visible="false" />
+            </VBox>
 
             <VBox spacing="8.0" styleClass="totals-box">
                 <Separator styleClass="totals-separator" />
@@ -59,7 +69,7 @@
                     <Label fx:id="lblVat" styleClass="total-value-dark" text="₱0.00" />
                 </HBox>
                 <HBox fx:id="rowDiscount" managed="false" visible="false">
-                    <Label styleClass="total-label-accent" text="Senior/PWD (20%)" />
+                    <Label fx:id="lblDiscountTitle" styleClass="total-label-accent" text="Senior/PWD (20%)" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblDiscount" styleClass="total-value-accent" text="-₱0.00" />
                 </HBox>
