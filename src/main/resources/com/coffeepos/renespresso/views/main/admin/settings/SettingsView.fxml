@@ -19,7 +19,11 @@
             <Label styleClass="settings-subtitle" text="Application preferences and configuration" />
         </VBox>
         <Label fx:id="lblSaveNote" styleClass="status-text" />
-        <Button onAction="#handleSaveSettings" styleClass="primary-button" text="Save Changes" />
+        <HBox fx:id="storeActions" alignment="CENTER_RIGHT" spacing="10.0">
+            <Button fx:id="btnEdit" onAction="#handleEdit" styleClass="primary-button" text="Edit" />
+            <Button fx:id="btnCancel" onAction="#handleCancel" styleClass="secondary-button" text="Cancel" visible="false" managed="false" />
+            <Button fx:id="btnSave" onAction="#handleSaveSettings" styleClass="primary-button" text="Save Changes" visible="false" managed="false" />
+        </HBox>
     </HBox>
 
     <HBox spacing="20.0" VBox.vgrow="ALWAYS">
@@ -61,7 +65,7 @@
                             </VBox>
                             <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
                                 <Label styleClass="field-label" text="Contact number" />
-                                <TextField fx:id="txtContact" promptText="e.g. 0917 123 4567" styleClass="field-input" />
+                                <TextField fx:id="txtContact" promptText="e.g. 09171234567" styleClass="field-input" />
                             </VBox>
                             <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                 <Label styleClass="field-label" text="TIN" />
@@ -75,12 +79,12 @@
                 <VBox id="secBackup" spacing="20.0" visible="false" managed="false">
                     <VBox spacing="16.0" styleClass="card, settings-card">
                         <VBox spacing="4.0">
-                            <Label styleClass="card-title" text="Backup Database" />
-                            <Label styleClass="card-desc" wrapText="true" text="Choose which months of transactions to export, as Excel or CSV." />
+                            <Label styleClass="card-title" text="Backup Transaction History" />
+                            <Label styleClass="card-desc" wrapText="true" text="Choose which months of transactions to export to an Excel file." />
                         </VBox>
                         <Separator styleClass="card-sep" />
                         <HBox alignment="CENTER_LEFT" spacing="14.0">
-                            <Button fx:id="btnBackup" onAction="#handleBackup" styleClass="primary-button" text="💾  Backup Database" />
+                            <Button fx:id="btnBackup" onAction="#handleBackup" styleClass="primary-button" text="💾  Backup Transaction History" />
                             <ProgressIndicator fx:id="progress" managed="false" prefHeight="24.0" prefWidth="24.0" visible="false" />
                         </HBox>
                         <Label fx:id="lblStatus" styleClass="status-text" wrapText="true" />

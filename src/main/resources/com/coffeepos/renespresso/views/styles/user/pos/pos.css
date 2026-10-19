@@ -64,7 +64,7 @@
 .total-grand-value { -fx-text-fill: #5E3023; -fx-font-size: 24px; -fx-font-weight: bold; }
 
 /* Payment modal */
-.modal-overlay { -fx-background-color: rgba(94,48,35,0.55); }
+.modal-overlay { -fx-background-color: rgba(0,0,0,0.25); }
 .modal-dialog {
     -fx-background-color: white; -fx-background-radius: 16; -fx-padding: 28;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 24, 0, 0, 6);

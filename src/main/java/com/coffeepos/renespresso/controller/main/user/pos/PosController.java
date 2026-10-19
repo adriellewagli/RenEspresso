@@ -40,8 +40,8 @@ import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 public class PosController {
 
     private static final double PHOTO = 96;
-    private static final double VAT_RATE = 0.12;          // menu prices already include this VAT
-    private static final double CARD_MIN_W = 188;         // smallest a menu card may get before the grid drops a column
+    private static final double VAT_RATE = 0.12;
+    private static final double CARD_MIN_W = 188;
     private double cardWidth = CARD_MIN_W;
 
     // --- FXML bindings ---
@@ -186,10 +186,6 @@ public class PosController {
         resizeCards();
     }
 
-    /**
-     * Works out how many columns fit, then widens every card so the columns use the whole row
-     * (no empty strip left between the last card and the Current Order panel).
-     */
     private void resizeCards() {
         double gap = menuGrid.getHgap();
         double avail = menuGrid.getWidth() - menuGrid.getInsets().getLeft() - menuGrid.getInsets().getRight();
@@ -216,7 +212,9 @@ public class PosController {
 
         StackPane photo = new StackPane();
         photo.getStyleClass().add("dish-photo");
+        // ImageStore decides: full URL, "Folder/File.png" on the server, or a local upload
         ImageView iv = ImageStore.circleView(p.imagePath(), PHOTO);
+
         if (iv != null) {
             photo.getChildren().add(iv);
         } else {
@@ -264,7 +262,6 @@ public class PosController {
         return card;
     }
 
-    /** getPrice() may be a BigDecimal or a double depending on the model; handle both. */
     private static double priceOf(ProductVariant v) {
         Object price = v.getPrice();
         return ((Number) price).doubleValue();

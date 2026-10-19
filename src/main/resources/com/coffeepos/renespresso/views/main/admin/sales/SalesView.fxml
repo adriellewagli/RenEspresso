@@ -4,51 +4,160 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="20.0" styleClass="home-root"
+<VBox spacing="20.0" styleClass="home-root, sales-container"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coffeepos.renespresso.controller.main.admin.sales.SalesController">
 
+    <fx:define>
+        <ToggleGroup fx:id="periodGroup" />
+    </fx:define>
+
+    <!-- ============ HEADER ============ -->
     <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-header">
         <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-            <Label styleClass="page-title" text="Sales" />
-            <Label styleClass="page-subtitle" text="Track revenue, orders, and sales performance" />
+            <Label styleClass="page-title, sales-title" text="Sales" />
+            <Label styleClass="page-subtitle, sales-subtitle" text="Track revenue, orders, and sales performance" />
         </VBox>
         <VBox alignment="CENTER_RIGHT" spacing="2.0">
-            <Label fx:id="lblDate" styleClass="date-label" />
-            <Label fx:id="lblUpdated" styleClass="updated-label" />
+            <Label fx:id="lblDate" styleClass="date-label, header-date" />
+            <Label fx:id="lblUpdated" styleClass="updated-label, header-updated" />
         </VBox>
-        <Button fx:id="btnRefresh" onAction="#loadSales" styleClass="refresh-button" text="Refresh" />
+        <Button fx:id="btnRefresh" onAction="#loadSales" styleClass="refresh-button, btn-refresh" text="Refresh" />
     </HBox>
 
-    <HBox spacing="16.0">
-        <VBox styleClass="card, kpi-card" prefWidth="200.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
-            <Label styleClass="kpi-title" text="TODAY'S SALES" />
-            <Label fx:id="lblSalesToday" styleClass="kpi-value" text="₱0.00" />
-            <Label fx:id="lblOrdersToday" styleClass="kpi-sub" text="0 orders" />
-        </VBox>
-        <VBox styleClass="card, kpi-card" prefWidth="200.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
-            <Label styleClass="kpi-title" text="THIS WEEK" />
-            <Label fx:id="lblSalesWeek" styleClass="kpi-value" text="₱0.00" />
-            <Label fx:id="lblOrdersWeek" styleClass="kpi-sub" text="0 orders" />
-        </VBox>
-        <VBox styleClass="card, kpi-card" prefWidth="200.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
-            <Label styleClass="kpi-title" text="THIS MONTH" />
-            <Label fx:id="lblSalesMonth" styleClass="kpi-value" text="₱0.00" />
-            <Label fx:id="lblOrdersMonth" styleClass="kpi-sub" text="0 orders" />
-        </VBox>
-    </HBox>
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox spacing="20.0" style="-fx-background-color: transparent;">
 
-    <HBox spacing="16.0" minHeight="0.0" prefHeight="0.0" VBox.vgrow="ALWAYS">
-        <VBox styleClass="card, panel-card" minHeight="0.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
-            <Label styleClass="card-title" text="Daily Revenue Trend" />
-            <Label styleClass="card-subtitle" text="Sales performance over the last 14 days" />
-            <BarChart fx:id="salesChart" legendVisible="false" minHeight="0.0" prefHeight="0.0"
-                      styleClass="sales-chart" verticalGridLinesVisible="false" VBox.vgrow="ALWAYS">
-                <xAxis><CategoryAxis fx:id="xAxis" side="BOTTOM" /></xAxis>
-                <yAxis><NumberAxis fx:id="yAxis" side="LEFT" /></yAxis>
-            </BarChart>
-        </VBox>
-    </HBox>
+            <!-- ============ TOP KPIs ============ -->
+            <HBox spacing="16.0">
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="TODAY'S SALES" />
+                    <Label fx:id="lblSalesToday" styleClass="kpi-value" text="₱0.00" />
+                    <Label fx:id="lblOrdersToday" styleClass="kpi-sub" text="0 orders" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="THIS WEEK" />
+                    <Label fx:id="lblSalesWeek" styleClass="kpi-value" text="₱0.00" />
+                    <Label fx:id="lblOrdersWeek" styleClass="kpi-sub" text="0 orders" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="THIS MONTH" />
+                    <Label fx:id="lblSalesMonth" styleClass="kpi-value" text="₱0.00" />
+                    <Label fx:id="lblOrdersMonth" styleClass="kpi-sub" text="0 orders" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="THIS YEAR" />
+                    <Label fx:id="lblSalesYear" styleClass="kpi-value" text="₱0.00" />
+                    <Label fx:id="lblOrdersYear" styleClass="kpi-sub" text="0 orders" />
+                </VBox>
+            </HBox>
 
+            <!-- ============ PERIOD SWITCH ============ -->
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label styleClass="card-title" text="Sales Analysis" />
+                <Region prefWidth="12.0" />
+                <ToggleButton selected="true" styleClass="period-chip" text="Daily" toggleGroup="$periodGroup" userData="DAILY" />
+                <ToggleButton styleClass="period-chip" text="Weekly" toggleGroup="$periodGroup" userData="WEEKLY" />
+                <ToggleButton styleClass="period-chip" text="Monthly" toggleGroup="$periodGroup" userData="MONTHLY" />
+                <ToggleButton styleClass="period-chip" text="Quarterly" toggleGroup="$periodGroup" userData="QUARTERLY" />
+                <ToggleButton styleClass="period-chip" text="Yearly" toggleGroup="$periodGroup" userData="YEARLY" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblRangeNote" styleClass="card-subtitle" />
+            </HBox>
+
+            <!-- ============ SELECTED-RANGE KPIs ============ -->
+            <HBox spacing="16.0">
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="REVENUE" />
+                    <Label fx:id="lblRangeRevenue" styleClass="kpi-value" text="₱0.00" />
+                    <Label styleClass="kpi-sub" text="selected range" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="ORDERS" />
+                    <Label fx:id="lblRangeOrders" styleClass="kpi-value" text="0" />
+                    <Label styleClass="kpi-sub" text="completed / active" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="AVG ORDER VALUE" />
+                    <Label fx:id="lblAvgOrder" styleClass="kpi-value" text="₱0.00" />
+                    <Label styleClass="kpi-sub" text="per order" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="CANCELLED" />
+                    <Label fx:id="lblCancelled" styleClass="kpi-value" text="0" />
+                    <Label fx:id="lblCancelRate" styleClass="kpi-sub" text="0% of all orders" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="VAT COLLECTED" />
+                    <Label fx:id="lblVat" styleClass="kpi-value" text="₱0.00" />
+                    <Label styleClass="kpi-sub" text="12% VAT" />
+                </VBox>
+                <VBox styleClass="card, kpi-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="kpi-title" text="DISCOUNTS GIVEN" />
+                    <Label fx:id="lblDiscount" styleClass="kpi-value" text="₱0.00" />
+                    <Label styleClass="kpi-sub" text="PWD / senior / other" />
+                </VBox>
+            </HBox>
+
+            <!-- ============ REVENUE CHART ============ -->
+            <VBox styleClass="card, panel-card" spacing="6.0">
+                <Label fx:id="lblChartTitle" styleClass="card-title" text="Daily Revenue" />
+                <Label fx:id="lblChartSub" styleClass="card-subtitle" />
+                <Label fx:id="lblTrend" styleClass="card-subtitle" />
+                <Label fx:id="lblBest" styleClass="card-subtitle" />
+                <BarChart fx:id="salesChart" legendVisible="false" minHeight="320.0" prefHeight="320.0"
+                          styleClass="sales-chart" verticalGridLinesVisible="false">
+                    <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
+                    <yAxis><NumberAxis side="LEFT" /></yAxis>
+                </BarChart>
+            </VBox>
+
+            <!-- ============ ORDERS TREND + PAYMENT METHODS ============ -->
+            <HBox spacing="16.0">
+                <VBox styleClass="card, panel-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="card-title" text="Orders Trend" />
+                    <Label styleClass="card-subtitle" text="Number of orders in the same range" />
+                    <LineChart fx:id="ordersChart" createSymbols="true" legendVisible="false"
+                               minHeight="280.0" prefHeight="280.0" verticalGridLinesVisible="false">
+                        <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
+                        <yAxis><NumberAxis side="LEFT" minorTickVisible="false" /></yAxis>
+                    </LineChart>
+                </VBox>
+                <VBox styleClass="card, panel-card" prefWidth="380.0" minWidth="380.0">
+                    <Label styleClass="card-title" text="Payment Methods" />
+                    <Label styleClass="card-subtitle" text="Share of revenue" />
+                    <PieChart fx:id="paymentChart" labelsVisible="false" legendVisible="true"
+                              minHeight="280.0" prefHeight="280.0" />
+                </VBox>
+            </HBox>
+
+            <!-- ============ SALES BY HOUR ============ -->
+            <VBox styleClass="card, panel-card">
+                <Label styleClass="card-title" text="Sales by Hour of Day" />
+                <Label styleClass="card-subtitle" text="Find your busiest hours (selected range)" />
+                <BarChart fx:id="hourChart" legendVisible="false" minHeight="260.0" prefHeight="260.0"
+                          styleClass="sales-chart" verticalGridLinesVisible="false">
+                    <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
+                    <yAxis><NumberAxis side="LEFT" /></yAxis>
+                </BarChart>
+            </VBox>
+
+            <!-- ============ TOP PRODUCTS + CASHIERS ============ -->
+            <HBox spacing="16.0">
+                <VBox styleClass="card, panel-card" spacing="12.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="card-title" text="Top Selling Products" />
+                    <Label styleClass="card-subtitle" text="By quantity sold (selected range)" />
+                    <VBox fx:id="boxTopProducts" spacing="12.0" />
+                </VBox>
+                <VBox styleClass="card, panel-card" spacing="12.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <Label styleClass="card-title" text="Top Cashiers" />
+                    <Label styleClass="card-subtitle" text="By revenue (selected range)" />
+                    <VBox fx:id="boxTopCashiers" spacing="12.0" />
+                </VBox>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
 </VBox>

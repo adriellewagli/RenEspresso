@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.layout.HBox;
@@ -42,6 +43,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 public class SettingsController {
 
@@ -52,6 +54,10 @@ public class SettingsController {
     @FXML private StackPane sectionStack;
     @FXML private ToggleGroup navGroup;
     @FXML private Label lblSaveNote;
+
+    // header buttons (Store Information only)
+    @FXML private HBox storeActions;
+    @FXML private Button btnEdit, btnCancel, btnSave;
 
     // store information
     @FXML private TextField txtShopName, txtTagline, txtAddress, txtContact, txtTin;
@@ -80,7 +86,9 @@ public class SettingsController {
         showSection("secStore");
 
         SettingsManager.reload();
+        setupInputFilters();
         loadStoreInfo();
+        setEditing(false);   // fields are locked until Edit is clicked
     }
 
     private void showSection(String id) {
@@ -89,6 +97,44 @@ public class SettingsController {
             n.setVisible(show);
             n.setManaged(show);
         }
+        // Edit / Save / Cancel only make sense on the Store Information tab
+        boolean store = "secStore".equals(id);
+        storeActions.setVisible(store);
+        storeActions.setManaged(store);
+        if (!store) lblSaveNote.setText("");
+    }
+
+    /** Contact: digits only, max 11. TIN: digits only, dashes added automatically, max 12 digits. */
+    private void setupInputFilters() {
+        // Contact number: 09171234567
+        UnaryOperator<TextFormatter.Change> contactFilter = change -> {
+            String digits = change.getControlNewText().replaceAll("\\D", "");
+            if (digits.length() > 11) digits = digits.substring(0, 11);
+            change.setRange(0, change.getControlText().length());
+            change.setText(digits);
+            change.selectRange(digits.length(), digits.length());
+            return change;
+        };
+        txtContact.setTextFormatter(new TextFormatter<>(contactFilter));
+
+        // TIN: 000-000-000-000
+        UnaryOperator<TextFormatter.Change> tinFilter = change -> {
+            String digits = change.getControlNewText().replaceAll("\\D", "");
+            if (digits.length() > 12) digits = digits.substring(0, 12);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < digits.length(); i++) {
+                if (i > 0 && i % 3 == 0) sb.append('-');
+                sb.append(digits.charAt(i));
+            }
+            String formatted = sb.toString();
+
+            change.setRange(0, change.getControlText().length());
+            change.setText(formatted);
+            change.selectRange(formatted.length(), formatted.length());
+            return change;
+        };
+        txtTin.setTextFormatter(new TextFormatter<>(tinFilter));
     }
 
     // ------------------------------------------------------------------ STORE INFORMATION
@@ -101,7 +147,36 @@ public class SettingsController {
         txtTin.setText(SettingsManager.get(SettingsManager.STORE_TIN));
     }
 
-    /** Header "Save Changes" button. Saves Store Information. */
+    /** Locks or unlocks the fields and swaps Edit for Cancel + Save Changes. */
+    private void setEditing(boolean editing) {
+        for (TextField f : new TextField[]{txtShopName, txtTagline, txtAddress, txtContact, txtTin}) {
+            f.setDisable(!editing);
+        }
+        setShown(btnEdit, !editing);
+        setShown(btnCancel, editing);
+        setShown(btnSave, editing);
+    }
+
+    private static void setShown(Node n, boolean shown) {
+        n.setVisible(shown);
+        n.setManaged(shown);
+    }
+
+    @FXML
+    private void handleEdit() {
+        lblSaveNote.setText("");
+        setEditing(true);
+        txtShopName.requestFocus();
+    }
+
+    @FXML
+    private void handleCancel() {
+        loadStoreInfo();     // throw away unsaved changes
+        lblSaveNote.setText("");
+        setEditing(false);
+    }
+
+    /** "Save Changes" button (visible only while editing). */
     @FXML
     private void handleSaveSettings() {
         String name = txtShopName.getText().trim();
@@ -112,14 +187,14 @@ public class SettingsController {
             show(Alert.AlertType.WARNING, "Check your input", "Shop name is required.");
             return;
         }
-        if (!contact.isEmpty() && !contact.matches("[0-9+()\\-\\s]{7,20}")) {
+        if (!contact.isEmpty() && !contact.matches("\\d{11}")) {
             show(Alert.AlertType.WARNING, "Check your input",
-                    "Contact number can only contain digits, spaces, + ( ) and -.");
+                    "Contact number must be exactly 11 digits (e.g. 09171234567).");
             return;
         }
-        if (!tin.isEmpty() && !tin.matches("[0-9\\-\\s]{9,20}")) {
+        if (!tin.isEmpty() && !tin.matches("\\d{3}-\\d{3}-\\d{3}(-\\d{3})?")) {
             show(Alert.AlertType.WARNING, "Check your input",
-                    "TIN can only contain digits, spaces and dashes (at least 9 digits).");
+                    "TIN must be 9 or 12 digits, like 000-000-000 or 000-000-000-000.");
             return;
         }
 
@@ -135,6 +210,7 @@ public class SettingsController {
 
             SettingsManager.save(values);
             lblSaveNote.setText("Store information saved.");
+            setEditing(false);   // lock the fields again
         } catch (SQLException ex) {
             ex.printStackTrace();
             show(Alert.AlertType.ERROR, "Save failed", ex.getMessage());
@@ -156,7 +232,7 @@ public class SettingsController {
                 : months.get(0) + "_to_" + months.get(months.size() - 1);
 
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Save Database Backup");
+        chooser.setTitle("Save Transaction History Backup");
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Excel Workbook (*.xlsx)", "*.xlsx"));
         chooser.setInitialFileName("RenEspresso_Backup_" + range + ".xlsx");
@@ -176,13 +252,13 @@ public class SettingsController {
         btnBackup.setDisable(true);
         progress.setVisible(true);
         progress.setManaged(true);
-        lblStatus.setText("Backing up database...");
+        lblStatus.setText("Backing up transaction history...");
 
         task.setOnSucceeded(e -> {
             done();
             lblStatus.setText("Backup saved: " + out.getAbsolutePath());
             show(Alert.AlertType.INFORMATION, "Backup Complete",
-                    task.getValue() + " tables exported for " + months.size()
+                    "Transaction history exported for " + months.size()
                             + " month(s) to:\n" + out.getAbsolutePath());
         });
 
@@ -202,7 +278,7 @@ public class SettingsController {
     /** Dialog: tick one or more months of transactions to back up. */
     private Optional<List<YearMonth>> askMonths() {
         Dialog<List<YearMonth>> dlg = new Dialog<>();
-        dlg.setTitle("Backup Database");
+        dlg.setTitle("Backup Transaction History");
         dlg.setHeaderText("Choose the months of transactions to back up");
         dlg.initOwner(settingsRoot.getScene().getWindow());
 

@@ -16,9 +16,13 @@
 .kpi-title { -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; }
 .kpi-value { -fx-text-fill: #2F2118; -fx-font-size: 26px; -fx-font-weight: bold; }
 .kpi-sub   { -fx-text-fill: #8C7E77; -fx-font-size: 12px; }
-.panel-title { -fx-text-fill: #5E3023; -fx-font-size: 16px; -fx-font-weight: bold; }
+
+.panel-title    { -fx-text-fill: #5E3023; -fx-font-size: 16px; -fx-font-weight: bold; }
 .panel-subtitle { -fx-text-fill: #895737; -fx-font-size: 12px; }
-.empty-note { -fx-text-fill: #9A8878; -fx-font-size: 14px; }
+/* the new Sales FXML uses these two names for the same look */
+.card-title     { -fx-text-fill: #5E3023; -fx-font-size: 16px; -fx-font-weight: bold; }
+.card-subtitle  { -fx-text-fill: #895737; -fx-font-size: 12px; }
+.empty-note     { -fx-text-fill: #9A8878; -fx-font-size: 14px; }
 
 .header-date    { -fx-text-fill: #2F2118; -fx-font-size: 15px; -fx-font-weight: bold; }
 .header-updated { -fx-text-fill: #9A8878; -fx-font-size: 13px; }
@@ -35,8 +39,53 @@
 .btn-refresh:hover    { -fx-background-color: #724629; }
 .btn-refresh:disabled { -fx-opacity: 0.6; }
 
+/* ---------- period switch (Daily / Weekly / Monthly / Quarterly / Yearly) ---------- */
+.period-chip {
+    -fx-background-color: transparent;
+    -fx-border-color: #E3D9CD;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-padding: 6 16 6 16;
+    -fx-text-fill: #5E3023;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.period-chip:hover { -fx-background-color: #F3E9DC; }
+.period-chip:selected {
+    -fx-background-color: #5E3023;
+    -fx-border-color: #5E3023;
+    -fx-text-fill: #F3E9DC;
+}
+
+/* ---------- charts ---------- */
 .chart-bar {
     -fx-bar-fill: #895737;
     -fx-background-radius: 4 4 0 0;
 }
 .default-color0.chart-bar { -fx-bar-fill: #895737; }
+
+.axis-label, .axis { -fx-tick-label-fill: #8C7A6A; }
+.chart-horizontal-grid-lines { -fx-stroke: #EFE5D6; }
+
+/* orders line chart */
+.default-color0.chart-series-line { -fx-stroke: #5E3023; -fx-stroke-width: 2.5px; }
+.default-color0.chart-line-symbol {
+    -fx-background-color: #5E3023, #FFFDFA;
+}
+
+/* payment pie chart */
+.default-color0.chart-pie { -fx-pie-color: #5E3023; }
+.default-color1.chart-pie { -fx-pie-color: #C08552; }
+.default-color2.chart-pie { -fx-pie-color: #895737; }
+.default-color3.chart-pie { -fx-pie-color: #D9B99B; }
+.default-color4.chart-pie { -fx-pie-color: #8C7A6A; }
+.chart-pie-label-line { -fx-stroke: #8C7A6A; }
+.chart-legend { -fx-background-color: transparent; }
+
+/* hover tooltips */
+.tooltip {
+    -fx-background-color: #2F2118;
+    -fx-text-fill: #F3E9DC;
+    -fx-font-size: 12px;
+    -fx-background-radius: 8;
+}
