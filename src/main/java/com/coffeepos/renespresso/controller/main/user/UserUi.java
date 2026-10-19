@@ -165,20 +165,11 @@ public final class UserUi {
         VBox brand = new VBox(6);
         brand.setAlignment(Pos.CENTER);
 
-        Image logoImg = SettingsManager.getLogoImage();
-        if (logoImg != null) {
-            ImageView iv = new ImageView(logoImg);
-            iv.setFitWidth(64);
-            iv.setFitHeight(64);
-            iv.setPreserveRatio(true);
-            brand.getChildren().add(iv);
-        } else {
-            Circle badge = new Circle(27, Color.web(BROWN));
-            Region cup = new Region();
-            cup.setMinSize(24, 24); cup.setPrefSize(24, 24); cup.setMaxSize(24, 24);
-            cup.setStyle("-fx-background-color: " + CREAM + "; -fx-shape: \"M2 21h18v-2H2v2zM20 8h-2V5h2c1.1 0 2 .9 2 2s-.9 2-2 2zm0-5H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c2.21 0 4-1.79 4-4s-1.79-4-4-4z\";");
-            brand.getChildren().add(new StackPane(badge, cup));
-        }
+        Circle badge = new Circle(27, Color.web(BROWN));
+        Region cup = new Region();
+        cup.setMinSize(24, 24); cup.setPrefSize(24, 24); cup.setMaxSize(24, 24);
+        cup.setStyle("-fx-background-color: " + CREAM + "; -fx-shape: \"M2 21h18v-2H2v2zM20 8h-2V5h2c1.1 0 2 .9 2 2s-.9 2-2 2zm0-5H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c2.21 0 4-1.79 4-4s-1.79-4-4-4z\";");
+        brand.getChildren().add(new StackPane(badge, cup));
 
         brand.getChildren().add(label(SettingsManager.getStoreName(),
                 "-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + BROWN + ";"));

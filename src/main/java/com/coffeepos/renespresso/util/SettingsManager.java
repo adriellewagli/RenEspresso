@@ -1,14 +1,10 @@
 package com.coffeepos.renespresso.util;
 
 import com.coffeepos.renespresso.dao.SettingsDAO;
-import javafx.scene.image.Image;
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +18,9 @@ public final class SettingsManager {
     public static final String STORE_ADDRESS = "store.address";
     public static final String STORE_CONTACT = "store.contact";
     public static final String STORE_TIN = "store.tin";
-    public static final String STORE_LOGO_PATH = "store.logo_path";
+
+    /** Width of a printed receipt in characters (the dashed line on your receipts is 42). */
+    public static final int RECEIPT_WIDTH = 42;
 
     private static final Map<String, String> DEFAULTS = Map.of(
             STORE_NAME, "RenEspresso",
@@ -32,8 +30,11 @@ public final class SettingsManager {
     private static final Map<String, String> cache = new HashMap<>();
     private static boolean loaded = false;
 
-    private static Image logoImage;
-    private static String logoImagePath;
+    // Bind labels to these so they update right after "Save Changes"
+    private static final ReadOnlyStringWrapper storeNameProp =
+            new ReadOnlyStringWrapper(DEFAULTS.get(STORE_NAME));
+    private static final ReadOnlyStringWrapper storeTaglineProp =
+            new ReadOnlyStringWrapper(DEFAULTS.get(STORE_TAGLINE));
 
     private SettingsManager() {}
 
@@ -49,8 +50,7 @@ public final class SettingsManager {
             System.err.println("SettingsManager: could not load settings, using defaults. " + e.getMessage());
         } finally {
             loaded = true;
-            logoImagePath = null;
-            logoImage = null;
+            publish();
         }
     }
 
@@ -70,8 +70,19 @@ public final class SettingsManager {
         SettingsDAO.saveAll(values);
         ensureLoaded();
         cache.putAll(values);
-        logoImagePath = null;   // force the logo to be re-read
-        logoImage = null;
+        publish();
+    }
+
+    /** Pushes the current name and tagline into the bindable properties (on the FX thread). */
+    private static void publish() {
+        String name = getStoreName();
+        String tagline = getStoreTagline();
+        Runnable r = () -> {
+            storeNameProp.set(name);
+            storeTaglineProp.set(tagline);
+        };
+        if (Platform.isFxApplicationThread()) r.run();
+        else Platform.runLater(r);
     }
 
     // ------------------------------------------------------------------ STORE INFORMATION
@@ -85,40 +96,51 @@ public final class SettingsManager {
     public static String getStoreContact() { return get(STORE_CONTACT); }
     public static String getStoreTin()     { return get(STORE_TIN); }
 
-    /** The store logo, or null if none was uploaded. */
-    public static synchronized Image getLogoImage() {
-        String path = get(STORE_LOGO_PATH);
-        if (path == null || path.isBlank()) return null;
-        if (!path.equals(logoImagePath)) {
-            File f = new File(path);
-            logoImage = f.isFile() ? new Image(f.toURI().toString(), 256, 256, true, true) : null;
-            logoImagePath = path;
+    public static ReadOnlyStringProperty storeNameProperty()    { return storeNameProp.getReadOnlyProperty(); }
+    public static ReadOnlyStringProperty storeTaglineProperty() { return storeTaglineProp.getReadOnlyProperty(); }
+
+    // ------------------------------------------------------------------ RECEIPT HEADER
+
+    /** Centered receipt header: name, tagline, address, contact, TIN. Blank fields are skipped. */
+    public static String receiptHeader() {
+        return receiptHeader(RECEIPT_WIDTH);
+    }
+
+    public static String receiptHeader(int width) {
+        StringBuilder sb = new StringBuilder();
+        appendCentered(sb, getStoreName(), width);
+        appendCentered(sb, getStoreTagline(), width);
+
+        String address = getStoreAddress();
+        if (address != null && !address.isBlank()) {
+            for (String line : wrap(address.trim(), width)) appendCentered(sb, line, width);
         }
-        return logoImage;
+        String contact = getStoreContact();
+        if (contact != null && !contact.isBlank()) appendCentered(sb, "Tel: " + contact.trim(), width);
+        String tin = getStoreTin();
+        if (tin != null && !tin.isBlank()) appendCentered(sb, "TIN: " + tin.trim(), width);
+        return sb.toString();
     }
 
-    /**
-     * Copies the chosen image into the app folder (user home / RenEspresso) and returns the new path.
-     * The logo is kept as a file, not inside the database, so the Excel backup does not break.
-     */
-    public static File storeLogoFile(File source) throws IOException {
-        Path dir = Paths.get(System.getProperty("user.home"), "RenEspresso");
-        Files.createDirectories(dir);
-
-        // remove any old logo (it may have a different extension)
-        File[] old = dir.toFile().listFiles((d, name) -> name.startsWith("store-logo."));
-        if (old != null) for (File f : old) Files.deleteIfExists(f.toPath());
-
-        String name = source.getName().toLowerCase();
-        String ext = name.contains(".") ? name.substring(name.lastIndexOf('.')) : ".png";
-        Path target = dir.resolve("store-logo" + ext);
-        Files.copy(source.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
-        return target.toFile();
+    private static void appendCentered(StringBuilder sb, String text, int width) {
+        if (text == null || text.isBlank()) return;
+        text = text.trim();
+        int pad = Math.max(0, (width - text.length()) / 2);
+        sb.append(" ".repeat(pad)).append(text).append('\n');
     }
 
-    public static void deleteLogoFiles() {
-        Path dir = Paths.get(System.getProperty("user.home"), "RenEspresso");
-        File[] old = dir.toFile().listFiles((d, name) -> name.startsWith("store-logo."));
-        if (old != null) for (File f : old) f.delete();
+    private static java.util.List<String> wrap(String text, int width) {
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        for (String word : text.split("\\s+")) {
+            if (cur.length() > 0 && cur.length() + 1 + word.length() > width) {
+                lines.add(cur.toString());
+                cur.setLength(0);
+            }
+            if (cur.length() > 0) cur.append(' ');
+            cur.append(word);
+        }
+        if (cur.length() > 0) lines.add(cur.toString());
+        return lines;
     }
 }
