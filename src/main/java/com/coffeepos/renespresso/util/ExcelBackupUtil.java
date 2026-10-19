@@ -8,15 +8,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
+import java.time.YearMonth;
 import java.util.List;
 
 public final class ExcelBackupUtil {
 
     private ExcelBackupUtil() {}
 
-    /** Writes every table to its own sheet. Returns the number of tables exported. */
-    public static int backupToExcel(Connection conn, File outFile) throws SQLException, IOException {
+    public static int backupToExcel(Connection conn, File outFile, List<YearMonth> months)
+            throws SQLException, IOException {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
 
             CellStyle headerStyle = wb.createCellStyle();
@@ -26,17 +26,13 @@ public final class ExcelBackupUtil {
             headerStyle.setFillForegroundColor(IndexedColors.TAN.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            List<String> tables = new ArrayList<>();
-            try (ResultSet rs = conn.getMetaData()
-                    .getTables(conn.getCatalog(), null, "%", new String[]{"TABLE"})) {
-                while (rs.next()) tables.add(rs.getString("TABLE_NAME"));
-            }
+            List<String> tables = BackupSupport.listTables(conn);
 
             for (String table : tables) {
                 Sheet sheet = wb.createSheet(WorkbookUtil.createSafeSheetName(table));
 
-                try (Statement st = conn.createStatement();
-                     ResultSet rs = st.executeQuery("SELECT * FROM `" + table + "`")) {
+                try (PreparedStatement ps = BackupSupport.select(conn, table, months);
+                     ResultSet rs = ps.executeQuery()) {
 
                     ResultSetMetaData md = rs.getMetaData();
                     int cols = md.getColumnCount();
