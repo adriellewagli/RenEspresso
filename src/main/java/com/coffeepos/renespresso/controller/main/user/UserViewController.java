@@ -71,6 +71,7 @@ public class UserViewController {
     private Button[] navButtons;
     private String[] navIcons;
     private String[] navLabels;
+    private Tooltip[] navTips;
 
     @FXML
     public void initialize() {
@@ -149,14 +150,29 @@ public class UserViewController {
     }
 
     // =====================================================================
-    //  SIDEBAR (same behaviour as the admin dashboard, every icon is the same size)
+    //  SIDEBAR (same look and behaviour as the admin dashboard)
     // =====================================================================
     private void setupSidebar() {
         navButtons = new Button[]{btnHome, btnMenu, btnOrders, btnLogout};
-        navIcons   = new String[]{"icon-home", "icon-cafe", "icon-orders", "icon-history", "icon-logout"};
-        navLabels  = new String[]{"HOME", "MENU", "ORDERS", "TRANSACTION HISTORY", "LOGOUT"};
-        for (int i = 0; i < navButtons.length; i++) setupIconButton(navButtons[i], navIcons[i]);
+        navIcons   = new String[]{"icon-home", "icon-cafe", "icon-orders", "icon-logout"};
+        navLabels  = new String[]{"HOME", "MENU", "ORDERS", "LOGOUT"};
+        String[] tips = {"Home", "Menu", "Orders", "Logout"};
+
+        navTips = new Tooltip[tips.length];
+        for (int i = 0; i < navButtons.length; i++) {
+            navTips[i] = makeTip(tips[i]);
+            setupIconButton(navButtons[i], navIcons[i]);
+        }
         applySidebarState();
+    }
+
+    private Tooltip makeTip(String text) {
+        Tooltip t = new Tooltip(text);
+        t.setShowDelay(Duration.millis(150));
+        // inline style on purpose: tooltips live in their own window, so rootPane stylesheets don't reach them
+        t.setStyle("-fx-background-color: #2F2118; -fx-text-fill: #F3E9DC; -fx-font-size: 12px;"
+                + "-fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 6 10;");
+        return t;
     }
 
     private void setupIconButton(Button btn, String iconClass) {
@@ -192,7 +208,10 @@ public class UserViewController {
         sessionBox.setVisible(expanded);
         sessionBox.setManaged(expanded);
 
-        for (int i = 0; i < navButtons.length; i++) navButtons[i].setText(expanded ? navLabels[i] : "");
+        for (int i = 0; i < navButtons.length; i++) {
+            navButtons[i].setText(expanded ? navLabels[i] : "");
+            navButtons[i].setTooltip(expanded ? null : navTips[i]);   // name on hover only when collapsed
+        }
     }
 
     // =====================================================================

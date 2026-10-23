@@ -36,7 +36,7 @@
 
             <Region VBox.vgrow="ALWAYS" />
             <Separator styleClass="sidebar-sep" />
-            <Button fx:id="btnLogout" maxWidth="Infinity" onAction="#handleLogout" styleClass="nav-button" />
+            <Button fx:id="btnLogout" maxWidth="Infinity" onAction="#handleLogout" styleClass="nav-button, nav-logout" />
         </VBox>
 
         <!-- ================= CONTENT ================= -->
