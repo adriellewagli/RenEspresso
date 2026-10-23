@@ -10,7 +10,9 @@ import javafx.animation.Timeline;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -257,11 +259,14 @@ public class OrderQueueController {
             items.add(noLines, 0, 1, 3, 1);
         }
 
-        javafx.scene.control.ScrollPane itemsScroll = new javafx.scene.control.ScrollPane(items);
+        items.setPadding(new Insets(0, 6, 0, 0));
+
+        ScrollPane itemsScroll = new ScrollPane(items);
         itemsScroll.setFitToWidth(true);
-        itemsScroll.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        itemsScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        itemsScroll.getStyleClass().add("transparent-scrollpane");
         itemsScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
-        itemsScroll.setMaxHeight(180);
+        VBox.setVgrow(itemsScroll, Priority.ALWAYS);
 
         VBox totals = new VBox(8, infoRow("VATable Sales", peso(r.getSubtotal())));
         if (r.isDiscounted()) totals.getChildren().add(infoRow("Senior/PWD (20%)", "-" + peso(r.getDiscount())));
@@ -276,7 +281,9 @@ public class OrderQueueController {
         HBox totalRow = new HBox(totalLbl, sp2, total);
         totalRow.setAlignment(Pos.CENTER_LEFT);
 
-        detailPanel.getChildren().addAll(head, sub, info, itemsScroll, new Separator(), totals, new Separator(), totalRow);
+        VBox footerBox = new VBox(12);
+        footerBox.setMinHeight(Region.USE_PREF_SIZE);
+        footerBox.getChildren().addAll(new Separator(), totals, new Separator(), totalRow);
 
         if (r.getStatus() == OrderStatus.PREPARING) {
             Button done = new Button("Complete Order");
@@ -293,13 +300,27 @@ public class OrderQueueController {
             cancel.getStyleClass().add("btn-danger");
             cancel.setMaxWidth(Double.MAX_VALUE);
             cancel.setOnAction(e -> {
-                if (AlertUtil.showYesNo("Cancel Order",
-                        "Cancel order " + r.getTicketNumber() + "? It will be removed from today's totals.")) {
-                    session.cancelOrder(r);
-                    closeDetails();
+                if (!AlertUtil.showYesNo("Cancel Order",
+                        "Cancel order " + r.getTicketNumber() + "? This action requires Admin authorization.")) {
+                    return;
                 }
+
+                boolean authorized = AlertUtil.requestAdminAuthorization(
+                        "Admin Authorization Required",
+                        "Please enter Admin or Manager credentials to cancel order " + r.getTicketNumber() + ".",
+                        "Authorize Cancel"
+                );
+
+                if (!authorized) {
+                    return;
+                }
+
+                session.cancelOrder(r);
+                closeDetails();
+                AlertUtil.showSuccess("Order Cancelled",
+                        "Order " + r.getTicketNumber() + " has been cancelled with Admin authorization.");
             });
-            detailPanel.getChildren().addAll(done, cancel);
+            footerBox.getChildren().addAll(done, cancel);
         }
 
         Button receiptBtn = new Button("View Receipt");
@@ -311,7 +332,9 @@ public class OrderQueueController {
         back.getStyleClass().add("btn-secondary");
         back.setMaxWidth(Double.MAX_VALUE);
         back.setOnAction(e -> closeDetails());
-        detailPanel.getChildren().addAll(receiptBtn, back);
+        footerBox.getChildren().addAll(receiptBtn, back);
+
+        detailPanel.getChildren().addAll(head, sub, info, itemsScroll, footerBox);
 
         detailPanel.setVisible(true);
         detailPanel.setManaged(true);

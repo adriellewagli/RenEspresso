@@ -64,13 +64,17 @@ public class UserDAO {
 
     // ADMIN/MANAGER VALIDATION FOR AUTHORIZATION MODAL WITH JBCRYPT
     public static boolean validateAdminCredentials(String username, String plainPassword) {
+        if (username == null || plainPassword == null || username.isBlank() || plainPassword.isEmpty()) {
+            return false;
+        }
+
         String query = "SELECT password, role FROM users WHERE username = ? "
-                + "AND role IN ('ADMIN', 'MANAGER')";
+                + "AND UPPER(role) IN ('ADMIN', 'MANAGER')";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setString(1, username);
+            stmt.setString(1, username.trim());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {

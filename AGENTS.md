@@ -49,6 +49,13 @@ This document records architectural conventions, established business logic, dom
   - `UserSession.PAYMENT_METHODS` is constrained to `List.of("Cash")`.
   - The POS payment modal locks the payment method to "Cash" (`cmbPaymentMethod.setDisable(true)`), enforcing cash tendered input, quick cash buttons, and change calculation before finalizing any transaction.
 
+### 1.6 Admin Authorization for Order Cancellation
+- **Rule:** Cashiers cannot unilaterally cancel active orders. Cancelling any preparing/active order strictly requires **Admin or Manager authorization**.
+- **Implementation:**
+  - Modal prompt via `AlertUtil.requestAdminAuthorization()` backed by `AdminAuthModalView.fxml` and `AdminAuthController.java`.
+  - Credentials validated with jBCrypt via `UserDAO.validateAdminCredentials(username, password)`.
+  - Prevents rogue cancellations and enforces audit trail while complying with Rule 1.1 (spoilage / no stock restoration).
+
 ---
 
 ## 🏛️ 2. Tech Stack & Environment

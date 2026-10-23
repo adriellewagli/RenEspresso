@@ -1,5 +1,6 @@
 package com.coffeepos.renespresso.util;
 
+import com.coffeepos.renespresso.controller.util.AdminAuthController;
 import com.coffeepos.renespresso.controller.util.AlertController;
 import com.coffeepos.renespresso.controller.util.ConfirmAlertController;
 import javafx.fxml.FXMLLoader;
@@ -20,6 +21,7 @@ public class AlertUtil {
 
     private static final String ALERT_VIEW_PATH = "/com/coffeepos/renespresso/views/util/CustomAlertView.fxml";
     private static final String CONFIRM_VIEW_PATH = "/com/coffeepos/renespresso/views/util/ConfirmAlertView.fxml";
+    private static final String ADMIN_AUTH_VIEW_PATH = "/com/coffeepos/renespresso/views/util/AdminAuthModalView.fxml";
 
     //PALLETE
     private static final String SYSTEM_PRIMARY_COLOR = "#6f4e37"; // Renespresso Coffee Brown
@@ -66,6 +68,34 @@ public class AlertUtil {
 
     public static boolean showYesNo(String title, String message) {
         return showConfirmModal(title, message, "Yes", "No");
+    }
+
+    // ADMIN AUTHORIZATION
+    public static boolean requestAdminAuthorization(String title, String message) {
+        return requestAdminAuthorization(title, message, "Authorize Cancel");
+    }
+
+    public static boolean requestAdminAuthorization(String title, String message, String authorizeBtnText) {
+        try {
+            URL xmlUrl = AlertUtil.class.getResource(ADMIN_AUTH_VIEW_PATH);
+            if (xmlUrl == null) {
+                throw new IllegalStateException("Cannot find FXML file: " + ADMIN_AUTH_VIEW_PATH);
+            }
+
+            FXMLLoader loader = new FXMLLoader(xmlUrl);
+            Parent root = loader.load();
+
+            AdminAuthController controller = loader.getController();
+            controller.setAuthData(title, message, authorizeBtnText);
+
+            Stage stage = createModalStage(root);
+            stage.showAndWait();
+
+            return controller.isAuthorized();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private static void showAlert(AlertType type, String title, String message) {

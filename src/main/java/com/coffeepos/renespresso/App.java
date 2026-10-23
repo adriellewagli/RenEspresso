@@ -9,7 +9,6 @@ public class App extends Application {
 
     @Override
     public void init() {
-        // Shutdown hook ensures is_active is reset to 0 even if process is terminated externally
         Runtime.getRuntime().addShutdownHook(new Thread(SessionManager::logout));
     }
 
