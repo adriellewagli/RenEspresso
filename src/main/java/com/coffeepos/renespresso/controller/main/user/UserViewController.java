@@ -3,7 +3,6 @@ package com.coffeepos.renespresso.controller.main.user;
 import com.coffeepos.renespresso.controller.main.user.om.OrderManagementController;
 import com.coffeepos.renespresso.controller.main.user.pos.PosController;
 import com.coffeepos.renespresso.controller.main.user.queue.OrderQueueController;
-import com.coffeepos.renespresso.controller.main.user.transact.TransactionHistoryController;
 import com.coffeepos.renespresso.model.TransactionRecord;
 import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
@@ -38,17 +37,16 @@ public class UserViewController {
     @FXML private StackPane rootPane;
     @FXML private VBox sidebar, brandTextBox, sessionBox;
     @FXML private Label lblClock, lblDate, lblCashierName, lblWelcome;
-    @FXML private Button btnHome, btnMenu, btnOrders, btnTransactionHistory, btnLogout;
+    @FXML private Button btnHome, btnMenu, btnOrders, btnLogout;
 
     // Views owned by the shell
     @FXML private VBox homeView;
 
     // Included views (fx:include fx:id="posView" -> posView + posViewController, etc.)
-    @FXML private Node posView, queueView, orderView, transactView;
+    @FXML private Node posView, queueView, orderView;
     @FXML private PosController posViewController;
     @FXML private OrderQueueController queueViewController;
     @FXML private OrderManagementController orderViewController;
-    @FXML private TransactionHistoryController transactViewController;
 
     // Home dashboard
     @FXML private Label lblDashSales, lblDashLast, lblDashOrders, lblDashItems, lblDashQueue,
@@ -146,7 +144,6 @@ public class UserViewController {
             case F1 -> { if (!modalOpen()) { showHome(); event.consume(); } }
             case F2 -> { if (!modalOpen()) { showMenu(); event.consume(); } }
             case F3 -> { if (!modalOpen()) { showOrders(); event.consume(); } }
-            case F4 -> { if (!modalOpen()) { showTransactionHistory(); event.consume(); } }
             default -> { }
         }
     }
@@ -155,7 +152,7 @@ public class UserViewController {
     //  SIDEBAR (same behaviour as the admin dashboard, every icon is the same size)
     // =====================================================================
     private void setupSidebar() {
-        navButtons = new Button[]{btnHome, btnMenu, btnOrders, btnTransactionHistory, btnLogout};
+        navButtons = new Button[]{btnHome, btnMenu, btnOrders, btnLogout};
         navIcons   = new String[]{"icon-home", "icon-cafe", "icon-orders", "icon-history", "icon-logout"};
         navLabels  = new String[]{"HOME", "MENU", "ORDERS", "TRANSACTION HISTORY", "LOGOUT"};
         for (int i = 0; i < navButtons.length; i++) setupIconButton(navButtons[i], navIcons[i]);
@@ -211,9 +208,8 @@ public class UserViewController {
         if (posView != null) setShown(posView, false);
         if (queueView != null) setShown(queueView, false);
         if (orderView != null) setShown(orderView, false);
-        if (transactView != null) setShown(transactView, false);
 
-        for (Button btn : List.of(btnHome, btnMenu, btnOrders, btnTransactionHistory)) {
+        for (Button btn : List.of(btnHome, btnMenu, btnOrders)) {
             btn.getStyleClass().remove("nav-button-active");
             if (!btn.getStyleClass().contains("nav-button")) btn.getStyleClass().add("nav-button");
         }
@@ -238,13 +234,6 @@ public class UserViewController {
     }
 
     @FXML public void showOrders() { show(queueView, btnOrders); }
-
-    @FXML public void showTransactionHistory() {
-        show(transactView, btnTransactionHistory);
-        if (transactViewController != null) {
-            transactViewController.loadTransactions();
-        }
-    }
 
     @FXML
     public void handleLogout(ActionEvent event) {

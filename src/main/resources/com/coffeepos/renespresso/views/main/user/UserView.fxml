@@ -33,7 +33,6 @@
             <Button fx:id="btnHome" maxWidth="Infinity" onAction="#showHome" styleClass="nav-button" />
             <Button fx:id="btnMenu" maxWidth="Infinity" onAction="#showMenu" styleClass="nav-button" />
             <Button fx:id="btnOrders" maxWidth="Infinity" onAction="#showOrders" styleClass="nav-button" />
-            <Button fx:id="btnTransactionHistory" maxWidth="Infinity" onAction="#showTransactionHistory" styleClass="nav-button" />
 
             <Region VBox.vgrow="ALWAYS" />
             <Separator styleClass="sidebar-sep" />
@@ -116,7 +115,6 @@
             <fx:include fx:id="posView" source="pos/PosView.fxml" />
             <fx:include fx:id="queueView" source="queue/OrderQueueView.fxml" />
             <fx:include fx:id="orderView" source="om/OrderManagementView.fxml" />
-            <fx:include fx:id="transactView" source="transact/TransactionHistoryView.fxml" />
 
 
         </StackPane>

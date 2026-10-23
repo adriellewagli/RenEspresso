@@ -55,6 +55,4 @@ module com.coffeepos.renespresso {
     opens com.coffeepos.renespresso.controller.main.user.om to javafx.fxml;
     exports com.coffeepos.renespresso.controller.main.user.queue;
     opens com.coffeepos.renespresso.controller.main.user.queue to javafx.fxml;
-    exports com.coffeepos.renespresso.controller.main.user.transact;
-    opens com.coffeepos.renespresso.controller.main.user.transact to javafx.fxml;
 }
