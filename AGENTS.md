@@ -43,7 +43,11 @@ This document records architectural conventions, established business logic, dom
 - `users.is_active` tracks whether a staff account is currently online/logged in:
   - **Login:** Sets `is_active = 1` and updates `last_login = NOW()`.
   - **Logout / Exit:** Sets `is_active = 0` via `SessionManager.logout()`. Handled on manual logout, stage window close (`setOnCloseRequest`), application termination (`App.stop()`), and JVM shutdown hook.
-  - Accounts displayed as Active (green) or Inactive (grey) in Account Management and counted on Home dashboard.
+### 1.5 Cash-Only Limitation Rule
+- **Rule:** RenEspresso strictly operates as a **Cash-Only** establishment. Non-cash payment methods (e.g. GCash, credit/debit cards) are **not accepted**.
+- **Implementation:**
+  - `UserSession.PAYMENT_METHODS` is constrained to `List.of("Cash")`.
+  - The POS payment modal locks the payment method to "Cash" (`cmbPaymentMethod.setDisable(true)`), enforcing cash tendered input, quick cash buttons, and change calculation before finalizing any transaction.
 
 ---
 
@@ -65,5 +69,5 @@ This document records architectural conventions, established business logic, dom
    - In `TransactionController.applyFilters()` and `OrderManagementController.applyFilters()`, added null checks to prevent `NullPointerException` on `orderId`, `staffName`, `staffRole`, `paymentStatus`, `paymentMethod`, `status`, `ticketNumber`, `items`, and `createdAt`. Also applied defensive null checks across queue and menu search filters.
 3. **Low-Stock Alerting & Badges:**
    - Add visual warning badges when product `quantity <= 5` in both POS menu cards and Admin menu view.
-4. **Payment Reference Number for Non-Cash:**
-   - Add reference number / approval code input field when GCash or Card is selected.
+4. **[CANCELLED / OBSOLETE] Payment Reference Number for Non-Cash:**
+   - Cancelled: Business operates strictly on Cash Only; non-cash payment options removed.

@@ -24,7 +24,7 @@ public final class UserSession {
 
     public static final String STORE_NAME = "RenEspresso";
     public static final String TERMINAL_ID = "REG-01";
-    public static final List<String> PAYMENT_METHODS = List.of("Cash", "GCash", "Card");
+    public static final List<String> PAYMENT_METHODS = List.of("Cash");
 
     // --- cashier / shift (setCashierName() in the shell fills the real name at login) ---
     public String cashierName = "Cashier";

@@ -469,6 +469,7 @@ public class PosController {
     private void setupPaymentModal() {
         cmbPaymentMethod.getItems().setAll(UserSession.PAYMENT_METHODS);
         cmbPaymentMethod.setValue("Cash");
+        cmbPaymentMethod.setDisable(true);
         cmbPaymentMethod.valueProperty().addListener((obs, o, n) -> updateChangeDue());
         txtCashReceived.textProperty().addListener((obs, o, n) -> updateChangeDue());
         txtCashReceived.setOnAction(e -> { if (!btnConfirmOrder.isDisabled()) confirmAndFinalizeOrder(); });
