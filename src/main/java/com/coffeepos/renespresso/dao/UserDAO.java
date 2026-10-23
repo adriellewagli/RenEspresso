@@ -18,7 +18,7 @@ public class UserDAO {
     // AUTHENTICATE USER LOGIN WITH JBCRYPT
     public static User authenticate(String username, String plainPassword) {
         String query = "SELECT user_id, username, password, full_name, role, is_active FROM users "
-                + "WHERE LOWER(username) = LOWER(?) AND is_active = 1";
+                + "WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -32,12 +32,13 @@ public class UserDAO {
                     if (PasswordUtil.checkPassword(plainPassword, storedHash)) {
                         int userId = rs.getInt("user_id");
                         touchLastLogin(userId);
+                        setActiveStatus(userId, true);
                         return new User(
                                 userId,
                                 rs.getString("username"),
                                 rs.getString("full_name"),
                                 rs.getString("role"),
-                                rs.getBoolean("is_active"));
+                                true);
                     }
                 }
             }
@@ -48,10 +49,23 @@ public class UserDAO {
         return null;
     }
 
+    public static void setActiveStatus(int userId, boolean active) {
+        if (userId <= 0) return;
+        String query = "UPDATE users SET is_active = ? WHERE user_id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, active ? 1 : 0);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("UserDAO setActiveStatus Error: " + e.getMessage());
+        }
+    }
+
     // ADMIN/MANAGER VALIDATION FOR AUTHORIZATION MODAL WITH JBCRYPT
     public static boolean validateAdminCredentials(String username, String plainPassword) {
         String query = "SELECT password, role FROM users WHERE username = ? "
-                + "AND role IN ('ADMIN', 'MANAGER') AND is_active = 1";
+                + "AND role IN ('ADMIN', 'MANAGER')";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -92,7 +106,7 @@ public class UserDAO {
 
     // Overloaded registerUser for direct parameter registration.
     public static boolean registerUser(String username, String plainPassword, String fullName, String role) {
-        return registerUser(new User(0, username, fullName, role, true), plainPassword);
+        return registerUser(new User(0, username, fullName, role, false), plainPassword);
     }
 
     // ---------------------------------------------------------------- ACCOUNT
@@ -137,7 +151,7 @@ public class UserDAO {
     }
 
     public static int countOtherActiveAdmins(int excludeId) throws SQLException {
-        String query = "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND is_active = 1 AND user_id <> ?";
+        String query = "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND user_id <> ?";
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, excludeId);

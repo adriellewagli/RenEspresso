@@ -1,5 +1,6 @@
 package com.coffeepos.renespresso.util;
 
+import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.model.User;
 
 public final class SessionManager {
@@ -8,11 +9,23 @@ public final class SessionManager {
 
     private SessionManager() {}
 
-    public static void login(User user) { currentUser = user; }
+    public static synchronized void login(User user) {
+        currentUser = user;
+        if (user != null && user.getUserId() > 0) {
+            UserDAO.setActiveStatus(user.getUserId(), true);
+        }
+    }
 
-    public static void logout() { currentUser = null; }
+    public static synchronized void logout() {
+        if (currentUser != null) {
+            if (currentUser.getUserId() > 0) {
+                UserDAO.setActiveStatus(currentUser.getUserId(), false);
+            }
+            currentUser = null;
+        }
+    }
 
-    public static User getCurrentUser() { return currentUser; }
+    public static synchronized User getCurrentUser() { return currentUser; }
 
-    public static boolean isLoggedIn() { return currentUser != null; }
+    public static synchronized boolean isLoggedIn() { return currentUser != null; }
 }

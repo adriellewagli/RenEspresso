@@ -114,7 +114,7 @@ public class LoginController {
                 NavigateUtil.navigateTo(event, "main/user/UserView.fxml", "Renespresso POS Terminal", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
             }
         } else {
-            AlertUtil.showError("Authentication Failed", "Invalid username or password, or account is inactive.");
+            AlertUtil.showError("Authentication Failed", "Invalid username or password.");
         }
     }
 }

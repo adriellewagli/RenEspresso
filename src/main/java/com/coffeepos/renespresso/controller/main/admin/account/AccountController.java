@@ -135,10 +135,11 @@ public class AccountController {
         String login = lastLoginFilter.getValue();
 
         filtered.setPredicate(r -> {
-            if (!q.isEmpty()
-                    && !r.name().toLowerCase().contains(q)
-                    && !r.username().toLowerCase().contains(q))
-                return false;
+            if (!q.isEmpty()) {
+                boolean match = (r.name() != null && r.name().toLowerCase().contains(q))
+                        || (r.username() != null && r.username().toLowerCase().contains(q));
+                if (!match) return false;
+            }
 
             if (role != null && !role.equals("All Roles") && !r.role().equals(role))
                 return false;

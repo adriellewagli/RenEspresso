@@ -395,7 +395,7 @@ public class MenuConfigureController {
 
             String desc = descField.getText().trim();
             String descOrNull = desc.isEmpty() ? null : desc;
-            boolean available = (qty > 0);
+            boolean available = availableBtn.isSelected() && (qty > 0);
 
             if (edit) {
                 MenuDAO.updateProduct(existing.id(), name, cat.id(), descOrNull, newImage, available, qty);

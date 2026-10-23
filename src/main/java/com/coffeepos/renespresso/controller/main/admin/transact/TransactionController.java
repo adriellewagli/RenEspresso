@@ -115,20 +115,21 @@ public class TransactionController {
         String q = txtSearch.getText();
         if (q != null && !q.isBlank()) {
             String query = q.trim().toLowerCase();
-            boolean matchSearch = r.getOrderId().toLowerCase().contains(query)
-                    || r.getStaffName().toLowerCase().contains(query)
-                    || r.getStaffRole().toLowerCase().contains(query)
-                    || r.getPaymentStatus().toLowerCase().contains(query)
-                    || r.getPaymentMethod().toLowerCase().contains(query)
-                    || r.getStatus().label().toLowerCase().contains(query)
-                    || r.getTicketNumber().toLowerCase().contains(query)
-                    || r.getItems().toLowerCase().contains(query);
+            boolean matchSearch = (r.getOrderId() != null && r.getOrderId().toLowerCase().contains(query))
+                    || (r.getStaffName() != null && r.getStaffName().toLowerCase().contains(query))
+                    || (r.getStaffRole() != null && r.getStaffRole().toLowerCase().contains(query))
+                    || (r.getPaymentStatus() != null && r.getPaymentStatus().toLowerCase().contains(query))
+                    || (r.getPaymentMethod() != null && r.getPaymentMethod().toLowerCase().contains(query))
+                    || (r.getStatus() != null && r.getStatus().label() != null && r.getStatus().label().toLowerCase().contains(query))
+                    || (r.getTicketNumber() != null && r.getTicketNumber().toLowerCase().contains(query))
+                    || (r.getItems() != null && r.getItems().toLowerCase().contains(query));
             if (!matchSearch) return false;
         }
 
         // Date filter
         String dateOpt = cmbDateFilter.getValue();
         if (dateOpt != null && !dateOpt.equals("Date: All Dates")) {
+            if (r.getCreatedAt() == null) return false;
             LocalDate recordDate = r.getCreatedAt().toLocalDate();
             LocalDate today = LocalDate.now();
             if (dateOpt.equals("Date: Today")) {
@@ -147,14 +148,14 @@ public class TransactionController {
         String statusOpt = cmbStatusFilter.getValue();
         if (statusOpt != null && !statusOpt.equals("Status: All States")) {
             String expected = statusOpt.replace("Status: ", "").trim();
-            if (!r.getStatus().label().equalsIgnoreCase(expected)) return false;
+            if (r.getStatus() == null || r.getStatus().label() == null || !r.getStatus().label().equalsIgnoreCase(expected)) return false;
         }
 
         // Payment filter
         String paymentOpt = cmbPaymentFilter.getValue();
         if (paymentOpt != null && !paymentOpt.equals("Payment: All")) {
             String expected = paymentOpt.replace("Payment: ", "").trim();
-            if (!r.getPaymentStatus().equalsIgnoreCase(expected)) return false;
+            if (r.getPaymentStatus() == null || !r.getPaymentStatus().equalsIgnoreCase(expected)) return false;
         }
 
         return true;

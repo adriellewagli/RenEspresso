@@ -140,8 +140,9 @@ public class MenuController {
 
         List<Product> shown = allProducts.stream()
                 .filter(p -> selectedCategoryId == -1 || p.categoryId() == selectedCategoryId)
-                .filter(p -> q.isEmpty() || p.name().toLowerCase().contains(q)
-                        || p.category().toLowerCase().contains(q)
+                .filter(p -> q.isEmpty()
+                        || (p.name() != null && p.name().toLowerCase().contains(q))
+                        || (p.category() != null && p.category().toLowerCase().contains(q))
                         || (p.description() != null && p.description().toLowerCase().contains(q)))
                 .filter(p -> avail == null || avail.equals("All items")
                         || (avail.equals("Available") == p.available()))

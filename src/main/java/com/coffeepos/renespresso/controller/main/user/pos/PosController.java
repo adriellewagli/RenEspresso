@@ -169,8 +169,9 @@ public class PosController {
 
         List<Product> shown = products.stream()
                 .filter(p -> selectedCategoryId == -1 || p.categoryId() == selectedCategoryId)
-                .filter(p -> q.isEmpty() || p.name().toLowerCase().contains(q)
-                        || p.category().toLowerCase().contains(q))
+                .filter(p -> q.isEmpty()
+                        || (p.name() != null && p.name().toLowerCase().contains(q))
+                        || (p.category() != null && p.category().toLowerCase().contains(q)))
                 .toList();
 
         menuGrid.getChildren().clear();

@@ -68,9 +68,10 @@ public class OrderQueueController {
         String q = txtQueueSearch.getText() == null ? "" : txtQueueSearch.getText().trim().toLowerCase();
         List<TransactionRecord> shown = all.stream()
                 .filter(r -> filter == null || r.getStatus() == filter)
-                .filter(r -> q.isEmpty() || r.getTicketNumber().toLowerCase().contains(q)
-                        || r.getItems().toLowerCase().contains(q)
-                        || r.getLines().stream().anyMatch(l -> l.name().toLowerCase().contains(q)))
+                .filter(r -> q.isEmpty()
+                        || (r.getTicketNumber() != null && r.getTicketNumber().toLowerCase().contains(q))
+                        || (r.getItems() != null && r.getItems().toLowerCase().contains(q))
+                        || (r.getLines() != null && r.getLines().stream().anyMatch(l -> l.name() != null && l.name().toLowerCase().contains(q))))
                 .toList();
 
         orderGrid.getChildren().clear();

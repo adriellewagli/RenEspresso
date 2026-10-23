@@ -46,6 +46,7 @@ public class NavigateUtil {
 
             stage.setTitle(title);
             stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> SessionManager.logout());
 
             if (mode == WindowMode.AUTH_DIALOG) {
                 // Exit maximized state if switching back from POS to Login

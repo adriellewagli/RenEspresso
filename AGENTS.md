@@ -39,6 +39,12 @@ This document records architectural conventions, established business logic, dom
 - Cart item quantities are grouped by `productId` before batch update to prevent duplicate update locks.
 - Never deduct stock in a separate connection before `saveTransaction()`.
 
+### 1.4 User Session & Active Status Lifecycle
+- `users.is_active` tracks whether a staff account is currently online/logged in:
+  - **Login:** Sets `is_active = 1` and updates `last_login = NOW()`.
+  - **Logout / Exit:** Sets `is_active = 0` via `SessionManager.logout()`. Handled on manual logout, stage window close (`setOnCloseRequest`), application termination (`App.stop()`), and JVM shutdown hook.
+  - Accounts displayed as Active (green) or Inactive (grey) in Account Management and counted on Home dashboard.
+
 ---
 
 ## 🏛️ 2. Tech Stack & Environment
@@ -53,10 +59,10 @@ This document records architectural conventions, established business logic, dom
 
 ## 📋 3. Backlog for Next Work Session
 
-1. **Menu Item Availability Toggle Bug:**
-   - In `MenuConfigureController.handleSave()`, fix line 398 to respect `availableBtn.isSelected() && (qty > 0)` instead of ignoring the toggle.
-2. **Null-Safe Transaction Search Filters:**
-   - In `TransactionController.applyFilters()` and `TransactionHistoryController.applyFilters()`, add null checks to prevent `NullPointerException` on `orderId`, `staffName`, `staffRole`, `paymentMethod`, and `items`.
+1. **[FIXED] Menu Item Availability Toggle Bug:**
+   - In `MenuConfigureController.handleSave()`, fixed line 398 to respect `availableBtn.isSelected() && (qty > 0)`.
+2. **[FIXED] Null-Safe Transaction Search Filters:**
+   - In `TransactionController.applyFilters()` and `OrderManagementController.applyFilters()`, added null checks to prevent `NullPointerException` on `orderId`, `staffName`, `staffRole`, `paymentStatus`, `paymentMethod`, `status`, `ticketNumber`, `items`, and `createdAt`. Also applied defensive null checks across queue and menu search filters.
 3. **Low-Stock Alerting & Badges:**
    - Add visual warning badges when product `quantity <= 5` in both POS menu cards and Admin menu view.
 4. **Payment Reference Number for Non-Cash:**
