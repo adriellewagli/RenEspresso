@@ -318,6 +318,9 @@ public class MenuController {
         }
 
         boolean next = !p.available();
+        String prompt = next ? "Mark \"" + p.name() + "\" as available?" : "Mark \"" + p.name() + "\" as unavailable?";
+        if (!AlertUtil.showYesNo("Change Availability", prompt)) return;
+
         try {
             MenuDAO.setAvailable(p.id(), next);
             int i = allProducts.indexOf(p);
@@ -338,6 +341,7 @@ public class MenuController {
             ImageStore.delete(p.imagePath());
             allProducts.remove(p);
             render();
+            AlertUtil.showSuccess("Dish Deleted", "\"" + p.name() + "\" was removed from the menu.");
         } catch (SQLIntegrityConstraintViolationException e) {
             AlertUtil.showWarning("Can't delete this dish",
                     "\"" + p.name() + "\" appears in past transactions. "

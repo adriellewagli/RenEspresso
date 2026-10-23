@@ -19,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -51,6 +52,7 @@ public class AdminDashboardController {
     private boolean isExpanded = false; // start minimized
 
     @FXML private StackPane rootPane;
+    @FXML private HBox brandHeader;
     @FXML private VBox sidebar, brandTextBox, sessionBox;
     @FXML private Label lblClock, lblDate, lblUserName;
 
@@ -169,6 +171,9 @@ public class AdminDashboardController {
         sidebar.setPrefWidth(width);
         sidebar.setMaxWidth(width);
 
+        if (brandHeader != null) {
+            brandHeader.setAlignment(isExpanded ? Pos.CENTER_LEFT : Pos.CENTER);
+        }
         brandTextBox.setVisible(isExpanded);
         brandTextBox.setManaged(isExpanded);
         sessionBox.setVisible(isExpanded);
@@ -177,6 +182,7 @@ public class AdminDashboardController {
         for (int i = 0; i < navButtons.length; i++) {
             navButtons[i].setText(isExpanded ? navLabels[i] : "");
             navButtons[i].setTooltip(isExpanded ? null : navTips[i]);   // name on hover only when collapsed
+            navButtons[i].setAlignment(isExpanded ? Pos.CENTER_LEFT : Pos.CENTER);
         }
     }
 

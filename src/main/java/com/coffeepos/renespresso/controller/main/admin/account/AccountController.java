@@ -314,6 +314,7 @@ public class AccountController {
         try {
             UserDAO.deleteAccount(row.id());
             accounts.remove(row);
+            AlertUtil.showSuccess("Account Deleted", "Account for \"" + row.name() + "\" was deleted.");
         } catch (SQLIntegrityConstraintViolationException e) {
             AlertUtil.showWarning("Can't delete this account",
                     row.name() + " is linked to existing transactions, so it can't be deleted.");
@@ -438,18 +439,21 @@ public class AccountController {
                 String question = edit
                         ? "Save the changes to " + name + "'s account?"
                         : "Create an account for " + name + " (" + role + ")?";
-                if (!ConfirmUtil.confirmSave(pane, question)) {
+                if (!AlertUtil.showYesNo("Save Account", question)) {
                     ev.consume();
                     return;
                 }
 
                 if (edit) {
                     UserDAO.updateAccount(existing.id(), name, username, role, active, pw);
+                    AlertUtil.showSuccess("Account Updated", "Account for \"" + name + "\" was updated successfully.");
                 } else if (!UserDAO.registerUser(
                         new com.coffeepos.renespresso.model.User(0, username, name, role, active), pw)) {
                     AlertUtil.showError("Could not create account", "The account could not be created.");
                     ev.consume();
                     return;
+                } else {
+                    AlertUtil.showSuccess("Account Created", "Account for \"" + name + "\" was created successfully.");
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -461,12 +465,12 @@ public class AccountController {
         });
 
         cancelBtn.addEventFilter(ActionEvent.ACTION, ev -> {
-            if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane))
+            if (dirty.getAsBoolean() && !AlertUtil.showYesNo("Discard Changes", "You have unsaved changes. Discard them?"))
                 ev.consume();
         });
         dialog.setOnShown(e -> pane.getScene().getWindow().addEventFilter(
                 WindowEvent.WINDOW_CLOSE_REQUEST, ev -> {
-                    if (dirty.getAsBoolean() && !ConfirmUtil.confirmDiscard(pane))
+                    if (dirty.getAsBoolean() && !AlertUtil.showYesNo("Discard Changes", "You have unsaved changes. Discard them?"))
                         ev.consume();
                 }));
 

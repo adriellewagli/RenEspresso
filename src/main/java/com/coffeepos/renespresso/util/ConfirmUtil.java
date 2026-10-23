@@ -41,14 +41,13 @@ public final class ConfirmUtil {
 
     /** "Save these changes?" -> true if the user confirms. */
     public static boolean confirmSave(Node anchor, String message) {
-        return ask(anchor, false, "Save changes?", message, "Yes, Save", "Review");
+        return AlertUtil.showYesNo("Save Changes", message);
     }
 
     /** "Discard your changes?" -> true if the user wants to discard. */
     public static boolean confirmDiscard(Node anchor) {
-        return ask(anchor, true, "Discard changes?",
-                "You have unsaved changes. If you cancel now, they will be lost.",
-                "Discard", "Keep Editing");
+        return AlertUtil.showYesNo("Discard Changes",
+                "You have unsaved changes. If you cancel now, they will be lost.");
     }
 
     /** Collects every stylesheet from the node and its parents (used by other dialogs). */

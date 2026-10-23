@@ -12,7 +12,6 @@ import javafx.geometry.Pos;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -65,7 +64,6 @@ public class SalesController {
     @FXML private Label lblChartTitle, lblChartSub, lblTrend, lblBest;
     @FXML private BarChart<String, Number> salesChart;
     @FXML private LineChart<String, Number> ordersChart;
-    @FXML private PieChart paymentChart;
     @FXML private BarChart<String, Number> hourChart;
 
     // lists
@@ -80,7 +78,6 @@ public class SalesController {
         salesChart.setAnimated(false);
         ordersChart.setAnimated(false);
         hourChart.setAnimated(false);
-        paymentChart.setAnimated(false);
 
         ((NumberAxis) salesChart.getYAxis()).setTickLabelFormatter(pesoAxis());
         ((NumberAxis) hourChart.getYAxis()).setTickLabelFormatter(pesoAxis());
@@ -172,7 +169,6 @@ public class SalesController {
         lblDiscount.setText(money(t.discount()));
 
         showTrendCharts(d);
-        showPayments(d.payments());
         showHours(d.hours());
         showProducts(d.products());
         showCashiers(d.cashiers());
@@ -223,19 +219,6 @@ public class SalesController {
         lblBest.setText(best.revenue() <= 0 ? "No sales in this range"
                 : "Best " + period.unit + ": " + best.label() + " (" + money(best.revenue()) + ")"
                 + "   •   Average per " + period.unit + ": " + money(sum / pts.size()));
-    }
-
-    private void showPayments(List<Slice> payments) {
-        double total = payments.stream().mapToDouble(Slice::value).sum();
-        List<PieChart.Data> data = new ArrayList<>();
-        for (Slice s : payments) {
-            double pct = total == 0 ? 0 : s.value() * 100 / total;
-            PieChart.Data pd = new PieChart.Data(s.name() + "  " + String.format("%.0f%%", pct), s.value());
-            String tip = s.name() + ": " + money(s.value()) + " • " + orders(s.count());
-            pd.nodeProperty().addListener((o, a, n) -> { if (n != null) Tooltip.install(n, new Tooltip(tip)); });
-            data.add(pd);
-        }
-        paymentChart.getData().setAll(data);
     }
 
     private void showHours(List<Slice> hours) {

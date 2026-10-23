@@ -73,15 +73,6 @@
     -fx-background-color: #5E3023, #FFFDFA;
 }
 
-/* payment pie chart */
-.default-color0.chart-pie { -fx-pie-color: #5E3023; }
-.default-color1.chart-pie { -fx-pie-color: #C08552; }
-.default-color2.chart-pie { -fx-pie-color: #895737; }
-.default-color3.chart-pie { -fx-pie-color: #D9B99B; }
-.default-color4.chart-pie { -fx-pie-color: #8C7A6A; }
-.chart-pie-label-line { -fx-stroke: #8C7A6A; }
-.chart-legend { -fx-background-color: transparent; }
-
 /* hover tooltips */
 .tooltip {
     -fx-background-color: #2F2118;

@@ -75,7 +75,8 @@
     -fx-font-size: 12px; -fx-background-radius: 12; -fx-padding: 3 12 3 12;
 }
 .modal-body-text { -fx-text-fill: #895737; -fx-font-size: 13px; }
-.modal-amount-box { -fx-background-color: #F3E9DC; -fx-background-radius: 10; -fx-padding: 10 16 10 16; -fx-alignment: CENTER; }
-.modal-amount-label { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.modal-amount-box { -fx-background-color: #F3E9DC; -fx-background-radius: 10; -fx-padding: 12 16 12 16; -fx-alignment: CENTER-LEFT; }
+.modal-amount-label { -fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold; }
 .modal-amount-value { -fx-text-fill: #5E3023; -fx-font-size: 18px; -fx-font-weight: bold; }
+.modal-total-amount, .modal-amount-box .modal-amount-value { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
 .modal-dialog .text-field { -fx-background-color: #F3E9DC; -fx-background-radius: 8; -fx-text-fill: #5E3023; -fx-padding: 8 12 8 12; }

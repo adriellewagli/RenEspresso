@@ -156,6 +156,11 @@
 .queue-row {
     -fx-background-color: #FBF6EE; -fx-background-radius: 12;
     -fx-border-color: #EFE5D6; -fx-border-radius: 12; -fx-padding: 12 16;
+    -fx-cursor: hand;
+}
+.queue-row:hover {
+    -fx-background-color: #F5EBDD;
+    -fx-border-color: #D4B996;
 }
 .ticket-badge {
     -fx-background-color: #895737; -fx-text-fill: #FFFFFF; -fx-font-weight: bold;
@@ -163,6 +168,15 @@
 }
 .queue-items { -fx-text-fill: #2F2118; -fx-font-size: 13px; -fx-font-weight: bold; }
 .queue-total { -fx-text-fill: #895737; -fx-font-size: 15px; -fx-font-weight: bold; }
+.recent-row {
+    -fx-background-color: #FBF6EE; -fx-background-radius: 12;
+    -fx-border-color: #EFE5D6; -fx-border-radius: 12; -fx-padding: 10 14;
+    -fx-cursor: hand;
+}
+.recent-row:hover {
+    -fx-background-color: #F5EBDD;
+    -fx-border-color: #D4B996;
+}
 .recent-left  { -fx-text-fill: #7A6757; -fx-font-size: 13px; }
 .recent-right { -fx-text-fill: #2F2118; -fx-font-size: 13px; -fx-font-weight: bold; }
 
@@ -173,8 +187,17 @@
     -fx-padding: 16;
     -fx-min-width: 300; -fx-pref-width: 300; -fx-max-width: 300;
     -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.07), 12, 0, 0, 3);
+    -fx-cursor: hand;
 }
-.order-card-selected { -fx-border-color: #895737; -fx-border-width: 2; }
+.order-card:hover {
+    -fx-border-color: #D4B996;
+    -fx-background-color: #FFFFFF;
+}
+.order-card-selected {
+    -fx-border-color: #895737;
+    -fx-border-width: 2;
+    -fx-background-color: #FFFDF8;
+}
 .order-title    { -fx-text-fill: #2F2118; -fx-font-size: 16px; -fx-font-weight: bold; }
 .order-items    { -fx-text-fill: #895737; -fx-font-size: 12px; -fx-font-weight: bold; }
 .order-line     { -fx-text-fill: #3B2A20; -fx-font-size: 13px; }
@@ -311,9 +334,10 @@
     -fx-font-size: 12px; -fx-background-radius: 12; -fx-padding: 4 12;
 }
 .modal-body-text { -fx-text-fill: #895737; -fx-font-size: 13px; }
-.modal-amount-box { -fx-background-color: #F8F2E8; -fx-background-radius: 12; -fx-padding: 12 18; -fx-alignment: CENTER; }
-.modal-amount-label { -fx-text-fill: #895737; -fx-font-size: 13px; }
+.modal-amount-box { -fx-background-color: #F8F2E8; -fx-background-radius: 12; -fx-padding: 14 18; -fx-alignment: CENTER-LEFT; }
+.modal-amount-label { -fx-text-fill: #895737; -fx-font-size: 13px; -fx-font-weight: bold; }
 .modal-amount-value { -fx-text-fill: #5E3023; -fx-font-size: 20px; -fx-font-weight: bold; }
+.modal-total-amount, .modal-amount-box .modal-amount-value { -fx-text-fill: #5E3023; -fx-font-size: 32px; -fx-font-weight: bold; }
 .modal-dialog .text-field {
     -fx-background-color: #F8F2E8; -fx-background-radius: 10;
     -fx-border-color: #E7DCCB; -fx-border-radius: 10;

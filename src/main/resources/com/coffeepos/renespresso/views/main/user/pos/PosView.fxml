@@ -96,14 +96,9 @@
                 <Label fx:id="lblModalTicket" styleClass="modal-ticket-badge" />
             </HBox>
 
-            <VBox spacing="2.0" styleClass="modal-amount-box">
+            <VBox alignment="CENTER_LEFT" spacing="2.0" styleClass="modal-amount-box">
                 <Label styleClass="modal-amount-label" text="Amount due" />
-                <Label fx:id="lblModalTotal" styleClass="modal-amount-value" />
-            </VBox>
-
-            <VBox spacing="6.0">
-                <Label styleClass="field-label" text="Payment method" />
-                <ComboBox fx:id="cmbPaymentMethod" maxWidth="Infinity" styleClass="filter-combo" />
+                <Label fx:id="lblModalTotal" styleClass="modal-amount-value, modal-total-amount" />
             </VBox>
 
             <VBox fx:id="rowCashBox" spacing="10.0">

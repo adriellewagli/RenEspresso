@@ -35,6 +35,7 @@ public class UserViewController {
 
     // --- Shell FXML bindings ---
     @FXML private StackPane rootPane;
+    @FXML private HBox brandHeader;
     @FXML private VBox sidebar, brandTextBox, sessionBox;
     @FXML private Label lblClock, lblDate, lblCashierName, lblWelcome;
     @FXML private Button btnHome, btnMenu, btnOrders, btnLogout;
@@ -93,6 +94,10 @@ public class UserViewController {
         setupLiveClock();
         setupSidebar();
         setupKeyboardShortcuts();
+
+        if (posViewController != null) {
+            posViewController.setOnOrderCompleted(this::showHome);
+        }
 
         session.loadFromDatabase();
 
@@ -203,6 +208,9 @@ public class UserViewController {
         sidebar.setPrefWidth(width);
         sidebar.setMaxWidth(width);
 
+        if (brandHeader != null) {
+            brandHeader.setAlignment(expanded ? Pos.CENTER_LEFT : Pos.CENTER);
+        }
         brandTextBox.setVisible(expanded);
         brandTextBox.setManaged(expanded);
         sessionBox.setVisible(expanded);
@@ -211,6 +219,7 @@ public class UserViewController {
         for (int i = 0; i < navButtons.length; i++) {
             navButtons[i].setText(expanded ? navLabels[i] : "");
             navButtons[i].setTooltip(expanded ? null : navTips[i]);   // name on hover only when collapsed
+            navButtons[i].setAlignment(expanded ? Pos.CENTER_LEFT : Pos.CENTER);
         }
     }
 
@@ -310,11 +319,19 @@ public class UserViewController {
 
             Button done = new Button("Complete");
             done.getStyleClass().add("btn-primary-sm");
-            done.setOnAction(e -> session.completeOrder(r));
+            done.setOnAction(e -> {
+                if (AlertUtil.showYesNo("Complete Order", "Mark order " + r.getTicketNumber() + " as completed?")) {
+                    session.completeOrder(r);
+                }
+            });
 
             HBox row = new HBox(14, badge, new VBox(2, items, meta), spacer, total, receiptBtn, done);
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add("queue-row");
+            row.setOnMouseClicked(e -> {
+                if (isButtonOrInteractive(e.getTarget())) return;
+                openOrderInOrderManagement(r);
+            });
             queueBox.getChildren().add(row);
         }
     }
@@ -343,7 +360,30 @@ public class UserViewController {
             receiptBtn.setOnAction(e -> UserUi.showReceiptDialog(r));
             HBox row = new HBox(10, left, spacer, status, right, receiptBtn);
             row.setAlignment(Pos.CENTER_LEFT);
+            row.getStyleClass().add("recent-row");
+            row.setOnMouseClicked(e -> {
+                if (isButtonOrInteractive(e.getTarget())) return;
+                openOrderInOrderManagement(r);
+            });
             recentOrdersBox.getChildren().add(row);
         }
+    }
+
+    public void openOrderInOrderManagement(TransactionRecord record) {
+        if (record == null) return;
+        showOrders();
+        if (queueViewController != null) {
+            queueViewController.selectAndShowOrder(record);
+        }
+    }
+
+    private boolean isButtonOrInteractive(Object target) {
+        if (target instanceof Node n) {
+            while (n != null) {
+                if (n instanceof ButtonBase) return true;
+                n = n.getParent();
+            }
+        }
+        return false;
     }
 }

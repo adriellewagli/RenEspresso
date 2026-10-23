@@ -114,24 +114,16 @@
                 </BarChart>
             </VBox>
 
-            <!-- ============ ORDERS TREND + PAYMENT METHODS ============ -->
-            <HBox spacing="16.0">
-                <VBox styleClass="card, panel-card" maxWidth="Infinity" HBox.hgrow="ALWAYS">
-                    <Label styleClass="card-title" text="Orders Trend" />
-                    <Label styleClass="card-subtitle" text="Number of orders in the same range" />
-                    <LineChart fx:id="ordersChart" createSymbols="true" legendVisible="false"
-                               minHeight="280.0" prefHeight="280.0" verticalGridLinesVisible="false">
-                        <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
-                        <yAxis><NumberAxis side="LEFT" minorTickVisible="false" /></yAxis>
-                    </LineChart>
-                </VBox>
-                <VBox styleClass="card, panel-card" prefWidth="380.0" minWidth="380.0">
-                    <Label styleClass="card-title" text="Payment Methods" />
-                    <Label styleClass="card-subtitle" text="Share of revenue" />
-                    <PieChart fx:id="paymentChart" labelsVisible="false" legendVisible="true"
-                              minHeight="280.0" prefHeight="280.0" />
-                </VBox>
-            </HBox>
+            <!-- ============ ORDERS TREND ============ -->
+            <VBox styleClass="card, panel-card">
+                <Label styleClass="card-title" text="Orders Trend" />
+                <Label styleClass="card-subtitle" text="Number of orders in the same range" />
+                <LineChart fx:id="ordersChart" createSymbols="true" legendVisible="false"
+                           minHeight="280.0" prefHeight="280.0" verticalGridLinesVisible="false">
+                    <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
+                    <yAxis><NumberAxis side="LEFT" minorTickVisible="false" /></yAxis>
+                </LineChart>
+            </VBox>
 
             <!-- ============ SALES BY HOUR ============ -->
             <VBox styleClass="card, panel-card">

@@ -13,9 +13,13 @@
 
         <!-- ================= SIDEBAR (same structure as the cashier) ================= -->
         <VBox fx:id="sidebar" minWidth="85.0" prefWidth="85.0" maxWidth="85.0" spacing="8.0" styleClass="user-sidebar">
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <HBox fx:id="brandHeader" alignment="CENTER" maxWidth="Infinity" spacing="10.0">
                 <Button onAction="#toggleSidebar" styleClass="brand-button">
-                    <graphic><Region styleClass="nav-svg, icon-cafe" /></graphic>
+                    <graphic>
+                        <StackPane minWidth="37.0" minHeight="37.0" prefWidth="37.0" prefHeight="37.0">
+                            <Region styleClass="nav-svg, icon-cafe" />
+                        </StackPane>
+                    </graphic>
                 </Button>
                 <VBox fx:id="brandTextBox" spacing="1.0">
                     <Label styleClass="brand-name" text="RenEspresso" />

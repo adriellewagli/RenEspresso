@@ -157,24 +157,54 @@ public class OrderQueueController {
             done.getStyleClass().add("btn-primary-sm");
             done.setMaxWidth(Double.MAX_VALUE);
             HBox.setHgrow(done, Priority.ALWAYS);
-            done.setOnAction(e -> session.completeOrder(r));
+            done.setOnAction(e -> {
+                if (AlertUtil.showYesNo("Complete Order", "Mark order " + r.getTicketNumber() + " as completed?")) {
+                    session.completeOrder(r);
+                    render();
+                }
+            });
             actions.getChildren().add(done);
         }
         Button details = new Button("Details");
         details.getStyleClass().add("btn-secondary-sm");
-        details.setOnAction(e -> showDetails(r));
+        details.setOnAction(e -> selectAndShowOrder(r));
         actions.getChildren().add(details);
 
         VBox card = new VBox(10, head, meta, new Separator(), lines, totalRow, actions);
         card.getStyleClass().add("order-card");
-        if (r == selected) card.getStyleClass().add("order-card-selected");
+        if (isSameOrder(r, selected)) {
+            card.getStyleClass().add("order-card-selected");
+        }
+
+        card.setOnMouseClicked(e -> {
+            if (isButtonOrInteractive(e.getTarget())) return;
+            selectAndShowOrder(r);
+        });
+        card.setStyle("-fx-cursor: hand;");
         return card;
     }
 
     // =====================================================================
-    //  DETAIL PANEL
+    //  DETAIL PANEL & SELECTION
     // =====================================================================
-    private void showDetails(TransactionRecord r) {
+    public void selectAndShowOrder(TransactionRecord r) {
+        if (r == null) return;
+        txtQueueSearch.setText("");
+        if (filter != null && r.getStatus() != filter) {
+            filter = null;
+        }
+
+        TransactionRecord target = session.transactionHistory.stream()
+                .filter(rec -> isSameOrder(rec, r))
+                .findFirst()
+                .orElse(r);
+
+        selected = target;
+        render();
+        showDetails(target);
+    }
+
+    public void showDetails(TransactionRecord r) {
         selected = r;
         detailPanel.getChildren().clear();
 
@@ -221,6 +251,17 @@ public class OrderQueueController {
             items.add(p, 2, row);
             row++;
         }
+        if (r.getLines().isEmpty()) {
+            Label noLines = new Label(r.getItems() != null && !r.getItems().isBlank() ? r.getItems() : "No item details");
+            noLines.getStyleClass().add("card-subtitle");
+            items.add(noLines, 0, 1, 3, 1);
+        }
+
+        javafx.scene.control.ScrollPane itemsScroll = new javafx.scene.control.ScrollPane(items);
+        itemsScroll.setFitToWidth(true);
+        itemsScroll.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        itemsScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
+        itemsScroll.setMaxHeight(180);
 
         VBox totals = new VBox(8, infoRow("VATable Sales", peso(r.getSubtotal())));
         if (r.isDiscounted()) totals.getChildren().add(infoRow("Senior/PWD (20%)", "-" + peso(r.getDiscount())));
@@ -235,13 +276,18 @@ public class OrderQueueController {
         HBox totalRow = new HBox(totalLbl, sp2, total);
         totalRow.setAlignment(Pos.CENTER_LEFT);
 
-        detailPanel.getChildren().addAll(head, sub, info, items, new Separator(), totals, new Separator(), totalRow);
+        detailPanel.getChildren().addAll(head, sub, info, itemsScroll, new Separator(), totals, new Separator(), totalRow);
 
         if (r.getStatus() == OrderStatus.PREPARING) {
             Button done = new Button("Complete Order");
             done.getStyleClass().add("btn-primary");
             done.setMaxWidth(Double.MAX_VALUE);
-            done.setOnAction(e -> session.completeOrder(r));
+            done.setOnAction(e -> {
+                if (AlertUtil.showYesNo("Complete Order", "Mark order " + r.getTicketNumber() + " as completed?")) {
+                    session.completeOrder(r);
+                    render();
+                }
+            });
 
             Button cancel = new Button("Cancel Order");
             cancel.getStyleClass().add("btn-danger");
@@ -250,6 +296,7 @@ public class OrderQueueController {
                 if (AlertUtil.showYesNo("Cancel Order",
                         "Cancel order " + r.getTicketNumber() + "? It will be removed from today's totals.")) {
                     session.cancelOrder(r);
+                    closeDetails();
                 }
             });
             detailPanel.getChildren().addAll(done, cancel);
@@ -260,7 +307,7 @@ public class OrderQueueController {
         receiptBtn.setMaxWidth(Double.MAX_VALUE);
         receiptBtn.setOnAction(e -> UserUi.showReceiptDialog(r));
 
-        Button back = new Button("Go Back");
+        Button back = new Button("Close Details");
         back.getStyleClass().add("btn-secondary");
         back.setMaxWidth(Double.MAX_VALUE);
         back.setOnAction(e -> closeDetails());
@@ -275,6 +322,25 @@ public class OrderQueueController {
         detailPanel.setVisible(false);
         detailPanel.setManaged(false);
         render();
+    }
+
+    private boolean isSameOrder(TransactionRecord a, TransactionRecord b) {
+        if (a == null || b == null) return false;
+        if (a == b) return true;
+        if (a.getTransactionId() > 0 && b.getTransactionId() > 0) {
+            return a.getTransactionId() == b.getTransactionId();
+        }
+        return a.getTicketNumber() != null && a.getTicketNumber().equals(b.getTicketNumber());
+    }
+
+    private boolean isButtonOrInteractive(Object target) {
+        if (target instanceof javafx.scene.Node n) {
+            while (n != null) {
+                if (n instanceof javafx.scene.control.ButtonBase) return true;
+                n = n.getParent();
+            }
+        }
+        return false;
     }
 
     private HBox infoRow(String left, String right) {

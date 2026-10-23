@@ -1,7 +1,7 @@
 package com.coffeepos.renespresso.controller.main.admin.settings;
 
 import com.coffeepos.renespresso.config.DatabaseManager;
-import com.coffeepos.renespresso.util.ConfirmUtil;
+import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.ExcelBackupUtil;
 import com.coffeepos.renespresso.util.SettingsManager;
 import javafx.beans.Observable;
@@ -13,7 +13,6 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -184,21 +183,21 @@ public class SettingsController {
         String tin = txtTin.getText().trim();
 
         if (name.isEmpty()) {
-            show(Alert.AlertType.WARNING, "Check your input", "Shop name is required.");
+            AlertUtil.showWarning("Check your input", "Shop name is required.");
             return;
         }
         if (!contact.isEmpty() && !contact.matches("\\d{11}")) {
-            show(Alert.AlertType.WARNING, "Check your input",
+            AlertUtil.showWarning("Check your input",
                     "Contact number must be exactly 11 digits (e.g. 09171234567).");
             return;
         }
         if (!tin.isEmpty() && !tin.matches("\\d{3}-\\d{3}-\\d{3}(-\\d{3})?")) {
-            show(Alert.AlertType.WARNING, "Check your input",
+            AlertUtil.showWarning("Check your input",
                     "TIN must be 9 or 12 digits, like 000-000-000 or 000-000-000-000.");
             return;
         }
 
-        if (!ConfirmUtil.confirmSave(settingsRoot, "Save the store information?")) return;
+        if (!AlertUtil.showYesNo("Save Settings", "Save the store information?")) return;
 
         try {
             Map<String, String> values = new HashMap<>();
@@ -211,9 +210,10 @@ public class SettingsController {
             SettingsManager.save(values);
             lblSaveNote.setText("Store information saved.");
             setEditing(false);   // lock the fields again
+            AlertUtil.showSuccess("Settings Saved", "Store information updated successfully.");
         } catch (SQLException ex) {
             ex.printStackTrace();
-            show(Alert.AlertType.ERROR, "Save failed", ex.getMessage());
+            AlertUtil.showError("Save failed", ex.getMessage());
         }
     }
 
@@ -257,7 +257,7 @@ public class SettingsController {
         task.setOnSucceeded(e -> {
             done();
             lblStatus.setText("Backup saved: " + out.getAbsolutePath());
-            show(Alert.AlertType.INFORMATION, "Backup Complete",
+            AlertUtil.showSuccess("Backup Complete",
                     "Transaction history exported for " + months.size()
                             + " month(s) to:\n" + out.getAbsolutePath());
         });
@@ -266,7 +266,7 @@ public class SettingsController {
             done();
             Throwable ex = task.getException();
             lblStatus.setText("Backup failed.");
-            show(Alert.AlertType.ERROR, "Backup Failed",
+            AlertUtil.showError("Backup Failed",
                     ex == null ? "Unknown error." : ex.getMessage());
         });
 
@@ -331,13 +331,5 @@ public class SettingsController {
         btnBackup.setDisable(false);
         progress.setVisible(false);
         progress.setManaged(false);
-    }
-
-    private void show(Alert.AlertType type, String title, String msg) {
-        Alert a = new Alert(type);
-        a.setTitle(title);
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
     }
 }

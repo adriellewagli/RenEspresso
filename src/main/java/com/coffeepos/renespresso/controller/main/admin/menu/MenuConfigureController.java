@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -75,6 +76,8 @@ public class MenuConfigureController {
         });
         descField.setTextFormatter(new TextFormatter<>(c ->
                 c.getControlNewText().length() <= 255 ? c : null));
+        qtyField.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d{0,6}") ? c : null));
 
         statusGroup.selectedToggleProperty().addListener((o, old, now) -> {
             if (now == null && old != null) old.setSelected(true);
@@ -239,10 +242,14 @@ public class MenuConfigureController {
         sizeField.getStyleClass().add("form-input");
         HBox.setHgrow(sizeField, Priority.ALWAYS);
 
-        TextField priceField = new TextField(pv == null ? "" : String.format("%.2f", pv.getPrice()));
+        TextField priceField = new TextField(pv == null ? "" : String.format(Locale.US, "%.2f", pv.getPrice()));
         priceField.setPromptText("0.00");
         priceField.getStyleClass().add("price-field");
         priceField.setPrefWidth(90);
+        priceField.setTextFormatter(new TextFormatter<>(change -> {
+            if (",".equals(change.getText())) change.setText(".");
+            return change.getControlNewText().matches("\\d{0,7}(\\.\\d{0,2})?") ? change : null;
+        }));
 
         Label peso = new Label("₱");
         peso.getStyleClass().add("input-prefix");
@@ -265,6 +272,11 @@ public class MenuConfigureController {
         delBtn.setOnAction(e -> {
             if (variantRows.size() <= 1) {
                 AlertUtil.showWarning("Cannot delete", "A menu item must have at least one size/price.");
+                return;
+            }
+            String sName = sizeField.getText().trim();
+            String label = sName.isEmpty() ? "this size" : "\"" + sName + "\"";
+            if (!AlertUtil.showYesNo("Delete Size", "Remove " + label + "?")) {
                 return;
             }
             variantsBox.getChildren().remove(row);
@@ -330,6 +342,7 @@ public class MenuConfigureController {
             categories.remove(c);
             categoryBox.getItems().remove(c);
             refreshCategoryList();
+            AlertUtil.showSuccess("Category Deleted", "Category \"" + c.name() + "\" was deleted.");
         } catch (SQLIntegrityConstraintViolationException ex) {
             AlertUtil.showWarning("Can't delete this category",
                     "\"" + c.name() + "\" still has dishes. Move or delete those dishes first.");
@@ -339,7 +352,37 @@ public class MenuConfigureController {
         }
     }
 
+    private boolean isFormDirty() {
+        if (existing == null) {
+            if (!nameField.getText().trim().isEmpty()) return true;
+            if (!descField.getText().trim().isEmpty()) return true;
+            if (!qtyField.getText().trim().isEmpty() && !qtyField.getText().trim().equals("0")) return true;
+            if (!imagePath.trim().isEmpty()) return true;
+            if (variantRows.size() > 1) return true;
+            if (!variantRows.isEmpty()) {
+                VariantUI first = variantRows.get(0);
+                if (!first.sizeF.getText().trim().isEmpty() || !first.priceF.getText().trim().isEmpty()) return true;
+            }
+            return false;
+        } else {
+            if (!nameField.getText().trim().equals(existing.name())) return true;
+            String curDesc = descField.getText().trim();
+            String oldDesc = existing.description() == null ? "" : existing.description();
+            if (!curDesc.equals(oldDesc)) return true;
+            if (!qtyField.getText().trim().equals(String.valueOf(existing.quantity()))) return true;
+            Category selCat = categoryBox.getValue();
+            if (selCat != null && selCat.id() != existing.categoryId()) return true;
+            String oldImage = Objects.toString(ImageStore.pathOf(existing.imagePath()), "");
+            if (!imagePath.trim().equals(oldImage)) return true;
+            if (!variantsToDelete.isEmpty()) return true;
+            return false;
+        }
+    }
+
     @FXML private void handleCancel() {
+        if (isFormDirty() && !AlertUtil.showYesNo("Discard Changes", "You have unsaved changes. Discard them?")) {
+            return;
+        }
         onClose.run();
     }
 
@@ -384,6 +427,10 @@ public class MenuConfigureController {
         }
 
         boolean edit = existing != null;
+        if (!AlertUtil.showYesNo("Save Menu Item", edit ? "Save changes to \"" + name + "\"?" : "Add \"" + name + "\" to the menu?")) {
+            return;
+        }
+
         String oldImage = edit ? existing.imagePath() : null;
         String newImage = oldImage;
         boolean copied = false;
@@ -410,6 +457,7 @@ public class MenuConfigureController {
             }
 
             if (oldImage != null && !Objects.equals(oldImage, newImage)) ImageStore.delete(oldImage);
+            AlertUtil.showSuccess("Dish Saved", edit ? "Menu item \"" + name + "\" updated successfully." : "Menu item \"" + name + "\" added successfully.");
             onClose.run();
 
         } catch (SQLException | IOException ex) {

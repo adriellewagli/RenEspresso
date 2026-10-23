@@ -33,7 +33,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
 
@@ -62,7 +64,6 @@ public class PosController {
 
     @FXML private StackPane modalOverlay;
     @FXML private Label lblModalTicket, lblModalTotal, lblChange;
-    @FXML private ComboBox<String> cmbPaymentMethod;
     @FXML private HBox rowCash, quickCashBar, rowChange;
     @FXML private TextField txtCashReceived;
     @FXML private Button btnConfirmOrder;
@@ -72,6 +73,11 @@ public class PosController {
     private final ObservableList<CartItem> cartItems = FXCollections.observableArrayList();
     private final SimpleDateFormat receiptDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
     private final ToggleGroup chipGroup = new ToggleGroup();
+    private Runnable onOrderCompleted;
+
+    public void setOnOrderCompleted(Runnable onOrderCompleted) {
+        this.onOrderCompleted = onOrderCompleted;
+    }
 
     private List<Category> categories = new ArrayList<>();
     private List<Product> products = new ArrayList<>();
@@ -467,10 +473,19 @@ public class PosController {
     //  PAYMENT MODAL
     // =====================================================================
     private void setupPaymentModal() {
-        cmbPaymentMethod.getItems().setAll(UserSession.PAYMENT_METHODS);
-        cmbPaymentMethod.setValue("Cash");
-        cmbPaymentMethod.setDisable(true);
-        cmbPaymentMethod.valueProperty().addListener((obs, o, n) -> updateChangeDue());
+        // Cash amount filter: allow only numeric digits and up to 2 decimal places, rejecting letters
+        UnaryOperator<TextFormatter.Change> cashFilter = change -> {
+            if (",".equals(change.getText())) {
+                change.setText(".");
+            }
+            String newText = change.getControlNewText();
+            if (newText.isEmpty() || newText.matches("\\d{0,7}(\\.\\d{0,2})?")) {
+                return change;
+            }
+            return null;
+        };
+        txtCashReceived.setTextFormatter(new TextFormatter<>(cashFilter));
+
         txtCashReceived.textProperty().addListener((obs, o, n) -> updateChangeDue());
         txtCashReceived.setOnAction(e -> { if (!btnConfirmOrder.isDisabled()) confirmAndFinalizeOrder(); });
     }
@@ -479,20 +494,18 @@ public class PosController {
     public void handleQuickCash(ActionEvent event) {
         String text = ((Button) event.getSource()).getText();
         if ("Exact".equals(text)) {
-            txtCashReceived.setText(String.format("%.2f", currentTotal));
+            txtCashReceived.setText(String.format(Locale.US, "%.2f", currentTotal));
         } else {
             Double amount = parseMoney(text);
-            if (amount != null) txtCashReceived.setText(String.format("%.2f", amount));
+            if (amount != null) txtCashReceived.setText(String.format(Locale.US, "%.2f", amount));
         }
     }
 
     private void updateChangeDue() {
-        boolean isCash = "Cash".equals(cmbPaymentMethod.getValue());
         for (HBox box : List.of(rowCash, quickCashBar, rowChange)) {
-            box.setVisible(isCash);
-            box.setManaged(isCash);
+            box.setVisible(true);
+            box.setManaged(true);
         }
-        if (!isCash) { btnConfirmOrder.setDisable(false); return; }
 
         Double cash = parseMoney(txtCashReceived.getText());
         long due = Math.round(currentTotal * 100);
@@ -500,10 +513,10 @@ public class PosController {
             lblChange.setText("\u20B10.00");
             btnConfirmOrder.setDisable(true);
         } else if (Math.round(cash * 100) < due) {
-            lblChange.setText("Short \u20B1" + String.format("%.2f", (due - Math.round(cash * 100)) / 100.0));
+            lblChange.setText("Short \u20B1" + String.format(Locale.US, "%.2f", (due - Math.round(cash * 100)) / 100.0));
             btnConfirmOrder.setDisable(true);
         } else {
-            lblChange.setText("\u20B1" + String.format("%.2f", (Math.round(cash * 100) - due) / 100.0));
+            lblChange.setText("\u20B1" + String.format(Locale.US, "%.2f", (Math.round(cash * 100) - due) / 100.0));
             btnConfirmOrder.setDisable(false);
         }
     }
@@ -527,19 +540,17 @@ public class PosController {
             return;
         }
 
-        String defaultMethod = session.defaultPayment == null ? "Cash" : session.defaultPayment;
         if (!session.requireConfirm) {
-            processOrder(defaultMethod, currentTotal);
+            processOrder("Cash", currentTotal);
             return;
         }
 
         lblModalTicket.setText("Ticket " + session.ticketLabel());
         lblModalTotal.setText(lblTotal.getText());
-        cmbPaymentMethod.setValue(defaultMethod);
         txtCashReceived.clear();
         updateChangeDue();
         modalOverlay.setVisible(true);
-        if ("Cash".equals(defaultMethod)) Platform.runLater(() -> txtCashReceived.requestFocus());
+        Platform.runLater(() -> txtCashReceived.requestFocus());
     }
 
     @FXML
@@ -548,13 +559,10 @@ public class PosController {
     @FXML
     public void confirmAndFinalizeOrder() {
         if (cartItems.isEmpty()) { closeConfirmationModal(); return; }
-        String method = cmbPaymentMethod.getValue() == null ? "Cash" : cmbPaymentMethod.getValue();
-        double tendered = currentTotal;
-        if ("Cash".equals(method)) {
-            Double cash = parseMoney(txtCashReceived.getText());
-            if (cash == null || Math.round(cash * 100) < Math.round(currentTotal * 100)) return;
-            tendered = cash;
-        }
+        String method = "Cash";
+        Double cash = parseMoney(txtCashReceived.getText());
+        if (cash == null || Math.round(cash * 100) < Math.round(currentTotal * 100)) return;
+        double tendered = cash;
         processOrder(method, tendered);
     }
 
@@ -600,6 +608,10 @@ public class PosController {
         updateTotals();
         closeConfirmationModal();
         reload();
+
+        if (onOrderCompleted != null) {
+            onOrderCompleted.run();
+        }
 
         AlertUtil.showSuccess("Order Processed", "Order " + record.getOrderId() + " (" + ticket + ") was added to the queue.");
     }

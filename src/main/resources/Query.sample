@@ -47,7 +47,7 @@ CREATE TABLE categories (
     name VARCHAR(50) NOT NULL UNIQUE,
     sort_order INT(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-``
+
 -- ------------------------------------------------------------------------------
 -- PRODUCTS TABLE
 -- Base product catalogue with stock level and availability
@@ -290,9 +290,9 @@ INSERT INTO product_variants (variant_id, product_id, size_name, price) VALUES
 INSERT INTO transactions (transaction_id, cashier_id, order_id, ticket_number, total_amount, subtotal, vat, discount, tendered, payment_method, payment_status, status, receipt_text, created_at, updated_at) VALUES
 (1, 4, 'TXN-8396', '#001', 180.00, 160.71, 19.29, 0.00, 200.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8396\nTotal: 180.00', '2026-10-11 15:51:26', '2026-10-11 15:51:26'),
 (2, 3, 'TXN-8397', '#002', 380.00, 339.29, 40.71, 0.00, 500.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8397\nTotal: 380.00', '2026-10-11 15:51:26', '2026-10-11 15:51:26'),
-(3, 4, 'TXN-8398', '#003', 320.00, 285.71, 34.29, 0.00, 320.00, 'GCash', 'Refunded', 'CANCELLED', 'RenEspresso Receipt\nOrder: TXN-8398\nTotal: 320.00', '2026-10-12 11:51:26', '2026-10-12 11:51:26'),
+(3, 4, 'TXN-8398', '#003', 320.00, 285.71, 34.29, 0.00, 320.00, 'Cash', 'Refunded', 'CANCELLED', 'RenEspresso Receipt\nOrder: TXN-8398\nTotal: 320.00', '2026-10-12 11:51:26', '2026-10-12 11:51:26'),
 (4, 2, 'TXN-8399', '#004', 610.00, 544.64, 65.36, 0.00, 1000.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8399\nTotal: 610.00', '2026-10-12 12:51:26', '2026-10-12 12:51:26'),
-(5, 3, 'TXN-8400', '#005', 250.00, 223.21, 26.79, 0.00, 250.00, 'Card', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8400\nTotal: 250.00', '2026-10-12 13:51:26', '2026-10-12 13:51:26'),
+(5, 3, 'TXN-8400', '#005', 250.00, 223.21, 26.79, 0.00, 250.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8400\nTotal: 250.00', '2026-10-12 13:51:26', '2026-10-12 13:51:26'),
 (6, 2, 'TXN-8401', '#006', 240.00, 214.29, 25.71, 0.00, 0.00, 'Cash', 'Unpaid', 'PENDING', 'RenEspresso Receipt\nOrder: TXN-8401\nTotal: 240.00', '2026-10-12 14:51:26', '2026-10-12 14:51:26'),
 (7, 3, 'TXN-8402', '#007', 440.00, 392.86, 47.14, 0.00, 500.00, 'Cash', 'Paid', 'COMPLETED', 'RenEspresso Receipt\nOrder: TXN-8402\nTotal: 440.00', '2026-10-12 15:31:26', '2026-10-12 15:55:41');
 
