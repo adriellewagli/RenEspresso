@@ -331,7 +331,7 @@ public class AccountController {
 
     private void showAccountDialog(AccountRow existing) {
         boolean edit = existing != null;
-        final boolean active = !edit || "Active".equals(existing.status());
+        final boolean active = edit && "Active".equals(existing.status());
 
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(edit ? "Edit Account" : "Add Account");

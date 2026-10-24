@@ -302,6 +302,7 @@ public class UserViewController {
         for (TransactionRecord r : session.queue) {
             Label badge = new Label(r.getTicketNumber());
             badge.getStyleClass().add("ticket-badge");
+            badge.setMinWidth(Region.USE_PREF_SIZE);
 
             Label items = new Label(r.getItems());
             items.getStyleClass().add("queue-items");
@@ -312,13 +313,16 @@ public class UserViewController {
             HBox.setHgrow(spacer, Priority.ALWAYS);
             Label total = new Label(r.getTotalPaid());
             total.getStyleClass().add("queue-total");
+            total.setMinWidth(Region.USE_PREF_SIZE);
 
             Button receiptBtn = new Button("Receipt");
             receiptBtn.getStyleClass().add("btn-secondary-sm");
+            receiptBtn.setMinWidth(Region.USE_PREF_SIZE);
             receiptBtn.setOnAction(e -> UserUi.showReceiptDialog(r));
 
             Button done = new Button("Complete");
             done.getStyleClass().add("btn-primary-sm");
+            done.setMinWidth(Region.USE_PREF_SIZE);
             done.setOnAction(e -> {
                 if (AlertUtil.showYesNo("Complete Order", "Mark order " + r.getTicketNumber() + " as completed?")) {
                     session.completeOrder(r);
@@ -349,15 +353,24 @@ public class UserViewController {
             TransactionRecord r = session.transactionHistory.get(i);
             Label left = new Label(r.getTicketNumber() + "  \u00B7  " + r.getTime());
             left.getStyleClass().add("recent-left");
+            left.setMinWidth(Region.USE_PREF_SIZE);
+
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
+
             Label status = new Label(r.getStatus().label());
             status.getStyleClass().addAll("pill", r.getStatus().styleClass());
+            status.setMinWidth(Region.USE_PREF_SIZE);
+
             Label right = new Label(r.getTotalPaid());
             right.getStyleClass().add("recent-right");
+            right.setMinWidth(Region.USE_PREF_SIZE);
+
             Button receiptBtn = new Button("Receipt");
             receiptBtn.getStyleClass().add("btn-secondary-sm");
+            receiptBtn.setMinWidth(Region.USE_PREF_SIZE);
             receiptBtn.setOnAction(e -> UserUi.showReceiptDialog(r));
+
             HBox row = new HBox(10, left, spacer, status, right, receiptBtn);
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add("recent-row");

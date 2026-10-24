@@ -114,6 +114,19 @@ public class MenuDAO {
         }
     }
 
+    public static boolean productExistsByName(String name, int excludeId) throws SQLException {
+        if (name == null || name.isBlank()) return false;
+        String sql = "SELECT 1 FROM products WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) AND id <> ?";
+        try (Connection c = DatabaseManager.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, name.trim());
+            ps.setInt(2, excludeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public static void deleteCategory(int id) throws SQLException {
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement ps = c.prepareStatement("DELETE FROM categories WHERE category_id = ?")) {

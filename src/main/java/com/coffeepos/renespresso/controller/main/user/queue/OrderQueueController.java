@@ -169,7 +169,7 @@ public class OrderQueueController {
         }
         Button details = new Button("Details");
         details.getStyleClass().add("btn-secondary-sm");
-        details.setOnAction(e -> selectAndShowOrder(r));
+        details.setOnAction(e -> toggleOrderDetails(r));
         actions.getChildren().add(details);
 
         VBox card = new VBox(10, head, meta, new Separator(), lines, totalRow, actions);
@@ -180,7 +180,7 @@ public class OrderQueueController {
 
         card.setOnMouseClicked(e -> {
             if (isButtonOrInteractive(e.getTarget())) return;
-            selectAndShowOrder(r);
+            toggleOrderDetails(r);
         });
         card.setStyle("-fx-cursor: hand;");
         return card;
@@ -189,6 +189,15 @@ public class OrderQueueController {
     // =====================================================================
     //  DETAIL PANEL & SELECTION
     // =====================================================================
+    public void toggleOrderDetails(TransactionRecord r) {
+        if (r == null) return;
+        if (selected != null && isSameOrder(r, selected) && detailPanel.isVisible()) {
+            closeDetails();
+            return;
+        }
+        selectAndShowOrder(r);
+    }
+
     public void selectAndShowOrder(TransactionRecord r) {
         if (r == null) return;
         txtQueueSearch.setText("");

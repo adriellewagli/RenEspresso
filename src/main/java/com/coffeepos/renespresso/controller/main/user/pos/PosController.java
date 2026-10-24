@@ -258,8 +258,17 @@ public class PosController {
             sizes.getChildren().add(noPrice);
         }
 
-        Label stock = new Label(sellable ? p.quantity() + " left" : "Unavailable");
-        stock.getStyleClass().add(sellable ? "dish-qty" : "dish-qty-off");
+        Label stock;
+        if (!sellable) {
+            stock = new Label("Unavailable");
+            stock.getStyleClass().add("dish-qty-off");
+        } else if (p.quantity() <= 5) {
+            stock = new Label("Low Stock (" + p.quantity() + " left)");
+            stock.getStyleClass().add("dish-qty-low");
+        } else {
+            stock = new Label(p.quantity() + " left");
+            stock.getStyleClass().add("dish-qty");
+        }
 
         VBox card = new VBox(6, photo, category, name, sizes, stock);
         card.setAlignment(Pos.TOP_CENTER);
@@ -298,6 +307,10 @@ public class PosController {
     }
 
     private void refreshCartUI() {
+        if (cartItems.isEmpty()) {
+            chkDiscount.setSelected(false);
+            seniorCount = 1;
+        }
         cartListView.getItems().clear();
         for (CartItem item : cartItems) {
             HBox row = new HBox(8);

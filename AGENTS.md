@@ -76,7 +76,7 @@ This document records architectural conventions, established business logic, dom
    - In `TransactionController.applyFilters()` and `OrderManagementController.applyFilters()`, added null checks to prevent `NullPointerException` on `orderId`, `staffName`, `staffRole`, `paymentStatus`, `paymentMethod`, `status`, `ticketNumber`, `items`, and `createdAt`. Also applied defensive null checks across queue and menu search filters.
 3. **[COMPLETED] Standardized AlertUtil Confirmation Across User & Admin:**
    - Standardized all critical and state-changing confirmations across User (`UserViewController`, `OrderQueueController`) and Admin (`SettingsController`, `AccountController`, `MenuController`, `MenuConfigureController`) to use `AlertUtil` modal dialogs (`AlertUtil.showYesNo`, `AlertUtil.showSuccess`, etc.).
-4. **Low-Stock Alerting & Badges:**
-   - Add visual warning badges when product `quantity <= 5` in both POS menu cards and Admin menu view.
+4. **[COMPLETED] Low-Stock Alerting & Badges:**
+   - Added visual warning badges and distinct styling (`dish-qty-low`, amber `#D97706`) when product `quantity <= 5` in both POS menu cards (`PosController.java`, `user-dashboard.css`) and Admin menu view (`MenuController.java`, `menu.css`).
 5. **[CANCELLED / OBSOLETE] Payment Reference Number for Non-Cash:**
    - Cancelled: Business operates strictly on Cash Only; non-cash payment options removed.

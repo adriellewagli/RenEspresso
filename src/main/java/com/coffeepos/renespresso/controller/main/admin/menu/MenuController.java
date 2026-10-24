@@ -254,7 +254,12 @@ public class MenuController {
         Label qtyLabel = new Label("Qty: " + p.quantity());
         qtyLabel.getStyleClass().add("dish-qty");
         if (p.quantity() <= 0) {
+            qtyLabel.setText("Qty: 0 (Out of Stock)");
             qtyLabel.setStyle("-fx-text-fill: #C0392B; -fx-font-weight: bold;");
+        } else if (p.quantity() <= 5) {
+            qtyLabel.setText("Qty: " + p.quantity() + " (Low Stock)");
+            qtyLabel.getStyleClass().add("dish-qty-low");
+            qtyLabel.setStyle("-fx-text-fill: #D97706; -fx-font-weight: bold;");
         }
 
         Button pill = new Button(p.available() ? "Available" : "Unavailable");

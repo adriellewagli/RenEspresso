@@ -270,6 +270,7 @@
 .dish-category { -fx-text-fill: #A98667; -fx-font-size: 9px; -fx-font-weight: bold; -fx-padding: 6 0 0 0; }
 .dish-name     { -fx-text-fill: #2F2118; -fx-font-size: 14px; -fx-font-weight: bold; -fx-text-alignment: center; }
 .dish-qty      { -fx-text-fill: #895737; -fx-font-size: 11px; }
+.dish-qty-low  { -fx-text-fill: #D97706; -fx-font-size: 11px; -fx-font-weight: bold; }
 .dish-qty-off  { -fx-text-fill: #C53030; -fx-font-size: 11px; -fx-font-weight: bold; }
 
 .size-chip {

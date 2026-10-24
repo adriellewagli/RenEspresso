@@ -179,11 +179,25 @@ public class SettingsController {
     @FXML
     private void handleSaveSettings() {
         String name = txtShopName.getText().trim();
+        String tagline = txtTagline.getText().trim();
+        String address = txtAddress.getText().trim();
         String contact = txtContact.getText().trim();
         String tin = txtTin.getText().trim();
 
         if (name.isEmpty()) {
             AlertUtil.showWarning("Check your input", "Shop name is required.");
+            return;
+        }
+        if (name.length() > 60) {
+            AlertUtil.showWarning("Check your input", "Shop name is too long (max 60 characters).");
+            return;
+        }
+        if (tagline.length() > 100) {
+            AlertUtil.showWarning("Check your input", "Tagline is too long (max 100 characters).");
+            return;
+        }
+        if (address.length() > 200) {
+            AlertUtil.showWarning("Check your input", "Address is too long (max 200 characters).");
             return;
         }
         if (!contact.isEmpty() && !contact.matches("\\d{11}")) {
@@ -202,8 +216,8 @@ public class SettingsController {
         try {
             Map<String, String> values = new HashMap<>();
             values.put(SettingsManager.STORE_NAME, name);
-            values.put(SettingsManager.STORE_TAGLINE, txtTagline.getText().trim());
-            values.put(SettingsManager.STORE_ADDRESS, txtAddress.getText().trim());
+            values.put(SettingsManager.STORE_TAGLINE, tagline);
+            values.put(SettingsManager.STORE_ADDRESS, address);
             values.put(SettingsManager.STORE_CONTACT, contact);
             values.put(SettingsManager.STORE_TIN, tin);
 

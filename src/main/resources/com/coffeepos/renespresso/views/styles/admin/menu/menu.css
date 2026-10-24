@@ -329,3 +329,9 @@
     -fx-font-size: 11px;
     -fx-padding: 4 0 0 0;
 }
+.dish-qty-low {
+    -fx-text-fill: #D97706;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 0 0 0;
+}

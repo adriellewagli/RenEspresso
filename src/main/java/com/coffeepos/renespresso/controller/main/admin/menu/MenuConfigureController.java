@@ -288,6 +288,10 @@ public class MenuConfigureController {
     @FXML private void handleAddCategory() {
         String name = newCatField.getText() == null ? "" : newCatField.getText().trim();
         if (name.isEmpty()) return;
+        if (name.length() > 50) {
+            AlertUtil.showWarning("Check your input", "Category name is too long (max 50 characters).");
+            return;
+        }
 
         Optional<Category> same = categories.stream()
                 .filter(c -> c.name().equalsIgnoreCase(name)).findFirst();
@@ -402,11 +406,20 @@ public class MenuConfigureController {
         }
 
         List<ProductVariant> parsedVariants = new ArrayList<>();
+        java.util.Set<String> seenSizes = new java.util.HashSet<>();
         for (VariantUI v : variantRows) {
             String sName = v.sizeF.getText().trim();
             BigDecimal sPrice = parsePrice(v.priceF.getText());
             if (sName.isEmpty() || sPrice == null) {
                 AlertUtil.showWarning("Check your input", "All sizes must have a valid name and price greater than 0.");
+                return;
+            }
+            if (sName.length() > 50) {
+                AlertUtil.showWarning("Check your input", "Size name \"" + sName + "\" is too long (max 50 characters).");
+                return;
+            }
+            if (!seenSizes.add(sName.toLowerCase())) {
+                AlertUtil.showWarning("Duplicate Size", "Size variant \"" + sName + "\" is listed more than once.");
                 return;
             }
             parsedVariants.add(new ProductVariant(v.variant == null ? 0 : v.variant.getVariantId(), 0, sName, sPrice));
@@ -423,6 +436,17 @@ public class MenuConfigureController {
 
         if (warning != null) {
             AlertUtil.showWarning("Check your input", warning);
+            return;
+        }
+
+        try {
+            if (MenuDAO.productExistsByName(name, existing != null ? existing.id() : 0)) {
+                AlertUtil.showWarning("Duplicate Item", "A menu item named \"" + name + "\" already exists. Please choose a different name.");
+                return;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            AlertUtil.showError("Database Error", "Failed to verify dish name uniqueness: " + e.getMessage());
             return;
         }
 
@@ -460,6 +484,10 @@ public class MenuConfigureController {
             AlertUtil.showSuccess("Dish Saved", edit ? "Menu item \"" + name + "\" updated successfully." : "Menu item \"" + name + "\" added successfully.");
             onClose.run();
 
+        } catch (SQLIntegrityConstraintViolationException ex) {
+            ex.printStackTrace();
+            if (copied) ImageStore.delete(newImage);
+            AlertUtil.showWarning("Cannot remove size", "One or more sizes cannot be removed because they are recorded in past transactions.");
         } catch (SQLException | IOException ex) {
             ex.printStackTrace();
             if (copied) ImageStore.delete(newImage);
