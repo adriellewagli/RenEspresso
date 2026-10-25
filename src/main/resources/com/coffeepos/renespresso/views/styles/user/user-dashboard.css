@@ -258,10 +258,11 @@
 .menu-card-off .dish-photo { -fx-opacity: 0.6; }
 
 .dish-photo {
-    -fx-background-color: #F6E7D5; -fx-background-radius: 100;
+    -fx-background-color: #FFFFFF; -fx-background-radius: 100;
     -fx-border-color: #E3CBA8; -fx-border-width: 2; -fx-border-radius: 100; -fx-padding: 4;
     -fx-min-width: 108; -fx-pref-width: 108; -fx-max-width: 108;
     -fx-min-height: 108; -fx-pref-height: 108; -fx-max-height: 108;
+    -fx-alignment: center;
 }
 .dish-placeholder {
     -fx-min-width: 96; -fx-min-height: 96; -fx-background-color: #EFD6BB; -fx-background-radius: 100;

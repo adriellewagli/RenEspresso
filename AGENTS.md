@@ -293,3 +293,9 @@ This document records architectural conventions, established business logic, dom
 26. **[COMPLETED] Logo Icon-Only Design & Login Clean Up:**
    - **Pure Cup Icon Emblem:** Removed all text/typography from the official brand logo (`logo.png`, `app.ico`, `package/windows/RenEspresso.ico`), leaving only the centered coffee cup with heart latte art, aromatic steam, and saucer inside the warm rounded square tile.
    - **Removed Localhost Indicator on Login:** Removed the `btnServerConfig` button and localhost label from `LoginView.fxml` and cleaned up `LoginController.java`, providing a clean, distraction-free login interface while retaining automatic server connection prompts if unreachable.
+
+27. **[COMPLETED] Product Photo Preview Polish & Smart Subject Cropping:**
+   - **Eliminated Crescent Clipping Artifact:** Removed fixed outer `setClip` on the `circlePhotoNode` container and eliminated duplicate internal `Circle bg` stroke, clipping only the inner `ImageView`. Container borders and padding in `.dish-photo` now render symmetrically without clipping cuts or offset crescents.
+   - **Smart Subject Auto-Cropping (`applySmartCrop`):** Added sub-millisecond subject detection in `ImageStore.java` scanning pixel data to find the bounding box of non-white/non-transparent food and drink items. Zooms and centers the product to fill ~85% of the circular frame with a balanced 18% margin, replacing tiny centered dots with large, appetizing, prominent food previews.
+   - **White Container Seamless Blending:** Updated `.dish-photo` background to `#FFFFFF` in `menu.css` and `user-dashboard.css`, creating a seamless circular plate with warm coffee-gold border (`#E7DCCB` / `#E3CBA8`) for all product images.
+   - **Live Catalog Modal Preview:** Updated `MenuConfigureController.java` to support both local uploads and server-hosted images using `circlePhotoNode` for live previewing.

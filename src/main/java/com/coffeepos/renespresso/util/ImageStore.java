@@ -4,11 +4,14 @@ import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
@@ -261,29 +264,21 @@ public final class ImageStore {
         root.setMinSize(size, size);
         root.setPrefSize(size, size);
         root.setMaxSize(size, size);
+        root.setAlignment(Pos.CENTER);
         root.getStyleClass().add("photo-container");
 
         double radius = size / 2.0;
 
-        // --- LAYER 1: Background & Clip ---
-        Circle bg = new Circle(radius);
-        bg.setFill(Color.web("#FAF2E8"));
-        bg.setStroke(Color.web("#E6D3BE"));
-        bg.setStrokeWidth(Math.max(1.0, size * 0.02));
-
-        Circle clip = new Circle(radius, radius, radius);
-        root.setClip(clip);
-
-        // --- LAYER 2: Fallback / Placeholder Layer ---
+        // --- LAYER 1: Fallback / Placeholder Layer ---
         Node placeholderNode = createPlaceholder(dishName, size);
-        root.getChildren().addAll(bg, placeholderNode);
+        root.getChildren().add(placeholderNode);
 
         if (path == null || path.isBlank()) {
             return root; // No image specified, display clean placeholder
         }
 
-        // --- LAYER 3: Animated Loading Ring & Soft Pulse ---
-        double arcRadius = Math.max(8.0, radius - (size * 0.08));
+        // --- LAYER 2: Animated Loading Ring & Soft Pulse ---
+        double arcRadius = Math.max(8.0, radius - (size * 0.10));
         Arc loadingArc = new Arc(0, 0, arcRadius, arcRadius, 0, 90);
         loadingArc.setFill(null);
         loadingArc.setStroke(Color.web("#C08552"));
@@ -305,13 +300,14 @@ public final class ImageStore {
         rotate.play();
         pulse.play();
 
-        // --- LAYER 4: Image View ---
+        // --- LAYER 3: Image View with circular clip ---
         ImageView iv = new ImageView();
         iv.setFitWidth(size);
         iv.setFitHeight(size);
         iv.setPreserveRatio(true);
         iv.setSmooth(true);
         iv.setOpacity(0.0);
+        iv.setClip(new Circle(radius, radius, radius));
         root.getChildren().add(iv);
 
         String resolvedUrl = resolveImageUrl(path);
@@ -328,36 +324,33 @@ public final class ImageStore {
                 pulse.stop();
                 loadingArc.setVisible(false);
                 placeholderNode.setOpacity(1.0);
+                placeholderNode.setVisible(true);
                 return;
             }
 
             iv.setImage(img);
 
-            Runnable crop = () -> {
-                double w = img.getWidth(), h = img.getHeight(), s = Math.min(w, h);
-                if (s > 0) iv.setViewport(new Rectangle2D((w - s) / 2, (h - s) / 2, s, s));
-            };
-
-            Runnable onLoaded = () -> {
-                crop.run();
+            Runnable onLoaded = () -> Platform.runLater(() -> {
+                applySmartCrop(iv, img, size);
                 rotate.stop();
                 pulse.stop();
                 loadingArc.setVisible(false);
-                placeholderNode.setOpacity(1.0);
+                placeholderNode.setVisible(false);
 
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(250), iv);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(200), iv);
                 fadeIn.setFromValue(iv.getOpacity());
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
-            };
+            });
 
-            Runnable onError = () -> {
+            Runnable onError = () -> Platform.runLater(() -> {
                 rotate.stop();
                 pulse.stop();
                 loadingArc.setVisible(false);
                 placeholderNode.setOpacity(1.0);
+                placeholderNode.setVisible(true);
                 iv.setOpacity(0.0); // Gracefully stays at clean normal placeholder
-            };
+            });
 
             if (img.getProgress() >= 1.0) {
                 if (img.isError()) onError.run();
@@ -382,6 +375,7 @@ public final class ImageStore {
         root.getProperties().put("reloadAction", (Runnable) () -> {
             iv.setOpacity(0.0);
             loadingArc.setVisible(true);
+            placeholderNode.setVisible(true);
             rotate.play();
             pulse.play();
             startLoad.run();
@@ -391,12 +385,77 @@ public final class ImageStore {
     }
 
     /**
+     * Smartly centers and crops the food/drink subject in the circular preview,
+     * trimming empty white or transparent margins so the product looks prominent,
+     * crisp, and appetizing.
+     */
+    private static void applySmartCrop(ImageView iv, Image img, double targetSize) {
+        if (img == null || img.getWidth() <= 0 || img.getHeight() <= 0) return;
+        double w = img.getWidth();
+        double h = img.getHeight();
+
+        PixelReader pr = img.getPixelReader();
+        if (pr != null) {
+            int iw = (int) w;
+            int ih = (int) h;
+            int minX = iw, minY = ih, maxX = 0, maxY = 0;
+            boolean foundSubject = false;
+
+            // Sample every few pixels for ultra-fast scan (<1ms)
+            int step = Math.max(3, Math.min(iw, ih) / 120);
+            for (int y = 0; y < ih; y += step) {
+                for (int x = 0; x < iw; x += step) {
+                    int argb = pr.getArgb(x, y);
+                    int a = (argb >> 24) & 0xff;
+                    int r = (argb >> 16) & 0xff;
+                    int g = (argb >> 8) & 0xff;
+                    int b = argb & 0xff;
+
+                    // Non-transparent and not near-white background
+                    if (a > 30 && (r < 248 || g < 248 || b < 248)) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                        foundSubject = true;
+                    }
+                }
+            }
+
+            if (foundSubject && (maxX - minX) > 20 && (maxY - minY) > 20) {
+                double subjectW = maxX - minX;
+                double subjectH = maxY - minY;
+                double maxDim = Math.max(subjectW, subjectH);
+
+                // Add 18% comfortable margin so the product sits gracefully in the circle
+                double boxSize = Math.min(Math.min(w, h), maxDim * 1.18);
+                double cx = (minX + maxX) / 2.0;
+                double cy = (minY + maxY) / 2.0;
+
+                double vx = Math.max(0, Math.min(w - boxSize, cx - boxSize / 2.0));
+                double vy = Math.max(0, Math.min(h - boxSize, cy - boxSize / 2.0));
+
+                iv.setViewport(new Rectangle2D(vx, vy, boxSize, boxSize));
+                return;
+            }
+        }
+
+        // Standard center crop fallback
+        double s = Math.min(w, h);
+        if (s > 0) {
+            iv.setViewport(new Rectangle2D((w - s) / 2.0, (h - s) / 2.0, s, s));
+        }
+    }
+
+    /**
      * Creates a placeholder emblem (warm coffee cup or dish initial).
      */
     private static Node createPlaceholder(String dishName, double size) {
         StackPane p = new StackPane();
         p.setMinSize(size, size);
+        p.setPrefSize(size, size);
         p.setMaxSize(size, size);
+        p.setStyle("-fx-background-color: #FAF4EB; -fx-background-radius: 100;");
 
         if (size >= 48) {
             SVGPath cup = new SVGPath();
@@ -465,10 +524,7 @@ public final class ImageStore {
         iv.setSmooth(true);
         iv.setClip(new Circle(size / 2, size / 2, size / 2));
 
-        Runnable crop = () -> {
-            double w = img.getWidth(), h = img.getHeight(), s = Math.min(w, h);
-            if (s > 0) iv.setViewport(new Rectangle2D((w - s) / 2, (h - s) / 2, s, s));
-        };
+        Runnable crop = () -> Platform.runLater(() -> applySmartCrop(iv, img, size));
         if (img.getProgress() >= 1.0) crop.run();
         else img.progressProperty().addListener((o, a, b) -> { if (b.doubleValue() >= 1.0) crop.run(); });
 

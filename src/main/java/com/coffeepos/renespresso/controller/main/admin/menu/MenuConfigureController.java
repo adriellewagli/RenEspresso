@@ -134,7 +134,7 @@ public class MenuConfigureController {
                     .findFirst().ifPresent(categoryBox::setValue);
             availableBtn.setSelected(existing.available());
             unavailableBtn.setSelected(!existing.available());
-            imagePath = Objects.toString(ImageStore.pathOf(existing.imagePath()), "");
+            imagePath = existing.imagePath() != null ? existing.imagePath().trim() : "";
 
             try {
                 List<ProductVariant> variants = ProductVariantDAO.getVariantsByProductId(existing.id());
@@ -145,6 +145,10 @@ public class MenuConfigureController {
         } else {
             qtyField.setText("0");
         }
+
+        nameField.textProperty().addListener((o, a, b) -> {
+            if (imagePath.isBlank()) refreshPreview();
+        });
 
         qtyField.textProperty().addListener((obs, oldVal, newVal) -> {
             try {
@@ -219,29 +223,9 @@ public class MenuConfigureController {
     private void refreshPreview() {
         preview.getChildren().clear();
         String text = imagePath.trim();
-        if (text.isEmpty()) return;
-        File f = new File(text);
-        if (f.isFile() && ImageStore.isSupported(f)) {
-            ImageView iv = roundedSquareView(f, 120, 16);
-            if (iv != null) preview.getChildren().add(iv);
-        }
-    }
-
-    private ImageView roundedSquareView(File f, double size, double radius) {
-        Image img = new Image(f.toURI().toString());
-        if (img.isError() || img.getWidth() <= 0) return null;
-
-        ImageView iv = new ImageView(img);
-        iv.setFitWidth(size);
-        iv.setFitHeight(size);
-        double s = Math.min(img.getWidth(), img.getHeight());
-        iv.setViewport(new Rectangle2D((img.getWidth() - s) / 2, (img.getHeight() - s) / 2, s, s));
-
-        Rectangle clip = new Rectangle(size, size);
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        iv.setClip(clip);
-        return iv;
+        StackPane node = ImageStore.circlePhotoNode(text.isEmpty() ? null : text, nameField.getText(), 106);
+        node.getStyleClass().add("dish-photo");
+        preview.getChildren().add(node);
     }
 
     @FXML private void handleAddVariant() {
@@ -551,9 +535,9 @@ public class MenuConfigureController {
         if (name.isEmpty()) warning = "Dish name is required.";
         else if (name.length() > 100) warning = "Dish name is too long (max 100 characters).";
         else if (cat == null) warning = "Please choose or create a category.";
-        else if (!pathText.isEmpty() && !new File(pathText).isFile())
+        else if (!pathText.isEmpty() && !new File(pathText).isFile() && ImageStore.resolveImageUrl(pathText) == null)
             warning = "Image file not found. Please choose the photo again.";
-        else if (!pathText.isEmpty() && !ImageStore.isSupported(new File(pathText)))
+        else if (!pathText.isEmpty() && new File(pathText).isFile() && !ImageStore.isSupported(new File(pathText)))
             warning = "Unsupported image type. Use PNG, JPG, GIF or BMP.";
 
         if (warning != null) {
@@ -594,6 +578,8 @@ public class MenuConfigureController {
             else if (new File(pathText).isFile()) {
                 newImage = ImageStore.save(new File(pathText), cat != null ? cat.name() : null, name, oldImage);
                 copied = true;
+            } else if (pathText.equals(oldImage) || ImageStore.resolveImageUrl(pathText) != null) {
+                newImage = pathText;
             } else if (ImageStore.isStored(pathText)) {
                 newImage = ImageStore.fileNameOf(pathText);
             }

@@ -130,7 +130,7 @@
 .dish-body { -fx-padding: 18 14 14 14; }
 
 .dish-photo {
-    -fx-background-color: #FBF6EE;
+    -fx-background-color: #FFFFFF;
     -fx-background-radius: 100;
     -fx-border-color: #E7DCCB;
     -fx-border-width: 2;
@@ -138,6 +138,7 @@
     -fx-padding: 4;
     -fx-min-width: 118; -fx-pref-width: 118; -fx-max-width: 118;
     -fx-min-height: 118; -fx-pref-height: 118; -fx-max-height: 118;
+    -fx-alignment: center;
 }
 .dish-placeholder {
     -fx-min-width: 106; -fx-min-height: 106;
