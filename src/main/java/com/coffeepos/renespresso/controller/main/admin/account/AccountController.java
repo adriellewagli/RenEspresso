@@ -2,8 +2,10 @@ package com.coffeepos.renespresso.controller.main.admin.account;
 
 import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.model.AccountRow;
+import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.ConfirmUtil;
+import com.coffeepos.renespresso.util.SessionManager;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -14,8 +16,11 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -23,8 +28,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
+
+import java.io.IOException;
+import java.net.URL;
 
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -32,6 +44,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
@@ -43,7 +56,7 @@ public class AccountController {
     @FXML
     private ComboBox<String> roleFilter, statusFilter, lastLoginFilter;
     @FXML
-    private Button clearFiltersBtn, addAccountBtn;
+    private Button clearFiltersBtn, addAccountBtn, archivedAccountsBtn;
 
     @FXML
     private TableView<AccountRow> accountTable;
@@ -65,67 +78,93 @@ public class AccountController {
         this.currentUserId = id;
     }
 
+    private User getCurrentUser() {
+        return SessionManager.getCurrentUser();
+    }
+
+    private int getCurrentUserId() {
+        User cur = getCurrentUser();
+        return cur != null && cur.getUserId() > 0 ? cur.getUserId() : currentUserId;
+    }
+
+    private boolean isCurrentUserManager() {
+        User cur = getCurrentUser();
+        return cur != null && "MANAGER".equalsIgnoreCase(cur.getRole());
+    }
+
     @FXML
     public void initialize() {
-        setupFilter(roleFilter, "Role", "All Roles", ROLES);
-        setupFilter(statusFilter, "Status", "All Statuses", "Active", "Inactive");
-        setupFilter(lastLoginFilter, "Last Login", "Anytime", "Today", "Last 7 days", "Last 30 days");
-
+        setupFilterControls();
         setupColumns();
 
         filtered = new FilteredList<>(accounts, r -> true);
         SortedList<AccountRow> sorted = new SortedList<>(filtered);
         sorted.comparatorProperty().bind(accountTable.comparatorProperty());
         accountTable.setItems(sorted);
-        accountTable.setPlaceholder(new Label("No accounts match your filters"));
+        accountTable.getSortOrder().add(colRole);
+        colRole.setSortType(TableColumn.SortType.ASCENDING);
+
+        Label emptyNote = new Label("No accounts match your filters");
+        emptyNote.getStyleClass().add("empty-note");
+        accountTable.setPlaceholder(emptyNote);
+
+        loadAccounts();
+    }
+
+    private void setupFilterControls() {
+        updateRoleFilterOptions();
+
+        statusFilter.getItems().setAll("Status: All Statuses", "Status: Active", "Status: Inactive");
+        statusFilter.setValue("Status: All Statuses");
+
+        lastLoginFilter.getItems().setAll("Last Login: Anytime", "Last Login: Today", "Last Login: Last 7 days", "Last Login: Last 30 days");
+        lastLoginFilter.setValue("Last Login: Anytime");
 
         searchField.textProperty().addListener((o, a, b) -> applyFilters());
         roleFilter.valueProperty().addListener((o, a, b) -> applyFilters());
         statusFilter.valueProperty().addListener((o, a, b) -> applyFilters());
         lastLoginFilter.valueProperty().addListener((o, a, b) -> applyFilters());
+    }
 
-        loadAccounts();
+    private void updateRoleFilterOptions() {
+        String cur = roleFilter.getValue();
+        if (isCurrentUserManager()) {
+            roleFilter.getItems().setAll("Role: All Roles", "Role: Cashier");
+        } else {
+            roleFilter.getItems().setAll("Role: All Roles", "Role: Admin", "Role: Manager", "Role: Cashier");
+        }
+        if (cur != null && roleFilter.getItems().contains(cur)) {
+            roleFilter.setValue(cur);
+        } else {
+            roleFilter.setValue("Role: All Roles");
+        }
     }
 
     // ------------------------------------------------------------------ DATA
 
     public void loadAccounts() {
         try {
-            accounts.setAll(UserDAO.getAllAccounts());
+            updateRoleFilterOptions();
+            if (addAccountBtn != null) {
+                addAccountBtn.setText(isCurrentUserManager() ? "+  Add Cashier" : "+  Add Account");
+            }
+            if (archivedAccountsBtn != null) {
+                int count = UserDAO.getArchivedCount();
+                archivedAccountsBtn.setText("Archived Accounts (" + count + ")");
+            }
+            ObservableList<AccountRow> all = UserDAO.getAllAccounts();
+            if (isCurrentUserManager()) {
+                List<AccountRow> visible = all.stream()
+                        .filter(r -> "Cashier".equalsIgnoreCase(r.role()))
+                        .toList();
+                accounts.setAll(visible);
+            } else {
+                accounts.setAll(all);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             Platform.runLater(() -> AlertUtil.showError("Could not load accounts", e.getMessage()));
         }
-    }
-
-    // ------------------------------------------------------------------ FILTERS
-
-    /** Combo box whose closed state reads "Role: All Roles" like the design. */
-    private void setupFilter(ComboBox<String> box, String label, String allLabel, String... items) {
-        String[] all = new String[items.length + 1];
-        all[0] = allLabel;
-        System.arraycopy(items, 0, all, 1, items.length);
-        box.setItems(FXCollections.observableArrayList(all));
-        box.getSelectionModel().selectFirst();
-        box.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                    return;
-                }
-                Label name = new Label(label + ":");
-                name.getStyleClass().add("filter-label");
-                Label value = new Label(item);
-                value.getStyleClass().add("filter-value");
-                HBox row = new HBox(5, name, value);
-                row.setAlignment(Pos.CENTER_LEFT);
-                setText(null);
-                setGraphic(row);
-            }
-        });
     }
 
     private void applyFilters() {
@@ -135,17 +174,28 @@ public class AccountController {
         String login = lastLoginFilter.getValue();
 
         filtered.setPredicate(r -> {
+            if (isCurrentUserManager() && !"Cashier".equalsIgnoreCase(r.role())) {
+                return false;
+            }
+
             if (!q.isEmpty()) {
                 boolean match = (r.name() != null && r.name().toLowerCase().contains(q))
                         || (r.username() != null && r.username().toLowerCase().contains(q));
                 if (!match) return false;
             }
 
-            if (role != null && !role.equals("All Roles") && !r.role().equals(role))
-                return false;
-            if (status != null && !status.equals("All Statuses") && !r.status().equals(status))
-                return false;
-            return matchesLastLogin(r.lastLogin(), login);
+            if (role != null && !role.equals("Role: All Roles")) {
+                String roleVal = role.replace("Role: ", "");
+                if (!r.role().equalsIgnoreCase(roleVal))
+                    return false;
+            }
+            if (status != null && !status.equals("Status: All Statuses")) {
+                String statusVal = status.replace("Status: ", "");
+                if (!r.status().equalsIgnoreCase(statusVal))
+                    return false;
+            }
+            String loginVal = login != null ? login.replace("Last Login: ", "") : "Anytime";
+            return matchesLastLogin(r.lastLogin(), loginVal);
         });
     }
 
@@ -166,9 +216,9 @@ public class AccountController {
     @FXML
     public void handleClearFilters() {
         searchField.clear();
-        roleFilter.getSelectionModel().selectFirst();
-        statusFilter.getSelectionModel().selectFirst();
-        lastLoginFilter.getSelectionModel().selectFirst();
+        roleFilter.setValue("Role: All Roles");
+        statusFilter.setValue("Status: All Statuses");
+        lastLoginFilter.setValue("Last Login: Anytime");
     }
 
     // ------------------------------------------------------------------ TABLE
@@ -186,6 +236,7 @@ public class AccountController {
         colName.setCellFactory(c -> textCell("name-cell"));
         colUsername.setCellFactory(c -> textCell("muted-cell"));
         colRole.setCellFactory(c -> rolePillCell());
+        colRole.setComparator((r1, r2) -> Integer.compare(rolePriority(r1), rolePriority(r2)));
         colStatus.setCellFactory(c -> statusPillCell());
         colLastLogin.setCellFactory(c -> textCell("muted-cell"));
         colCreated.setCellFactory(c -> textCell("muted-cell"));
@@ -194,6 +245,16 @@ public class AccountController {
         colLastLogin.setSortable(false);
         colCreated.setSortable(false);
         colActions.setSortable(false);
+    }
+
+    private static int rolePriority(String role) {
+        if (role == null) return 99;
+        return switch (role.toUpperCase()) {
+            case "ADMIN" -> 1;
+            case "MANAGER" -> 2;
+            case "CASHIER" -> 3;
+            default -> 4;
+        };
     }
 
     private TableCell<AccountRow, String> textCell(String styleClass) {
@@ -223,8 +284,15 @@ public class AccountController {
                     return;
                 }
                 Label pill = new Label(role);
-                pill.getStyleClass().addAll("pill", "role-" + role.toLowerCase());
-                setGraphic(pill);
+                pill.getStyleClass().addAll("role-pill", "role-" + role.toLowerCase());
+                pill.setMinHeight(22);
+                pill.setPrefHeight(22);
+                pill.setMaxHeight(22);
+                pill.setAlignment(Pos.CENTER);
+                HBox wrapper = new HBox(pill);
+                wrapper.setFillHeight(false);
+                wrapper.setAlignment(Pos.CENTER);
+                setGraphic(wrapper);
             }
         };
     }
@@ -239,12 +307,24 @@ public class AccountController {
                     setGraphic(null);
                     return;
                 }
+                boolean isActive = "Active".equalsIgnoreCase(status);
                 Circle dot = new Circle(4);
-                dot.getStyleClass().add("status-dot");
-                Label pill = new Label(status, dot);
-                pill.setGraphicTextGap(6);
-                pill.getStyleClass().addAll("pill", "status-" + status.toLowerCase());
-                setGraphic(pill);
+                dot.setFill(isActive ? Color.web("#10B981") : Color.web("#D97706"));
+
+                Label textLbl = new Label(status);
+                textLbl.getStyleClass().add("status-text");
+
+                HBox pill = new HBox(6, dot, textLbl);
+                pill.setAlignment(Pos.CENTER);
+                pill.getStyleClass().addAll("status-pill", isActive ? "status-pill-active" : "status-pill-inactive");
+                pill.setMinHeight(22);
+                pill.setPrefHeight(22);
+                pill.setMaxHeight(22);
+
+                HBox wrapper = new HBox(pill);
+                wrapper.setFillHeight(false);
+                wrapper.setAlignment(Pos.CENTER);
+                setGraphic(wrapper);
             }
         };
     }
@@ -260,12 +340,26 @@ public class AccountController {
                     return;
                 }
                 Button edit = iconButton("icon-edit", "action-edit");
+                edit.setTooltip(new Tooltip("Edit Account"));
                 edit.setOnAction(e -> handleEdit(row));
-                Button delete = iconButton("icon-delete", "action-delete");
-                delete.setOnAction(e -> handleDelete(row));
 
-                HBox box = new HBox(10, edit, delete);
-                box.setAlignment(Pos.CENTER_LEFT);
+                HBox box = new HBox(8, edit);
+
+                // Admin accounts can NEVER be archived.
+                // Managers can only archive Cashier accounts.
+                boolean canArchive = !"Admin".equalsIgnoreCase(row.role());
+                if (isCurrentUserManager() && !"Cashier".equalsIgnoreCase(row.role())) {
+                    canArchive = false;
+                }
+
+                if (canArchive) {
+                    Button archive = iconButton("icon-archive", "action-archive");
+                    archive.setTooltip(new Tooltip("Archive Account"));
+                    archive.setOnAction(e -> handleArchive(row));
+                    box.getChildren().add(archive);
+                }
+
+                box.setAlignment(Pos.CENTER);
                 setGraphic(box);
             }
         };
@@ -291,36 +385,74 @@ public class AccountController {
         showAccountDialog(row);
     }
 
-    private void handleDelete(AccountRow row) {
-        if (row.id() == currentUserId) {
-            AlertUtil.showWarning("Not allowed", "You can't delete the account you're currently logged in with.");
-            return;
-        }
-        try {
-            if (row.role().equals("Admin") && row.status().equals("Active")
-                    && UserDAO.countOtherActiveAdmins(row.id()) == 0) {
-                AlertUtil.showWarning("Not allowed", "This is the only active admin. Create another admin first.");
-                return;
-            }
-        } catch (SQLException e) {
-            AlertUtil.showError("Database error", e.getMessage());
+    private void handleArchive(AccountRow row) {
+        if ("Admin".equalsIgnoreCase(row.role())) {
+            AlertUtil.showWarning("Not allowed", "Admin accounts cannot be archived.");
             return;
         }
 
-        if (!AlertUtil.showYesNo("Delete Account",
-                "Delete the account for " + row.name() + "? This cannot be undone."))
+        if (isCurrentUserManager() && !"Cashier".equalsIgnoreCase(row.role())) {
+            AlertUtil.showWarning("Not allowed", "Managers can only archive Cashier accounts.");
+            return;
+        }
+
+        int loggedInId = getCurrentUserId();
+        if (loggedInId > 0 && row.id() == loggedInId) {
+            AlertUtil.showWarning("Not allowed", "You can't archive the account you're currently logged in with.");
+            return;
+        }
+
+        if (!AlertUtil.showYesNo("Archive Account",
+                "Are you sure you want to archive \"" + row.name() + "\" (@" + row.username() + ")?\n\nThis account will be deactivated and moved to the Archived Accounts list."))
             return;
 
         try {
-            UserDAO.deleteAccount(row.id());
+            UserDAO.archiveAccount(row.id());
             accounts.remove(row);
-            AlertUtil.showSuccess("Account Deleted", "Account for \"" + row.name() + "\" was deleted.");
-        } catch (SQLIntegrityConstraintViolationException e) {
-            AlertUtil.showWarning("Can't delete this account",
-                    row.name() + " is linked to existing transactions, so it can't be deleted.");
+            if (archivedAccountsBtn != null) {
+                int count = UserDAO.getArchivedCount();
+                archivedAccountsBtn.setText("Archived Accounts (" + count + ")");
+            }
+            AlertUtil.showSuccess("Account Archived", "Account \"" + row.name() + "\" has been moved to archives.");
         } catch (SQLException e) {
             e.printStackTrace();
-            AlertUtil.showError("Delete failed", e.getMessage());
+            AlertUtil.showError("Archive failed", e.getMessage());
+        }
+    }
+
+    @FXML
+    public void handleOpenArchivedAccounts() {
+        try {
+            URL xmlUrl = getClass().getResource("/com/coffeepos/renespresso/views/main/admin/account/ArchivedAccountsModalView.fxml");
+            if (xmlUrl == null) {
+                throw new IllegalStateException("Cannot find ArchivedAccountsModalView.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(xmlUrl);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initStyle(StageStyle.TRANSPARENT);
+
+            if (accountTable.getScene() != null && accountTable.getScene().getWindow() != null) {
+                stage.initOwner(accountTable.getScene().getWindow());
+            }
+
+            Scene scene = new Scene(root);
+            scene.setFill(Color.TRANSPARENT);
+            scene.getStylesheets().addAll(ConfirmUtil.collectStylesheets(accountTable));
+            stage.setScene(scene);
+
+            stage.setOnShown(e -> stage.centerOnScreen());
+
+            stage.showAndWait();
+
+            // Refresh active table and badge after modal closes
+            loadAccounts();
+        } catch (IOException e) {
+            e.printStackTrace();
+            AlertUtil.showError("Could not open archives", e.getMessage());
         }
     }
 
@@ -360,8 +492,37 @@ public class AccountController {
         TextField userField = new TextField(edit ? existing.username() : "");
         PasswordField passField = new PasswordField();
         PasswordField confirmField = new PasswordField();
-        ComboBox<String> roleBox = new ComboBox<>(FXCollections.observableArrayList(ROLES));
-        roleBox.setValue(edit ? existing.role() : "Cashier");
+        List<String> allowedRoles;
+        boolean isRoleDisabled = false;
+
+        if (isCurrentUserManager()) {
+            // Manager cannot create co-manager or elevate: locked strictly to Cashier
+            allowedRoles = List.of("Cashier");
+            isRoleDisabled = true;
+        } else if (edit) {
+            if ("Admin".equalsIgnoreCase(existing.role())) {
+                // Admin role is fixed to admin only: cannot be demoted
+                allowedRoles = List.of("Admin");
+                isRoleDisabled = true;
+            } else {
+                // Staff accounts cannot be elevated to Admin (admin role is fixed to admin only)
+                allowedRoles = List.of("Manager", "Cashier");
+            }
+        } else {
+            // Admin adding a new account
+            allowedRoles = List.of(ROLES);
+        }
+
+        ComboBox<String> roleBox = new ComboBox<>(FXCollections.observableArrayList(allowedRoles));
+        roleBox.setValue(edit ? existing.role() : allowedRoles.get(0));
+        if (isRoleDisabled) {
+            roleBox.setDisable(true);
+            if (edit && "Admin".equalsIgnoreCase(existing.role())) {
+                roleBox.setTooltip(new Tooltip("The Admin role is fixed and cannot be changed."));
+            } else if (isCurrentUserManager()) {
+                roleBox.setTooltip(new Tooltip("Managers can only add or manage Cashiers."));
+            }
+        }
 
         nameField.setPromptText("e.g. Juan Dela Cruz");
         userField.setPromptText("3-30 characters");
@@ -372,10 +533,28 @@ public class AccountController {
         userField.getStyleClass().add("form-field");
         roleBox.getStyleClass().add("form-combo");
 
-        Label title = new Label(edit ? "Edit Account" : "Add New Account");
+        Label title = new Label();
+        String subText;
+        if (!edit) {
+            if (isCurrentUserManager()) {
+                title.setText("Add New Cashier");
+                subText = "Fill in the details below to create a Cashier account";
+            } else {
+                title.setText("Add New Account");
+                subText = "Fill in the details below to create a staff account";
+            }
+        } else {
+            title.setText("Edit Account");
+            if ("Admin".equalsIgnoreCase(existing.role())) {
+                subText = "Admin role is fixed to Admin only and cannot be changed";
+            } else if (isCurrentUserManager()) {
+                subText = "Update the details for Cashier " + existing.name();
+            } else {
+                subText = "Update the details for " + existing.name();
+            }
+        }
         title.getStyleClass().add("dialog-title");
-        Label subtitle = new Label(edit ? "Update the details for " + existing.name()
-                : "Fill in the details below to create a staff account");
+        Label subtitle = new Label(subText);
         subtitle.getStyleClass().add("dialog-subtitle");
         VBox headerBox = new VBox(4, title, subtitle);
 
@@ -564,13 +743,28 @@ public class AccountController {
         if (UserDAO.usernameExists(username, edit ? existing.id() : 0))
             return "That username is already taken.";
 
+        if (isCurrentUserManager()) {
+            if (!"Cashier".equalsIgnoreCase(role)) {
+                return "Managers cannot create co-managers or elevate accounts. Only Cashier role is allowed.";
+            }
+            if (edit && !"Cashier".equalsIgnoreCase(existing.role())) {
+                return "Managers can only manage Cashier accounts.";
+            }
+        }
+
         if (edit) {
-            if (existing.id() == currentUserId && !active)
+            int loggedInId = getCurrentUserId();
+            if (loggedInId > 0 && existing.id() == loggedInId && !active)
                 return "You can't deactivate the account you're logged in with.";
-            boolean wasActiveAdmin = existing.role().equals("Admin") && existing.status().equals("Active");
-            boolean stillActiveAdmin = role.equals("Admin") && active;
-            if (wasActiveAdmin && !stillActiveAdmin && UserDAO.countOtherActiveAdmins(existing.id()) == 0)
-                return "This is the only active admin. Create another admin first.";
+
+            boolean wasAdmin = "Admin".equalsIgnoreCase(existing.role());
+            boolean nowAdmin = "Admin".equalsIgnoreCase(role);
+            if (wasAdmin && !nowAdmin) {
+                return "Admin role is fixed to Admin only and cannot be changed.";
+            }
+            if (!wasAdmin && nowAdmin) {
+                return "Existing staff accounts cannot be elevated to Admin. Admin role is fixed.";
+            }
         }
         return null;
     }

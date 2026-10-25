@@ -306,8 +306,11 @@ public class MenuController {
     private Button iconButton(String iconClass, String buttonClass) {
         Region icon = new Region();
         icon.getStyleClass().add(iconClass);
+        icon.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        icon.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         Button b = new Button();
         b.setGraphic(icon);
+        b.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         b.getStyleClass().addAll("dish-action", buttonClass);
         return b;
     }

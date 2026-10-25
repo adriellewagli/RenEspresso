@@ -17,10 +17,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import com.coffeepos.renespresso.model.User;
+import com.coffeepos.renespresso.util.SessionManager;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 
 public class HomeController {
@@ -173,11 +176,25 @@ public class HomeController {
     }
 
     private void applyStaff(StaffData s) {
-        activeStaffLabel.setText(String.valueOf(s.active()));
-        totalStaffLabel.setText("of " + s.total() + " accounts");
+        User cur = SessionManager.getCurrentUser();
+        boolean isManager = cur != null && "MANAGER".equalsIgnoreCase(cur.getRole());
+
+        List<RoleCount> roles = s.roles();
+        if (isManager) {
+            roles = roles.stream()
+                    .filter(r -> "Cashier".equalsIgnoreCase(r.role()))
+                    .toList();
+            int active = roles.stream().mapToInt(RoleCount::active).sum();
+            int total = roles.stream().mapToInt(RoleCount::total).sum();
+            activeStaffLabel.setText(String.valueOf(active));
+            totalStaffLabel.setText("of " + total + " cashier accounts");
+        } else {
+            activeStaffLabel.setText(String.valueOf(s.active()));
+            totalStaffLabel.setText("of " + s.total() + " accounts");
+        }
 
         staffBox.getChildren().clear();
-        for (RoleCount r : s.roles()) {
+        for (RoleCount r : roles) {
             Label pill = new Label(r.role());
             pill.getStyleClass().addAll("pill", "role-" + r.role().toLowerCase());
             Region spacer = new Region();

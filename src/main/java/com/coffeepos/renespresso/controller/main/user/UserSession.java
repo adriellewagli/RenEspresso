@@ -123,6 +123,7 @@ public final class UserSession {
     public void cancelOrder(TransactionRecord record) {
         if (record.getStatus() != OrderStatus.PREPARING) return;
         record.setStatus(OrderStatus.CANCELLED);
+        record.setPaymentStatus("Refunded");
         TransactionDAO.updateStatus(record.getTransactionId(), OrderStatus.CANCELLED);
         salesTotal = Math.max(0, salesTotal - record.getTotal());
         ordersCount = Math.max(0, ordersCount - 1);

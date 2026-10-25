@@ -16,8 +16,8 @@
             <HBox fx:id="brandHeader" alignment="CENTER" maxWidth="Infinity" spacing="10.0">
                 <Button onAction="#toggleSidebar" styleClass="brand-button">
                     <graphic>
-                        <StackPane minWidth="37.0" minHeight="37.0" prefWidth="37.0" prefHeight="37.0">
-                            <Region styleClass="nav-svg, icon-cafe" />
+                        <StackPane minWidth="37.0" minHeight="37.0" prefWidth="37.0" prefHeight="37.0" maxWidth="37.0" maxHeight="37.0">
+                            <Region styleClass="nav-svg, icon-cafe" minWidth="20.0" minHeight="20.0" prefWidth="20.0" prefHeight="20.0" maxWidth="20.0" maxHeight="20.0" />
                         </StackPane>
                     </graphic>
                 </Button>

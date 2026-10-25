@@ -138,7 +138,9 @@ public class TransactionDAO {
 
     public static boolean updateStatus(int transactionId, OrderStatus status) {
         if (transactionId <= 0) return false;
-        String sql = "UPDATE transactions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE transaction_id = ?";
+        String sql = (status == OrderStatus.CANCELLED)
+                ? "UPDATE transactions SET status = ?, payment_status = 'Refunded', updated_at = CURRENT_TIMESTAMP WHERE transaction_id = ?"
+                : "UPDATE transactions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE transaction_id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status.name());

@@ -81,10 +81,10 @@ public class TransactionController {
         cmbDateFilter.getItems().setAll("Date: All Dates", "Date: Today", "Date: Yesterday", "Date: This Week", "Date: This Month");
         cmbDateFilter.setValue("Date: All Dates");
 
-        cmbStatusFilter.getItems().setAll("Status: All States", "Status: Preparing", "Status: Pending", "Status: Completed", "Status: Cancelled");
+        cmbStatusFilter.getItems().setAll("Status: All States", "Status: Preparing", "Status: Completed", "Status: Cancelled");
         cmbStatusFilter.setValue("Status: All States");
 
-        cmbPaymentFilter.getItems().setAll("Payment: All", "Payment: Paid", "Payment: Unpaid", "Payment: Refunded");
+        cmbPaymentFilter.getItems().setAll("Payment: All", "Payment: Paid", "Payment: Refunded");
         cmbPaymentFilter.setValue("Payment: All");
 
         cmbDateFilter.valueProperty().addListener((obs, o, n) -> refreshFilter());

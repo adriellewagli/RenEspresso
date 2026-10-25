@@ -183,11 +183,15 @@ public class UserViewController {
     private void setupIconButton(Button btn, String iconClass) {
         Region glyph = new Region();
         glyph.getStyleClass().addAll("nav-svg", iconClass);
+        glyph.setMinSize(20.0, 20.0);
+        glyph.setPrefSize(20.0, 20.0);
+        glyph.setMaxSize(20.0, 20.0);
 
         StackPane box = new StackPane(glyph);
         box.setMinSize(ICON_BOX, ICON_BOX);
         box.setPrefSize(ICON_BOX, ICON_BOX);
         box.setMaxSize(ICON_BOX, ICON_BOX);
+        StackPane.setAlignment(glyph, Pos.CENTER);
 
         btn.setGraphic(box);
         btn.setContentDisplay(ContentDisplay.LEFT);
@@ -217,7 +221,8 @@ public class UserViewController {
         sessionBox.setManaged(expanded);
 
         for (int i = 0; i < navButtons.length; i++) {
-            navButtons[i].setText(expanded ? navLabels[i] : "");
+            navButtons[i].setText(expanded ? navLabels[i] : null);
+            navButtons[i].setContentDisplay(expanded ? ContentDisplay.LEFT : ContentDisplay.GRAPHIC_ONLY);
             navButtons[i].setTooltip(expanded ? null : navTips[i]);   // name on hover only when collapsed
             navButtons[i].setAlignment(expanded ? Pos.CENTER_LEFT : Pos.CENTER);
         }

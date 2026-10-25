@@ -142,7 +142,7 @@ public class HomeDAO {
     // ------------------------------------------------------------------ STAFF
 
     public static StaffData loadStaff() throws SQLException {
-        String sql = "SELECT role, COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active FROM users "
+        String sql = "SELECT role, COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active FROM users WHERE COALESCE(is_archived, 0) = 0 "
                 + "GROUP BY role ORDER BY FIELD(role, 'ADMIN', 'MANAGER', 'CASHIER')";
         List<RoleCount> roles = new ArrayList<>();
         int active = 0, total = 0;

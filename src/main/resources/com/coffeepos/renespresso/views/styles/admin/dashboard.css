@@ -1,11 +1,11 @@
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: #EBDCCD;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-background-radius: 8px;
-    -fx-padding: 14 14;
+    -fx-background-radius: 12px;
+    -fx-padding: 8;
 }
 
 .nav-button:hover {
@@ -14,23 +14,23 @@
 }
 
 .nav-button-active {
-    -fx-background-color: #C89360;
+    -fx-background-color: #C08552;
     -fx-text-fill: #FFFFFF;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-background-radius: 8px;
-    -fx-padding: 14 14;
+    -fx-background-radius: 12px;
+    -fx-padding: 8;
 }
 
 .logout-button {
     -fx-background-color: #895737;
     -fx-text-fill: #F3E9DC;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-background-radius: 8px;
-    -fx-padding: 14 14;
+    -fx-background-radius: 12px;
+    -fx-padding: 8;
 }
 
 .nav-icon {

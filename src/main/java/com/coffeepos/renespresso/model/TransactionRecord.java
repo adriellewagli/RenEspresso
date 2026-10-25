@@ -138,7 +138,9 @@ public class TransactionRecord {
     public String getCashier() { return cashier; }
 
     public String getStaffName() {
-        return staffName != null && !staffName.isBlank() ? staffName : cashier;
+        if (staffName != null && !staffName.isBlank()) return staffName;
+        if (cashier != null && !cashier.isBlank()) return cashier;
+        return "Former Staff";
     }
     public void setStaffName(String staffName) { this.staffName = staffName; }
 
