@@ -61,6 +61,7 @@ This document records architectural conventions, established business logic, dom
   - Admin accounts cannot be deleted under any circumstance.
   - **Admin Role is Fixed to Admin Only:** Admin accounts cannot have their role changed/demoted to Manager or Cashier (locked at UI and DAO layers).
   - Existing staff accounts (Manager, Cashier) cannot be elevated to Admin.
+  - **Admin Cannot Create Admin:** The Admin cannot create or add another Admin account. In the "Add Account" dialog, allowed roles are strictly restricted to `Manager` and `Cashier` (`List.of("Manager", "Cashier")`), validated upon form submission in `AccountController.validate()`, and blocked at the database DAO layer in `UserDAO.registerUser()`.
   - Admins can see everything (all accounts: Admin, Manager, Cashier) and manage staff accounts between Manager and Cashier.
   - **Role-Based Listing Order:** The account list is ordered hierarchically based on roles: `Admin` -> `Manager` -> `Cashier` (with newest accounts first within each role, matching `HomeDAO`).
 - **Manager Access Constraints:**
@@ -86,7 +87,12 @@ This document records architectural conventions, established business logic, dom
   - Accessible via the "Archived Accounts (N)" header button in `AccountView.fxml`.
   - Lists all archived staff accounts with search filtering.
   - **Restoration:** Clicking "Restore" sets `is_archived = 0`, reactivating the account and returning it to the active staff list.
-  - **Hard Delete:** Clicking "Delete Permanently" issues a physical `DELETE FROM users WHERE user_id = ?`. If the staff member is linked to past transaction records, `UserDAO.hardDeleteAccount()` automatically unlinks their past sales (`UPDATE transactions SET cashier_id = NULL WHERE cashier_id = ?`) in the same database transaction. The user account is physically removed from the database while all sales totals, receipts, and order lines are preserved (displaying as "Former Staff" in Transaction History).
+- **Hard Delete & Former Staff Name Preservation:**
+  - Clicking "Delete Permanently" issues a physical `DELETE FROM users WHERE user_id = ?`.
+  - **Rule: Former staff names MUST still be seen in transaction history.**
+  - Before unlinking past sales with `UPDATE transactions SET cashier_id = NULL WHERE cashier_id = ?`, `UserDAO.hardDeleteAccount()` permanently snapshots `t.cashier_name = u.full_name` and `t.cashier_role = 'Former Staff'` in the same database transaction.
+  - Transactions also store `cashier_name` and `cashier_role` on order creation (`TransactionDAO.saveTransaction`).
+  - Queries in `TransactionDAO`, `HomeDAO`, and `SalesDAO` use `COALESCE(u.full_name, t.cashier_name, 'Former Staff')` and fall back to parsing `receipt_text` if legacy records lack the snapshot, ensuring former staff members' authentic names remain visible forever with the `Former Staff` indicator.
 - **Role Hierarchy & Non-Archivable Admin:**
   - Admin accounts can never be archived or deleted (enforced at UI and DAO layers).
   - Managers can only archive, view, restore, and delete Cashier accounts.
@@ -150,4 +156,15 @@ This document records architectural conventions, established business logic, dom
    - **Architectural Separation of Windows:** Separated `trendStart(today)` (for historical chart series: 30 daily bars, 12 weekly bars, 12 monthly bars, etc.) from `currentPeriodStart(today)` and `currentPeriodEnd(today)` (for active period metrics: Daily = Today, Weekly = This Week, Monthly = This Month, Quarterly = This Quarter, Yearly = This Year).
    - **Dynamic Range Note:** Provided descriptive range labels in `d.rangeLabel()` (`"Today (Oct 25, 2026)"`, `"This Week (Oct 19 – Oct 25, 2026)"`, etc.) displayed in `lblRangeNote`.
    - **Chart Category Accumulation & Color Cycling Fix:** Cleared `CategoryAxis` categories before setting new series in `SalesController.java`, and eliminated specific `.default-color0` constraints in `sales.css` across `.chart-bar` and `.chart-series-line` to prevent JavaFX color shifts when toggling periods.
-   - **Safe Null & Unlinked Cashier Fallbacks:** Applied `COALESCE(status, 'COMPLETED') <> 'CANCELLED'` across all SQL queries and mapped unlinked cashiers to `"Former Staff"`. Harmonized `.card` background to `#FFFFFF`.
+13. **[COMPLETED] Former Staff Name Preservation in Transaction History:**
+   - **Requirement:** Former staff names must still be seen in transaction history even after account archiving or permanent deletion.
+   - **Database Schema & Snapshot:** Added `cashier_name` and `cashier_role` columns to `transactions` table (with auto-migration on boot in `DatabaseManager.ensureSchema()`).
+   - **Hard-Delete Snapshot:** In `UserDAO.hardDeleteAccount()`, before setting `cashier_id = NULL`, the staff member's full name is snapshotted into `t.cashier_name = u.full_name` and `t.cashier_role = 'Former Staff'` in the same database transaction.
+   - **Order Creation Snapshot:** In `TransactionDAO.saveTransaction()`, `cashier_name` and `cashier_role` are stored directly on new orders.
+   - **SQL Queries & Receipt Parsing Fallback:** Updated `TransactionDAO` (`loadAllTransactions`, `loadTodayTransactions`, `loadTransactionsByCashier`), `HomeDAO` (`recentOrders`), and `SalesDAO` (`cashiers`) to query `COALESCE(u.full_name, t.cashier_name, 'Former Staff')`. If legacy rows lack a snapshot, `extractCashierFromReceipt(receiptText)` dynamically parses the original cashier name from the receipt text.
+   - **UI Rendering:** In `TransactionController.java` and `OrderManagementController.java`, the staff column displays the staff member's actual full name with a muted italic `Former Staff` indicator below it for former staff.
+14. **[COMPLETED] Admin Cannot Create Another Admin Rule:**
+   - **Requirement:** Admin accounts must not be able to create another Admin account.
+   - **UI Role Selection:** In `AccountController.java` (`showAccountDialog`), when an Admin adds an account, `allowedRoles` is set strictly to `List.of("Manager", "Cashier")`, removing `"Admin"` from the role ComboBox options.
+   - **UI Form Validation:** Added validation in `AccountController.validate()` returning `"Admins cannot create another Admin account. Only Manager or Cashier accounts can be created."` if an admin creation attempt occurs.
+   - **DAO Security Enforcement:** In `UserDAO.registerUser()`, added guard `if ("ADMIN".equalsIgnoreCase(user.getRole())) return false;`, ensuring backend security defense-in-depth against secondary admin creation.

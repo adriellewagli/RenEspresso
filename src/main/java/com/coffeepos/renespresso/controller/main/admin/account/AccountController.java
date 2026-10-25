@@ -527,8 +527,8 @@ public class AccountController {
                 allowedRoles = List.of("Manager", "Cashier");
             }
         } else {
-            // Admin adding a new account
-            allowedRoles = List.of(ROLES);
+            // Admin adding a new account: cannot create another Admin account
+            allowedRoles = List.of("Manager", "Cashier");
         }
 
         ComboBox<String> roleBox = new ComboBox<>(FXCollections.observableArrayList(allowedRoles));
@@ -768,6 +768,10 @@ public class AccountController {
             if (edit && !"Cashier".equalsIgnoreCase(existing.role())) {
                 return "Managers can only manage Cashier accounts.";
             }
+        }
+
+        if (!edit && "Admin".equalsIgnoreCase(role)) {
+            return "Admins cannot create another Admin account. Only Manager or Cashier accounts can be created.";
         }
 
         if (edit) {

@@ -170,11 +170,24 @@ public class OrderManagementController {
                     TransactionRecord r = getTableView().getItems().get(getIndex());
                     if (r == null) { setGraphic(null); return; }
 
-                    Label nameLbl = new Label(r.getStaffName());
+                    String staffName = r.getStaffName();
+                    if (staffName == null || staffName.isBlank()) {
+                        staffName = "Former Staff";
+                    }
+
+                    Label nameLbl = new Label(staffName);
                     nameLbl.getStyleClass().add("staff-name");
 
-                    Label roleLbl = new Label(r.getStaffRole());
+                    String role = r.getStaffRole();
+                    if (role == null || role.isBlank()) {
+                        role = "Staff";
+                    }
+
+                    Label roleLbl = new Label(role);
                     roleLbl.getStyleClass().add("staff-role");
+                    if ("Former Staff".equalsIgnoreCase(role)) {
+                        roleLbl.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-font-style: italic;");
+                    }
 
                     VBox box = new VBox(2, nameLbl, roleLbl);
                     box.setAlignment(Pos.CENTER_LEFT);

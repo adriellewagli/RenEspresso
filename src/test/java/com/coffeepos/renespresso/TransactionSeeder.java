@@ -84,10 +84,10 @@ public class TransactionSeeder {
 
             String insertTxSql = """
                 INSERT INTO transactions (
-                    transaction_id, cashier_id, order_id, ticket_number, total_amount,
+                    transaction_id, cashier_id, cashier_name, cashier_role, order_id, ticket_number, total_amount,
                     subtotal, vat, discount, tendered, payment_method, payment_status,
                     status, receipt_text, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Cash', ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Cash', ?, ?, ?, ?, ?)
             """;
 
             String insertItemSql = """
@@ -190,19 +190,21 @@ public class TransactionSeeder {
                     // Insert transaction
                     psTx.setInt(1, globalTxId);
                     psTx.setInt(2, cashier.userId());
-                    psTx.setString(3, orderId);
-                    psTx.setString(4, ticketNum);
-                    psTx.setDouble(5, total);
-                    psTx.setDouble(6, subtotal);
-                    psTx.setDouble(7, vat);
-                    psTx.setDouble(8, discount);
-                    psTx.setDouble(9, tendered);
-                    psTx.setString(10, payStatus);
-                    psTx.setString(11, status);
-                    psTx.setString(12, receipt);
+                    psTx.setString(3, cashier.name());
+                    psTx.setString(4, cashier.role());
+                    psTx.setString(5, orderId);
+                    psTx.setString(6, ticketNum);
+                    psTx.setDouble(7, total);
+                    psTx.setDouble(8, subtotal);
+                    psTx.setDouble(9, vat);
+                    psTx.setDouble(10, discount);
+                    psTx.setDouble(11, tendered);
+                    psTx.setString(12, payStatus);
+                    psTx.setString(13, status);
+                    psTx.setString(14, receipt);
                     Timestamp ts = Timestamp.valueOf(createdAt);
-                    psTx.setTimestamp(13, ts);
-                    psTx.setTimestamp(14, ts);
+                    psTx.setTimestamp(15, ts);
+                    psTx.setTimestamp(16, ts);
                     psTx.addBatch();
 
                     // Insert transaction items

@@ -46,8 +46,19 @@ public class DatabaseManager {
 
         try {
             dataSource = new HikariDataSource(config);
+            ensureSchema();
         } catch (Exception e) {
             System.err.println("DatabaseConfig: Failed to initialize connection pool: " + e.getMessage());
+        }
+    }
+
+    private static void ensureSchema() {
+        try (Connection conn = dataSource.getConnection();
+             java.sql.Statement st = conn.createStatement()) {
+            st.executeUpdate("ALTER TABLE transactions ADD COLUMN IF NOT EXISTS cashier_name VARCHAR(100) NULL AFTER cashier_id");
+            st.executeUpdate("ALTER TABLE transactions ADD COLUMN IF NOT EXISTS cashier_role VARCHAR(50) NULL AFTER cashier_name");
+        } catch (SQLException e) {
+            System.err.println("DatabaseManager: Schema check note: " + e.getMessage());
         }
     }
 

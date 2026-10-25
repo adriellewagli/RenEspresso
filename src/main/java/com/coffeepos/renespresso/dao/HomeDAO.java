@@ -115,7 +115,7 @@ public class HomeDAO {
     }
 
     private static List<RecentOrder> recentOrders(Connection c) throws SQLException {
-        String sql = "SELECT t.transaction_id, COALESCE(u.full_name, 'Former Staff') AS cashier, "
+        String sql = "SELECT t.transaction_id, COALESCE(u.full_name, t.cashier_name, 'Former Staff') AS cashier, "
                 + "t.total_amount, "
                 + "CASE WHEN UPPER(TRIM(t.status)) = 'READY' THEN 'COMPLETED' "
                 + "     ELSE COALESCE(NULLIF(TRIM(t.status), ''), 'COMPLETED') END AS status, "

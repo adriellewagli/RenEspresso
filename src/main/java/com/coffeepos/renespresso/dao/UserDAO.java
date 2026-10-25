@@ -117,6 +117,11 @@ public class UserDAO {
     }
 
     public static boolean registerUser(User user, String plainPassword) {
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            System.err.println("UserDAO Security: Creating additional Admin accounts is not permitted.");
+            return false;
+        }
+
         User sessionUser = SessionManager.getCurrentUser();
         if (sessionUser != null && "MANAGER".equalsIgnoreCase(sessionUser.getRole())) {
             if (!"CASHIER".equalsIgnoreCase(user.getRole())) {
@@ -366,6 +371,15 @@ public class UserDAO {
 
             conn.setAutoCommit(false);
             try {
+                // Snapshot staff member's name and role into transactions before unlinking
+                try (PreparedStatement snapshotStmt = conn.prepareStatement(
+                        "UPDATE transactions t JOIN users u ON u.user_id = t.cashier_id " +
+                        "SET t.cashier_name = u.full_name, t.cashier_role = 'Former Staff' " +
+                        "WHERE t.cashier_id = ?")) {
+                    snapshotStmt.setInt(1, id);
+                    snapshotStmt.executeUpdate();
+                }
+
                 // Unlink past transactions recorded by this staff member (preserves financial totals)
                 try (PreparedStatement unlinkStmt = conn.prepareStatement(
                         "UPDATE transactions SET cashier_id = NULL WHERE cashier_id = ?")) {

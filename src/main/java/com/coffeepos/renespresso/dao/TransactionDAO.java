@@ -24,9 +24,9 @@ public class TransactionDAO {
     public static int saveTransaction(TransactionRecord record, List<CartItem> cartItems, int cashierId) throws SQLException {
         String insertTxSQL = """
             INSERT INTO transactions (
-                cashier_id, order_id, ticket_number, total_amount, subtotal, vat,
+                cashier_id, cashier_name, cashier_role, order_id, ticket_number, total_amount, subtotal, vat,
                 discount, tendered, payment_method, payment_status, status, receipt_text, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
         String insertItemSQL = """
@@ -54,20 +54,22 @@ public class TransactionDAO {
                     } else {
                         ps.setNull(1, Types.INTEGER);
                     }
-                    ps.setString(2, orderId);
-                    ps.setString(3, record.getTicketNumber());
-                    ps.setBigDecimal(4, BigDecimal.valueOf(record.getTotal()));    // 80.00 Gross
-                    ps.setBigDecimal(5, BigDecimal.valueOf(record.getSubtotal())); // 71.43 Vatable Sales
-                    ps.setBigDecimal(6, BigDecimal.valueOf(record.getVat()));      // 8.57  VAT Amount
-                    ps.setBigDecimal(7, BigDecimal.valueOf(record.getDiscount()));
-                    ps.setBigDecimal(8, BigDecimal.valueOf(record.getTendered()));
-                    ps.setString(9, record.getPaymentMethod());
-                    ps.setString(10, record.getPaymentStatus());
-                    ps.setString(11, record.getStatus().name());
-                    ps.setString(12, record.getReceiptText());
+                    ps.setString(2, record.getStaffName());
+                    ps.setString(3, record.getStaffRole());
+                    ps.setString(4, orderId);
+                    ps.setString(5, record.getTicketNumber());
+                    ps.setBigDecimal(6, BigDecimal.valueOf(record.getTotal()));    // 80.00 Gross
+                    ps.setBigDecimal(7, BigDecimal.valueOf(record.getSubtotal())); // 71.43 Vatable Sales
+                    ps.setBigDecimal(8, BigDecimal.valueOf(record.getVat()));      // 8.57  VAT Amount
+                    ps.setBigDecimal(9, BigDecimal.valueOf(record.getDiscount()));
+                    ps.setBigDecimal(10, BigDecimal.valueOf(record.getTendered()));
+                    ps.setString(11, record.getPaymentMethod());
+                    ps.setString(12, record.getPaymentStatus());
+                    ps.setString(13, record.getStatus().name());
+                    ps.setString(14, record.getReceiptText());
                     Timestamp nowTs = Timestamp.valueOf(record.getCreatedAt() != null ? record.getCreatedAt() : LocalDateTime.now());
-                    ps.setTimestamp(13, nowTs);
-                    ps.setTimestamp(14, nowTs);
+                    ps.setTimestamp(15, nowTs);
+                    ps.setTimestamp(16, nowTs);
 
                     ps.executeUpdate();
                     try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -153,13 +155,21 @@ public class TransactionDAO {
     }
 
     public static List<TransactionRecord> loadAllTransactions() {
-        return loadTransactions("SELECT t.*, u.full_name AS staff_name, u.role AS staff_role " +
+        return loadTransactions("SELECT t.*, " +
+                "COALESCE(u.full_name, t.cashier_name, 'Former Staff') AS staff_name, " +
+                "CASE WHEN u.user_id IS NOT NULL AND COALESCE(u.is_archived, 0) = 1 THEN 'Former Staff' " +
+                "     WHEN u.user_id IS NOT NULL THEN u.role " +
+                "     ELSE COALESCE(t.cashier_role, 'Former Staff') END AS staff_role " +
                 "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
                 "ORDER BY t.created_at DESC");
     }
 
     public static List<TransactionRecord> loadTodayTransactions() {
-        return loadTransactions("SELECT t.*, u.full_name AS staff_name, u.role AS staff_role " +
+        return loadTransactions("SELECT t.*, " +
+                "COALESCE(u.full_name, t.cashier_name, 'Former Staff') AS staff_name, " +
+                "CASE WHEN u.user_id IS NOT NULL AND COALESCE(u.is_archived, 0) = 1 THEN 'Former Staff' " +
+                "     WHEN u.user_id IS NOT NULL THEN u.role " +
+                "     ELSE COALESCE(t.cashier_role, 'Former Staff') END AS staff_role " +
                 "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
                 "WHERE DATE(t.created_at) = CURDATE() " +
                 "ORDER BY t.created_at DESC");
@@ -172,7 +182,11 @@ public class TransactionDAO {
      */
     public static List<TransactionRecord> loadTransactionsByCashier(int cashierId) {
         if (cashierId <= 0) return new ArrayList<>();
-        return loadTransactions("SELECT t.*, u.full_name AS staff_name, u.role AS staff_role " +
+        return loadTransactions("SELECT t.*, " +
+                "COALESCE(u.full_name, t.cashier_name, 'Former Staff') AS staff_name, " +
+                "CASE WHEN u.user_id IS NOT NULL AND COALESCE(u.is_archived, 0) = 1 THEN 'Former Staff' " +
+                "     WHEN u.user_id IS NOT NULL THEN u.role " +
+                "     ELSE COALESCE(t.cashier_role, 'Former Staff') END AS staff_role " +
                 "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id " +
                 "WHERE t.cashier_id = " + cashierId + " " +
                 "ORDER BY t.created_at DESC");
@@ -204,6 +218,22 @@ public class TransactionDAO {
                 double tendered = rs.getDouble("tendered");
                 String receiptText = rs.getString("receipt_text");
 
+                if (staffName == null || staffName.isBlank() || "Former Staff".equalsIgnoreCase(staffName.trim())) {
+                    String fromReceipt = extractCashierFromReceipt(receiptText);
+                    if (fromReceipt != null && !fromReceipt.isBlank()) {
+                        staffName = fromReceipt;
+                        if (staffRole == null || staffRole.isBlank()) {
+                            staffRole = "Former Staff";
+                        }
+                    }
+                }
+                if (staffName == null || staffName.isBlank()) {
+                    staffName = "Former Staff";
+                }
+                if (staffRole == null || staffRole.isBlank()) {
+                    staffRole = "Former Staff";
+                }
+
                 OrderStatus status = OrderStatus.COMPLETED;
                 if (statusStr != null) {
                     try {
@@ -229,6 +259,21 @@ public class TransactionDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    private static String extractCashierFromReceipt(String receipt) {
+        if (receipt == null) return null;
+        for (String line : receipt.split("\\r?\\n")) {
+            if (line.trim().startsWith("Cashier:")) {
+                String raw = line.trim().substring("Cashier:".length()).trim();
+                if (raw.contains("(") && raw.endsWith(")")) {
+                    int openIdx = raw.lastIndexOf("(");
+                    return raw.substring(0, openIdx).trim();
+                }
+                return raw;
+            }
+        }
+        return null;
     }
 
     private static List<OrderLine> loadTransactionLines(Connection conn, int txId) {

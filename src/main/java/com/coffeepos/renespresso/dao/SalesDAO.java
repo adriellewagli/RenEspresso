@@ -317,11 +317,11 @@ public final class SalesDAO {
 
     private static List<Slice> cashiers(Connection conn, Timestamp start, Timestamp end) throws SQLException {
         String sql = """
-            SELECT COALESCE(u.full_name, 'Former Staff') AS name, SUM(t.total_amount) AS rev, COUNT(*) AS cnt
+            SELECT COALESCE(u.full_name, t.cashier_name, 'Former Staff') AS name, SUM(t.total_amount) AS rev, COUNT(*) AS cnt
             FROM transactions t
             LEFT JOIN users u ON u.user_id = t.cashier_id
             WHERE t.created_at >= ? AND t.created_at < ? AND COALESCE(t.status, 'COMPLETED') <> 'CANCELLED'
-            GROUP BY t.cashier_id, u.full_name
+            GROUP BY COALESCE(u.full_name, t.cashier_name, 'Former Staff')
             ORDER BY rev DESC
             LIMIT 5
         """;

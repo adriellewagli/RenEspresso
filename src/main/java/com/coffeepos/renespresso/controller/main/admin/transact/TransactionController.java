@@ -199,11 +199,33 @@ public class TransactionController {
                     TransactionRecord r = getTableView().getItems().get(getIndex());
                     if (r == null) { setGraphic(null); return; }
 
-                    Label nameLbl = new Label(r.getStaffName());
+                    String staffName = r.getStaffName();
+                    if (staffName == null || staffName.isBlank()) {
+                        staffName = "Former Staff";
+                    }
+
+                    Label nameLbl = new Label(staffName);
                     nameLbl.getStyleClass().add("staff-name");
 
+                    String role = r.getStaffRole();
+                    Node content;
+                    if (role != null && !role.isBlank()) {
+                        Label roleLbl = new Label(role);
+                        roleLbl.getStyleClass().add("staff-role");
+                        if ("Former Staff".equalsIgnoreCase(role)) {
+                            roleLbl.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px; -fx-font-style: italic;");
+                        } else {
+                            roleLbl.setStyle("-fx-text-fill: #8C7A6A; -fx-font-size: 11px;");
+                        }
+                        VBox box = new VBox(2, nameLbl, roleLbl);
+                        box.setAlignment(Pos.CENTER);
+                        content = box;
+                    } else {
+                        content = nameLbl;
+                    }
+
                     // Wrapper stretches across the whole cell and centers the name in it
-                    HBox wrapper = new HBox(nameLbl);
+                    HBox wrapper = new HBox(content);
                     wrapper.setAlignment(Pos.CENTER);
                     wrapper.prefWidthProperty().bind(Bindings.createDoubleBinding(
                             () -> Math.max(0, getWidth() - getInsets().getLeft() - getInsets().getRight()),
