@@ -18,6 +18,8 @@ public class AdminAuthController {
     @FXML private Label iconLabel;
     @FXML private Label titleLabel;
     @FXML private Label messageLabel;
+    @FXML private Label lblUsernameHeader;
+    @FXML private Label lblPasswordHeader;
     @FXML private TextField txtUsername;
     @FXML private PasswordField txtPassword;
     @FXML private Label lblError;
@@ -26,6 +28,7 @@ public class AdminAuthController {
 
     private boolean authorized = false;
     private String authorizedBy = null;
+    private boolean enforceCurrentUser = false;
 
     @FXML
     public void initialize() {
@@ -36,19 +39,18 @@ public class AdminAuthController {
         // Pressing Enter in username field moves to password
         txtUsername.setOnAction(e -> txtPassword.requestFocus());
 
-        // Auto-fill username if currently logged in user is already an Admin or Manager
         User current = SessionManager.getCurrentUser();
         if (current != null && current.getRole() != null) {
             String role = current.getRole().toUpperCase();
             if (role.equals("ADMIN") || role.equals("MANAGER")) {
-                txtUsername.setText(current.getUsername());
-                Platform.runLater(() -> txtPassword.requestFocus());
-            } else {
-                Platform.runLater(() -> txtUsername.requestFocus());
+                if (lblUsernameHeader != null) lblUsernameHeader.setText(role + " USERNAME");
+                if (lblPasswordHeader != null) lblPasswordHeader.setText(role + " PASSWORD");
+                txtUsername.setPromptText("Enter @" + current.getUsername());
             }
-        } else {
-            Platform.runLater(() -> txtUsername.requestFocus());
         }
+        txtUsername.clear();
+        txtPassword.clear();
+        Platform.runLater(() -> txtUsername.requestFocus());
     }
 
     public void setAuthData(String title, String message, String authorizeBtnText) {
@@ -61,6 +63,22 @@ public class AdminAuthController {
         if (authorizeBtnText != null && !authorizeBtnText.isBlank()) {
             btnAuthorize.setText(authorizeBtnText);
         }
+    }
+
+    public void setEnforceCurrentUser(boolean enforce) {
+        this.enforceCurrentUser = enforce;
+        User current = SessionManager.getCurrentUser();
+        if (current != null) {
+            String role = current.getRole() != null ? current.getRole().toUpperCase() : "USER";
+            if (lblUsernameHeader != null) lblUsernameHeader.setText(role + " USERNAME");
+            if (lblPasswordHeader != null) lblPasswordHeader.setText(role + " PASSWORD");
+            if (enforce) {
+                txtUsername.setPromptText("Enter @" + current.getUsername());
+            }
+        }
+        txtUsername.clear();
+        txtPassword.clear();
+        Platform.runLater(() -> txtUsername.requestFocus());
     }
 
     public boolean isAuthorized() {
@@ -77,20 +95,29 @@ public class AdminAuthController {
         String password = txtPassword.getText() != null ? txtPassword.getText() : "";
 
         if (username.isEmpty()) {
-            showError("Please enter an admin username.");
+            showError("Please enter your username.");
             txtUsername.requestFocus();
             return;
         }
 
         if (password.isEmpty()) {
-            showError("Please enter the password.");
+            showError("Please enter your password.");
             txtPassword.requestFocus();
             return;
         }
 
+        User current = SessionManager.getCurrentUser();
+        if (enforceCurrentUser && current != null) {
+            if (!username.equalsIgnoreCase(current.getUsername())) {
+                showError("Please enter credentials for your currently logged-in account (@" + current.getUsername() + ").");
+                txtUsername.requestFocus();
+                return;
+            }
+        }
+
         boolean valid = UserDAO.validateAdminCredentials(username, password);
         if (!valid) {
-            showError("Invalid credentials or user is not an Admin/Manager.");
+            showError("Invalid username or password.");
             txtPassword.clear();
             txtPassword.requestFocus();
             return;

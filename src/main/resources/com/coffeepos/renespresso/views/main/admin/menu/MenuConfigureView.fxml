@@ -129,6 +129,9 @@
                                 <VBox fx:id="categoryList" spacing="10.0" styleClass="category-list" />
                             </content>
                         </ScrollPane>
+
+                        <Button fx:id="archivedCategoriesBtn" onAction="#handleOpenArchivedCategories"
+                                styleClass="btn-archived-categories" text="Archived Categories (0)" maxWidth="Infinity" />
                     </VBox>
                 </HBox>
             </Group>

@@ -23,7 +23,7 @@
                 </Button>
                 <VBox fx:id="brandTextBox" spacing="1.0">
                     <Label styleClass="brand-name" text="RenEspresso" />
-                    <Label styleClass="brand-sub" text="Admin Portal" />
+                    <Label fx:id="lblPortalSub" styleClass="brand-sub" text="Admin Portal" />
                 </VBox>
             </HBox>
 

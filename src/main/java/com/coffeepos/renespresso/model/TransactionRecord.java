@@ -173,8 +173,16 @@ public class TransactionRecord {
     public OrderStatus getStatus() { return status.get(); }
     public void setStatus(OrderStatus s) { status.set(s); }
 
+    public LocalDateTime getEffectiveDateTime() {
+        if (createdAt == null && updatedAt == null) return LocalDateTime.MIN;
+        if (updatedAt != null && createdAt != null && !updatedAt.isEqual(createdAt)) {
+            return updatedAt;
+        }
+        return createdAt != null ? createdAt : updatedAt;
+    }
+
     public String getFormattedCreatedOrUpdated() {
-        LocalDateTime dt = (updatedAt != null && !updatedAt.isEqual(createdAt)) ? updatedAt : createdAt;
+        LocalDateTime dt = getEffectiveDateTime();
         if (dt == null) dt = LocalDateTime.now();
         LocalDate date = dt.toLocalDate();
         LocalDate today = LocalDate.now();

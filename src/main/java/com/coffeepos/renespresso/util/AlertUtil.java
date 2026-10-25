@@ -70,12 +70,20 @@ public class AlertUtil {
         return showConfirmModal(title, message, "Yes", "No");
     }
 
-    // ADMIN AUTHORIZATION
+    // SECURITY / ADMIN AUTHORIZATION
     public static boolean requestAdminAuthorization(String title, String message) {
         return requestAdminAuthorization(title, message, "Authorize Cancel");
     }
 
     public static boolean requestAdminAuthorization(String title, String message, String authorizeBtnText) {
+        return requestSecurityAuthorization(title, message, authorizeBtnText, false);
+    }
+
+    public static boolean requestSecurityAuthorization(String title, String message, String authorizeBtnText) {
+        return requestSecurityAuthorization(title, message, authorizeBtnText, true);
+    }
+
+    public static boolean requestSecurityAuthorization(String title, String message, String authorizeBtnText, boolean enforceCurrentUser) {
         try {
             URL xmlUrl = AlertUtil.class.getResource(ADMIN_AUTH_VIEW_PATH);
             if (xmlUrl == null) {
@@ -87,6 +95,7 @@ public class AlertUtil {
 
             AdminAuthController controller = loader.getController();
             controller.setAuthData(title, message, authorizeBtnText);
+            controller.setEnforceCurrentUser(enforceCurrentUser);
 
             Stage stage = createModalStage(root);
             stage.showAndWait();

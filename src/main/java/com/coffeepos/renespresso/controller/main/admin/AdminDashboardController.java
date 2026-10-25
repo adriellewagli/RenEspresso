@@ -54,7 +54,7 @@ public class AdminDashboardController {
     @FXML private StackPane rootPane;
     @FXML private HBox brandHeader;
     @FXML private VBox sidebar, brandTextBox, sessionBox;
-    @FXML private Label lblClock, lblDate, lblUserName;
+    @FXML private Label lblClock, lblDate, lblUserName, lblPortalSub;
 
     @FXML private Node homeView, menuView, salesView, transactionView, accountsView, settingsView;
 
@@ -77,16 +77,36 @@ public class AdminDashboardController {
     public void initialize() {
         for (String path : CSS) attachCss(path);
 
-        pageButtons = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings};
-        navButtons  = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings, btnLogout};
-        navIcons    = new String[]{"icon-home", "icon-cafe", "icon-sales", "icon-history", "icon-accounts", "icon-settings", "icon-logout"};
-        navLabels   = new String[]{"HOME", "MENU MANAGEMENT", "SALES", "TRANSACTION HISTORY", "ACCOUNT MANAGEMENT", "SETTINGS", "LOGOUT"};
-        String[] tips = {"Home", "Menu Management", "Sales", "Transaction History", "Account Management", "Settings", "Logout"};
+        boolean admin = isAdmin();
 
-        navTips = new Tooltip[tips.length];
-        for (int i = 0; i < navButtons.length; i++) {
-            navTips[i] = makeTip(tips[i]);
-            setupIconButton(navButtons[i], navIcons[i]);
+        if (admin) {
+            pageButtons = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings};
+            navButtons  = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnSettings, btnLogout};
+            navIcons    = new String[]{"icon-home", "icon-cafe", "icon-sales", "icon-history", "icon-accounts", "icon-settings", "icon-logout"};
+            navLabels   = new String[]{"HOME", "MENU MANAGEMENT", "SALES", "TRANSACTION HISTORY", "ACCOUNT MANAGEMENT", "SETTINGS", "LOGOUT"};
+            String[] tips = {"Home", "Menu Management", "Sales", "Transaction History", "Account Management", "Settings", "Logout"};
+
+            navTips = new Tooltip[tips.length];
+            for (int i = 0; i < navButtons.length; i++) {
+                navTips[i] = makeTip(tips[i]);
+                setupIconButton(navButtons[i], navIcons[i]);
+            }
+        } else {
+            // Managers strictly do NOT have Settings
+            btnSettings.setVisible(false);
+            btnSettings.setManaged(false);
+
+            pageButtons = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts};
+            navButtons  = new Button[]{btnHome, btnMenu, btnSales, btnTransactions, btnAccounts, btnLogout};
+            navIcons    = new String[]{"icon-home", "icon-cafe", "icon-sales", "icon-history", "icon-accounts", "icon-logout"};
+            navLabels   = new String[]{"HOME", "MENU MANAGEMENT", "SALES", "TRANSACTION HISTORY", "ACCOUNT MANAGEMENT", "LOGOUT"};
+            String[] tips = {"Home", "Menu Management", "Sales", "Transaction History", "Account Management", "Logout"};
+
+            navTips = new Tooltip[tips.length];
+            for (int i = 0; i < navButtons.length; i++) {
+                navTips[i] = makeTip(tips[i]);
+                setupIconButton(navButtons[i], navIcons[i]);
+            }
         }
 
         startClock();
@@ -155,12 +175,20 @@ public class AdminDashboardController {
         lblDate.setText(now.format(DATE_FMT));
     }
 
+    private boolean isAdmin() {
+        User me = SessionManager.getCurrentUser();
+        return me != null && "ADMIN".equalsIgnoreCase(me.getRole());
+    }
+
     private void populateUserInfo() {
         User me = SessionManager.getCurrentUser();
         if (me == null) return;
         String r = me.getRole() == null ? "" : me.getRole();
         String role = r.isEmpty() ? "Admin" : r.charAt(0) + r.substring(1).toLowerCase();
         lblUserName.setText(role + " \u2014 " + me.getFullName());
+        if (lblPortalSub != null) {
+            lblPortalSub.setText(role + " Portal");
+        }
     }
 
     @FXML
@@ -250,7 +278,13 @@ public class AdminDashboardController {
         if (accountsViewController != null) accountsViewController.loadAccounts();
     }
 
-    @FXML public void showSettings() { show(settingsView, btnSettings); }
+    @FXML public void showSettings() {
+        if (!isAdmin()) {
+            AlertUtil.showWarning("Access Denied", "Settings are exclusively reserved for System Administrators.");
+            return;
+        }
+        show(settingsView, btnSettings);
+    }
 
     @FXML
     public void handleLogout(ActionEvent event) {

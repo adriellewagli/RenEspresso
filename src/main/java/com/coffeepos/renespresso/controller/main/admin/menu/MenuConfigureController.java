@@ -22,13 +22,23 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.paint.Color;
+import com.coffeepos.renespresso.util.ConfirmUtil;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import javafx.util.StringConverter;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
@@ -48,6 +58,7 @@ public class MenuConfigureController {
     @FXML private ToggleGroup statusGroup;
     @FXML private ToggleButton availableBtn, unavailableBtn;
     @FXML private Button saveBtn;
+    @FXML private Button archivedCategoriesBtn;
     @FXML private ScrollPane formScroll;
     @FXML private HBox formBox;
 
@@ -113,6 +124,7 @@ public class MenuConfigureController {
 
         categoryBox.getItems().setAll(categories);
         refreshCategoryList();
+        updateArchivedCategoriesCount();
 
         if (edit) {
             nameField.setText(existing.name());
@@ -300,6 +312,14 @@ public class MenuConfigureController {
             newCatField.clear();
             return;
         }
+
+        if (!AlertUtil.requestSecurityAuthorization(
+                "Authorize New Category",
+                "Enter your username and password to authorize creating category \"" + name + "\".",
+                "Authorize Category")) {
+            return;
+        }
+
         try {
             Category c = MenuDAO.addCategory(name);
             categories.add(c);
@@ -307,6 +327,7 @@ public class MenuConfigureController {
             categoryBox.setValue(c);
             newCatField.clear();
             refreshCategoryList();
+            updateArchivedCategoriesCount();
         } catch (SQLException ex) {
             ex.printStackTrace();
             AlertUtil.showError("Could not create category", ex.getMessage());
@@ -325,34 +346,134 @@ public class MenuConfigureController {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            Region trash = new Region();
-            trash.getStyleClass().add("icon-delete");
-            Button del = new Button();
-            del.setGraphic(trash);
-            del.getStyleClass().add("category-delete");
-            del.setOnAction(e -> deleteCategory(c));
+            Region archiveIcon = new Region();
+            archiveIcon.getStyleClass().add("icon-archive");
+            Button archiveBtn = new Button();
+            archiveBtn.setGraphic(archiveIcon);
+            archiveBtn.getStyleClass().add("category-archive");
+            archiveBtn.setTooltip(new Tooltip("Archive Category"));
+            archiveBtn.setOnAction(e -> handleArchiveCategory(c));
 
-            HBox row = new HBox(10, dot, name, spacer, del);
+            HBox row = new HBox(10, dot, name, spacer, archiveBtn);
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add("category-row");
             categoryList.getChildren().add(row);
         }
     }
 
-    private void deleteCategory(Category c) {
-        if (!AlertUtil.showYesNo("Delete Category", "Delete the category \"" + c.name() + "\"?")) return;
+    private void handleArchiveCategory(Category c) {
         try {
-            MenuDAO.deleteCategory(c.id());
+            int activeDishes = MenuDAO.getActiveProductCountByCategory(c.id());
+            if (activeDishes > 0) {
+                AlertUtil.showWarning("Cannot Archive Category",
+                        "Category \"" + c.name() + "\" currently has " + activeDishes + " active dish(es).\n\n"
+                                + "Please archive or reassign all dishes in this category before archiving it.");
+                return;
+            }
+
+            if (!AlertUtil.showYesNo("Archive Category",
+                    "Archive category \"" + c.name() + "\"?\n\nArchived categories will no longer appear in the category dropdown or order screen. You can restore it anytime from Archived Categories.")) {
+                return;
+            }
+
+            if (!AlertUtil.requestSecurityAuthorization(
+                    "Authorize Category Archive",
+                    "Enter your username and password to authorize archiving category \"" + c.name() + "\".",
+                    "Authorize Archive")) {
+                return;
+            }
+
+            MenuDAO.archiveCategory(c.id());
             categories.remove(c);
             categoryBox.getItems().remove(c);
             refreshCategoryList();
-            AlertUtil.showSuccess("Category Deleted", "Category \"" + c.name() + "\" was deleted.");
-        } catch (SQLIntegrityConstraintViolationException ex) {
-            AlertUtil.showWarning("Can't delete this category",
-                    "\"" + c.name() + "\" still has dishes. Move or delete those dishes first.");
+            updateArchivedCategoriesCount();
+            AlertUtil.showSuccess("Category Archived", "Category \"" + c.name() + "\" was moved to archives.");
         } catch (SQLException ex) {
             ex.printStackTrace();
-            AlertUtil.showError("Could not delete category", ex.getMessage());
+            AlertUtil.showError("Could not archive category", ex.getMessage());
+        }
+    }
+
+    @FXML
+    public void handleOpenArchivedCategories() {
+        try {
+            URL xmlUrl = getClass().getResource("/com/coffeepos/renespresso/views/main/admin/menu/ArchivedMenuModalView.fxml");
+            if (xmlUrl == null) {
+                throw new IllegalStateException("Cannot find ArchivedMenuModalView.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(xmlUrl);
+            Parent modalRoot = loader.load();
+            ArchivedMenuModalController controller = loader.getController();
+            if (controller != null) {
+                controller.selectTab(ArchivedMenuModalController.MenuTab.CATEGORIES);
+            }
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initStyle(StageStyle.TRANSPARENT);
+
+            if (categoryList.getScene() != null && categoryList.getScene().getWindow() != null) {
+                stage.initOwner(categoryList.getScene().getWindow());
+            }
+
+            Scene scene = new Scene(modalRoot);
+            scene.setFill(Color.TRANSPARENT);
+            scene.getStylesheets().addAll(ConfirmUtil.collectStylesheets(categoryList));
+            stage.setScene(scene);
+
+            stage.setOnShowing(e -> {
+                modalRoot.applyCss();
+                Window owner = stage.getOwner();
+                if (owner != null && owner.getWidth() > 0 && owner.getHeight() > 0) {
+                    double w = modalRoot.prefWidth(-1);
+                    double h = modalRoot.prefHeight(w);
+                    stage.setX(owner.getX() + (owner.getWidth() - (w > 0 ? w : 920)) / 2);
+                    stage.setY(owner.getY() + (owner.getHeight() - (h > 0 ? h : 620)) / 2);
+                }
+            });
+            stage.setOnShown(e -> {
+                Window owner = stage.getOwner();
+                if (owner != null && owner.getWidth() > 0 && owner.getHeight() > 0) {
+                    stage.setX(owner.getX() + (owner.getWidth() - stage.getWidth()) / 2);
+                    stage.setY(owner.getY() + (owner.getHeight() - stage.getHeight()) / 2);
+                } else {
+                    stage.centerOnScreen();
+                }
+            });
+
+            stage.showAndWait();
+
+            // Refresh categories
+            List<Category> updatedCats = MenuDAO.getCategories();
+            categories.clear();
+            categories.addAll(updatedCats);
+            categoryBox.getItems().setAll(updatedCats);
+            if (existing != null) {
+                for (Category cat : updatedCats) {
+                    if (cat.id() == existing.categoryId()) {
+                        categoryBox.setValue(cat);
+                        break;
+                    }
+                }
+            }
+            refreshCategoryList();
+            updateArchivedCategoriesCount();
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtil.showError("Could not open archives", e.getMessage());
+        }
+    }
+
+    private void updateArchivedCategoriesCount() {
+        try {
+            int count = MenuDAO.getArchivedCategoriesCount();
+            if (archivedCategoriesBtn != null) {
+                archivedCategoriesBtn.setText("Archived Categories (" + count + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -452,6 +573,14 @@ public class MenuConfigureController {
 
         boolean edit = existing != null;
         if (!AlertUtil.showYesNo("Save Menu Item", edit ? "Save changes to \"" + name + "\"?" : "Add \"" + name + "\" to the menu?")) {
+            return;
+        }
+
+        if (!AlertUtil.requestSecurityAuthorization(
+                edit ? "Authorize Dish Update" : "Authorize New Dish",
+                edit ? "Enter your username and password to authorize updating \"" + name + "\"."
+                     : "Enter your username and password to authorize adding \"" + name + "\" to the menu.",
+                edit ? "Authorize Update" : "Authorize Add")) {
             return;
         }
 

@@ -57,6 +57,8 @@ public class DatabaseManager {
              java.sql.Statement st = conn.createStatement()) {
             st.executeUpdate("ALTER TABLE transactions ADD COLUMN IF NOT EXISTS cashier_name VARCHAR(100) NULL AFTER cashier_id");
             st.executeUpdate("ALTER TABLE transactions ADD COLUMN IF NOT EXISTS cashier_role VARCHAR(50) NULL AFTER cashier_name");
+            st.executeUpdate("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_archived TINYINT(1) NOT NULL DEFAULT 0");
+            st.executeUpdate("ALTER TABLE categories ADD COLUMN IF NOT EXISTS is_archived TINYINT(1) NOT NULL DEFAULT 0");
         } catch (SQLException e) {
             System.err.println("DatabaseManager: Schema check note: " + e.getMessage());
         }

@@ -4,23 +4,33 @@ import com.coffeepos.renespresso.dao.MenuDAO;
 import com.coffeepos.renespresso.model.Category;
 import com.coffeepos.renespresso.model.Product;
 import com.coffeepos.renespresso.model.ProductVariant;
+import com.coffeepos.renespresso.util.AlertUtil;
+import com.coffeepos.renespresso.util.ConfirmUtil;
 import com.coffeepos.renespresso.util.ImageStore;
 import com.coffeepos.renespresso.util.NavigateUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
-import com.coffeepos.renespresso.util.AlertUtil;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
+
+import java.net.URL;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +45,7 @@ public class MenuController {
     @FXML private FlowPane categoryChips, dishGrid;
     @FXML private Label countLabel;
     @FXML private Button addDishBtn;
+    @FXML private Button archivedMenuBtn;
 
     private static final DecimalFormat MONEY = new DecimalFormat("\u20B1#,##0.00");
     private static final double PHOTO = 106;
@@ -52,7 +63,13 @@ public class MenuController {
     private boolean rebuildingChips = false;
     private boolean loading = false;
 
-    private record Loaded(List<Category> categories, List<Product> products, Map<Integer, List<ProductVariant>> variants) {}
+    private record Loaded(
+            List<Category> categories,
+            List<Product> products,
+            Map<Integer, List<ProductVariant>> variants,
+            int archivedDishesCount,
+            int archivedCategoriesCount
+    ) {}
 
     @FXML
     public void initialize() {
@@ -85,7 +102,13 @@ public class MenuController {
         Task<Loaded> task = new Task<>() {
             @Override
             protected Loaded call() throws Exception {
-                return new Loaded(MenuDAO.getCategories(), MenuDAO.getProducts(), MenuDAO.getAllVariants());
+                return new Loaded(
+                        MenuDAO.getCategories(),
+                        MenuDAO.getProducts(),
+                        MenuDAO.getAllVariants(),
+                        MenuDAO.getArchivedProductsCount(),
+                        MenuDAO.getArchivedCategoriesCount()
+                );
             }
         };
         task.setOnSucceeded(e -> {
@@ -94,6 +117,12 @@ public class MenuController {
             variantMap = task.getValue().variants();
             buildChips();
             render();
+
+            if (archivedMenuBtn != null) {
+                int total = task.getValue().archivedDishesCount() + task.getValue().archivedCategoriesCount();
+                archivedMenuBtn.setText("Archived Items (" + total + ")");
+            }
+
             loading = false;
         });
         task.setOnFailed(e -> {
@@ -105,6 +134,18 @@ public class MenuController {
         Thread t = new Thread(task, "menu-loader");
         t.setDaemon(true);
         t.start();
+    }
+
+    private void updateArchivedCounts() {
+        try {
+            int dCount = MenuDAO.getArchivedProductsCount();
+            int cCount = MenuDAO.getArchivedCategoriesCount();
+            if (archivedMenuBtn != null) {
+                archivedMenuBtn.setText("Archived Items (" + (dCount + cCount) + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void buildChips() {
@@ -170,7 +211,6 @@ public class MenuController {
         Platform.runLater(this::relayoutCards);
     }
 
-
     private double computeCardWidth() {
         double w = dishGrid.getWidth();
         if (w <= 0) return MIN_CARD_WIDTH;
@@ -201,7 +241,6 @@ public class MenuController {
         int w = (int) cardWidth;
         card.setStyle("-fx-min-width:" + w + "; -fx-pref-width:" + w + "; -fx-max-width:" + w + ";");
     }
-
 
     private StackPane buildCard(Product p) {
         StackPane photo = new StackPane();
@@ -272,10 +311,14 @@ public class MenuController {
         body.getStyleClass().add("dish-body");
 
         Button edit = iconButton("icon-edit", "action-edit");
+        edit.setTooltip(new Tooltip("Edit Dish"));
         edit.setOnAction(e -> showDishDialog(p));
-        Button delete = iconButton("icon-delete", "action-delete");
-        delete.setOnAction(e -> handleDelete(p));
-        HBox actions = new HBox(6, edit, delete);
+
+        Button archive = iconButton("icon-archive", "action-archive");
+        archive.setTooltip(new Tooltip("Archive Dish"));
+        archive.setOnAction(e -> handleArchiveDish(p));
+
+        HBox actions = new HBox(6, edit, archive);
         actions.setAlignment(Pos.TOP_RIGHT);
         actions.setPickOnBounds(false);
         actions.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
@@ -340,23 +383,88 @@ public class MenuController {
         }
     }
 
-    private void handleDelete(Product p) {
-        if (!AlertUtil.showYesNo("Delete Dish",
-                "Delete \"" + p.name() + "\" from the menu? This cannot be undone.")) return;
+    private void handleArchiveDish(Product p) {
+        if (!AlertUtil.showYesNo("Archive Dish",
+                "Archive \"" + p.name() + "\" from the menu?\n\nThis dish will be hidden from the active menu and POS order screen. You can restore it anytime from Archived Dishes.")) {
+            return;
+        }
+
+        if (!AlertUtil.requestSecurityAuthorization("Authorize Dish Archive",
+                "Enter your username and password to authorize archiving \"" + p.name() + "\".", "Authorize Archive")) {
+            return;
+        }
 
         try {
-            MenuDAO.deleteProduct(p.id());
-            ImageStore.delete(p.imagePath());
+            MenuDAO.archiveProduct(p.id());
             allProducts.remove(p);
             render();
-            AlertUtil.showSuccess("Dish Deleted", "\"" + p.name() + "\" was removed from the menu.");
-        } catch (SQLIntegrityConstraintViolationException e) {
-            AlertUtil.showWarning("Can't delete this dish",
-                    "\"" + p.name() + "\" appears in past transactions. "
-                            + "Mark it as unavailable instead so your sales history stays intact.");
+            updateArchivedCounts();
+            AlertUtil.showSuccess("Dish Archived", "\"" + p.name() + "\" was archived successfully.");
         } catch (SQLException e) {
             e.printStackTrace();
-            AlertUtil.showError("Delete failed", e.getMessage());
+            AlertUtil.showError("Archive failed", e.getMessage());
+        }
+    }
+
+    @FXML
+    public void handleOpenArchivedMenu() {
+        openArchivedModal(ArchivedMenuModalController.MenuTab.DISHES);
+    }
+
+    private void openArchivedModal(ArchivedMenuModalController.MenuTab initialTab) {
+        try {
+            URL xmlUrl = getClass().getResource("/com/coffeepos/renespresso/views/main/admin/menu/ArchivedMenuModalView.fxml");
+            if (xmlUrl == null) {
+                throw new IllegalStateException("Cannot find ArchivedMenuModalView.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(xmlUrl);
+            Parent modalRoot = loader.load();
+            ArchivedMenuModalController controller = loader.getController();
+            if (controller != null) {
+                controller.selectTab(initialTab);
+            }
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initStyle(StageStyle.TRANSPARENT);
+
+            if (root.getScene() != null && root.getScene().getWindow() != null) {
+                stage.initOwner(root.getScene().getWindow());
+            }
+
+            Scene scene = new Scene(modalRoot);
+            scene.setFill(Color.TRANSPARENT);
+            scene.getStylesheets().addAll(ConfirmUtil.collectStylesheets(root));
+            stage.setScene(scene);
+
+            stage.setOnShowing(e -> {
+                modalRoot.applyCss();
+                Window owner = stage.getOwner();
+                if (owner != null && owner.getWidth() > 0 && owner.getHeight() > 0) {
+                    double w = modalRoot.prefWidth(-1);
+                    double h = modalRoot.prefHeight(w);
+                    stage.setX(owner.getX() + (owner.getWidth() - (w > 0 ? w : 920)) / 2);
+                    stage.setY(owner.getY() + (owner.getHeight() - (h > 0 ? h : 620)) / 2);
+                }
+            });
+            stage.setOnShown(e -> {
+                Window owner = stage.getOwner();
+                if (owner != null && owner.getWidth() > 0 && owner.getHeight() > 0) {
+                    stage.setX(owner.getX() + (owner.getWidth() - stage.getWidth()) / 2);
+                    stage.setY(owner.getY() + (owner.getHeight() - stage.getHeight()) / 2);
+                } else {
+                    stage.centerOnScreen();
+                }
+            });
+
+            stage.showAndWait();
+
+            // Refresh menu and chips when modal closes
+            loadData();
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtil.showError("Could not open archives", e.getMessage());
         }
     }
 

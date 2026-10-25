@@ -129,7 +129,7 @@ public class AccountController {
     private void updateRoleFilterOptions() {
         String cur = roleFilter.getValue();
         if (isCurrentUserManager()) {
-            roleFilter.getItems().setAll("Role: All Roles", "Role: Cashier");
+            roleFilter.getItems().setAll("Role: All Roles", "Role: Manager", "Role: Cashier");
         } else {
             roleFilter.getItems().setAll("Role: All Roles", "Role: Admin", "Role: Manager", "Role: Cashier");
         }
@@ -154,8 +154,9 @@ public class AccountController {
             }
             ObservableList<AccountRow> all = UserDAO.getAllAccounts();
             if (isCurrentUserManager()) {
+                int loggedInId = getCurrentUserId();
                 List<AccountRow> visible = all.stream()
-                        .filter(r -> "Cashier".equalsIgnoreCase(r.role()))
+                        .filter(r -> "Cashier".equalsIgnoreCase(r.role()) || (loggedInId > 0 && r.id() == loggedInId))
                         .toList();
                 accounts.setAll(visible);
             } else {
@@ -174,8 +175,12 @@ public class AccountController {
         String login = lastLoginFilter.getValue();
 
         filtered.setPredicate(r -> {
-            if (isCurrentUserManager() && !"Cashier".equalsIgnoreCase(r.role())) {
-                return false;
+            if (isCurrentUserManager()) {
+                int loggedInId = getCurrentUserId();
+                boolean isSelf = loggedInId > 0 && r.id() == loggedInId;
+                if (!"Cashier".equalsIgnoreCase(r.role()) && !isSelf) {
+                    return false;
+                }
             }
 
             if (!q.isEmpty()) {
@@ -339,15 +344,19 @@ public class AccountController {
                     setGraphic(null);
                     return;
                 }
+                int loggedInId = getCurrentUserId();
+                boolean isSelf = loggedInId > 0 && row.id() == loggedInId;
+
                 Button edit = iconButton("icon-edit", "action-edit");
-                edit.setTooltip(new Tooltip("Edit Account"));
+                edit.setTooltip(new Tooltip(isSelf ? "Edit Your Profile" : "Edit Account"));
                 edit.setOnAction(e -> handleEdit(row));
 
                 HBox box = new HBox(8, edit);
 
                 // Admin accounts can NEVER be archived.
                 // Managers can only archive Cashier accounts.
-                boolean canArchive = !"Admin".equalsIgnoreCase(row.role());
+                // A user can never archive their own account.
+                boolean canArchive = !isSelf && !"Admin".equalsIgnoreCase(row.role());
                 if (isCurrentUserManager() && !"Cashier".equalsIgnoreCase(row.role())) {
                     canArchive = false;
                 }
@@ -405,6 +414,11 @@ public class AccountController {
         if (!AlertUtil.showYesNo("Archive Account",
                 "Are you sure you want to archive \"" + row.name() + "\" (@" + row.username() + ")?\n\nThis account will be deactivated and moved to the Archived Accounts list."))
             return;
+
+        if (!AlertUtil.requestSecurityAuthorization("Authorize Archive",
+                "Enter your username and password to authorize archiving \"" + row.name() + "\".", "Authorize Archive")) {
+            return;
+        }
 
         try {
             UserDAO.archiveAccount(row.id());
@@ -482,9 +496,11 @@ public class AccountController {
     private void showAccountDialog(AccountRow existing) {
         boolean edit = existing != null;
         final boolean active = edit && "Active".equals(existing.status());
+        int loggedInId = getCurrentUserId();
+        boolean isSelf = edit && loggedInId > 0 && existing.id() == loggedInId;
 
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle(edit ? "Edit Account" : "Add Account");
+        dialog.setTitle(edit ? (isSelf ? "Edit Your Profile" : "Edit Account") : "Add Account");
         dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
         dialog.setHeaderText(null);
         dialog.setGraphic(null);
@@ -512,16 +528,24 @@ public class AccountController {
         PasswordField confirmField = new PasswordField();
         List<String> allowedRoles;
         boolean isRoleDisabled = false;
+        String roleTooltip = null;
 
-        if (isCurrentUserManager()) {
+        if (isSelf) {
+            // Cannot edit your own role: fixed to current role
+            allowedRoles = List.of(existing.role());
+            isRoleDisabled = true;
+            roleTooltip = "You cannot change your own role.";
+        } else if (isCurrentUserManager()) {
             // Manager cannot create co-manager or elevate: locked strictly to Cashier
             allowedRoles = List.of("Cashier");
             isRoleDisabled = true;
+            roleTooltip = "Managers can only add or manage Cashiers.";
         } else if (edit) {
             if ("Admin".equalsIgnoreCase(existing.role())) {
                 // Admin role is fixed to admin only: cannot be demoted
                 allowedRoles = List.of("Admin");
                 isRoleDisabled = true;
+                roleTooltip = "The Admin role is fixed and cannot be changed.";
             } else {
                 // Staff accounts cannot be elevated to Admin (admin role is fixed to admin only)
                 allowedRoles = List.of("Manager", "Cashier");
@@ -535,10 +559,8 @@ public class AccountController {
         roleBox.setValue(edit ? existing.role() : allowedRoles.get(0));
         if (isRoleDisabled) {
             roleBox.setDisable(true);
-            if (edit && "Admin".equalsIgnoreCase(existing.role())) {
-                roleBox.setTooltip(new Tooltip("The Admin role is fixed and cannot be changed."));
-            } else if (isCurrentUserManager()) {
-                roleBox.setTooltip(new Tooltip("Managers can only add or manage Cashiers."));
+            if (roleTooltip != null) {
+                roleBox.setTooltip(new Tooltip(roleTooltip));
             }
         }
 
@@ -562,13 +584,18 @@ public class AccountController {
                 subText = "Fill in the details below to create a staff account";
             }
         } else {
-            title.setText("Edit Account");
-            if ("Admin".equalsIgnoreCase(existing.role())) {
-                subText = "Admin role is fixed to Admin only and cannot be changed";
-            } else if (isCurrentUserManager()) {
-                subText = "Update the details for Cashier " + existing.name();
+            if (isSelf) {
+                title.setText("Edit Your Profile");
+                subText = "Update your profile details and account credentials";
             } else {
-                subText = "Update the details for " + existing.name();
+                title.setText("Edit Account");
+                if ("Admin".equalsIgnoreCase(existing.role())) {
+                    subText = "Admin role is fixed to Admin only and cannot be changed";
+                } else if (isCurrentUserManager()) {
+                    subText = "Update the details for Cashier " + existing.name();
+                } else {
+                    subText = "Update the details for " + existing.name();
+                }
             }
         }
         title.getStyleClass().add("dialog-title");
@@ -634,16 +661,30 @@ public class AccountController {
                 }
 
                 String question = edit
-                        ? "Save the changes to " + name + "'s account?"
+                        ? (isSelf ? "Save the changes to your profile?" : "Save the changes to " + name + "'s account?")
                         : "Create an account for " + name + " (" + role + ")?";
-                if (!AlertUtil.showYesNo("Save Account", question)) {
+                if (!AlertUtil.showYesNo(isSelf ? "Save Profile" : "Save Account", question)) {
+                    ev.consume();
+                    return;
+                }
+
+                if (!AlertUtil.requestSecurityAuthorization(
+                        edit ? "Verify Identity" : "Authorize New Account",
+                        edit ? "Enter your username and password to confirm changing account credentials."
+                                : "Enter your username and password to authorize creating this new account.",
+                        edit ? "Confirm & Update" : "Authorize Account")) {
                     ev.consume();
                     return;
                 }
 
                 if (edit) {
                     UserDAO.updateAccount(existing.id(), name, username, role, active, pw);
-                    AlertUtil.showSuccess("Account Updated", "Account for \"" + name + "\" was updated successfully.");
+                    if (isSelf) {
+                        SessionManager.updateCurrentUserProfile(name, username);
+                        AlertUtil.showSuccess("Profile Updated", "Your profile details were updated successfully.");
+                    } else {
+                        AlertUtil.showSuccess("Account Updated", "Account for \"" + name + "\" was updated successfully.");
+                    }
                 } else if (!UserDAO.registerUser(
                         new com.coffeepos.renespresso.model.User(0, username, name, role, active), pw)) {
                     AlertUtil.showError("Could not create account", "The account could not be created.");
@@ -761,7 +802,17 @@ public class AccountController {
         if (UserDAO.usernameExists(username, edit ? existing.id() : 0))
             return "That username is already taken.";
 
-        if (isCurrentUserManager()) {
+        int loggedInId = getCurrentUserId();
+        boolean isSelf = edit && loggedInId > 0 && existing.id() == loggedInId;
+
+        if (isSelf) {
+            if (!existing.role().equalsIgnoreCase(role)) {
+                return "You cannot change your own role.";
+            }
+            if (!active) {
+                return "You can't deactivate the account you're logged in with.";
+            }
+        } else if (isCurrentUserManager()) {
             if (!"Cashier".equalsIgnoreCase(role)) {
                 return "Managers cannot create co-managers or elevate accounts. Only Cashier role is allowed.";
             }
@@ -774,11 +825,7 @@ public class AccountController {
             return "Admins cannot create another Admin account. Only Manager or Cashier accounts can be created.";
         }
 
-        if (edit) {
-            int loggedInId = getCurrentUserId();
-            if (loggedInId > 0 && existing.id() == loggedInId && !active)
-                return "You can't deactivate the account you're logged in with.";
-
+        if (edit && !isSelf) {
             boolean wasAdmin = "Admin".equalsIgnoreCase(existing.role());
             boolean nowAdmin = "Admin".equalsIgnoreCase(role);
             if (wasAdmin && !nowAdmin) {

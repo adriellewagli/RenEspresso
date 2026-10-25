@@ -26,9 +26,10 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <HBox alignment="CENTER_RIGHT" spacing="12.0">
-            <ComboBox fx:id="cmbDateFilter" promptText="Date: All Dates" styleClass="filter-combo" prefWidth="150.0" />
-            <ComboBox fx:id="cmbStatusFilter" promptText="Status: All States" styleClass="filter-combo" prefWidth="160.0" />
-            <ComboBox fx:id="cmbPaymentFilter" promptText="Payment: All" styleClass="filter-combo" prefWidth="140.0" />
+            <ComboBox fx:id="cmbDateFilter" promptText="Date: All Dates" styleClass="filter-combo" prefWidth="140.0" />
+            <ComboBox fx:id="cmbStatusFilter" promptText="Status: All States" styleClass="filter-combo" prefWidth="150.0" />
+            <ComboBox fx:id="cmbPaymentFilter" promptText="Payment: All" styleClass="filter-combo" prefWidth="135.0" />
+            <ComboBox fx:id="cmbSortFilter" promptText="Sort: Latest to Oldest" styleClass="filter-combo" prefWidth="180.0" />
             <Button fx:id="btnClearFilters" onAction="#handleClearFilters" text="Clear Filters" styleClass="btn-clear-filters" />
         </HBox>
     </HBox>

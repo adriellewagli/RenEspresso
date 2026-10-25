@@ -19,6 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.coffeepos.renespresso.controller.main.user.UserUi.peso;
@@ -34,6 +35,7 @@ public class OrderManagementController {
     @FXML private ComboBox<String> cmbDateFilter;
     @FXML private ComboBox<String> cmbStatusFilter;
     @FXML private ComboBox<String> cmbPaymentFilter;
+    @FXML private ComboBox<String> cmbSortFilter;
     @FXML private Button btnClearFilters;
 
     @FXML private TableView<TransactionRecord> tblHistory;
@@ -69,9 +71,20 @@ public class OrderManagementController {
         cmbPaymentFilter.getItems().setAll("Payment: All", "Payment: Paid", "Payment: Refunded");
         cmbPaymentFilter.setValue("Payment: All");
 
+        cmbSortFilter.getItems().setAll(
+                "Sort: Latest to Oldest",
+                "Sort: Oldest to Latest",
+                "Sort: Highest Amount",
+                "Sort: Lowest Amount"
+        );
+        cmbSortFilter.setValue("Sort: Latest to Oldest");
+
         cmbDateFilter.valueProperty().addListener((obs, o, n) -> refreshFilter());
         cmbStatusFilter.valueProperty().addListener((obs, o, n) -> refreshFilter());
         cmbPaymentFilter.valueProperty().addListener((obs, o, n) -> refreshFilter());
+        cmbSortFilter.valueProperty().addListener((obs, o, n) -> {
+            if (tblHistory != null) tblHistory.getSortOrder().clear();
+        });
         txtHistorySearch.textProperty().addListener((obs, o, n) -> refreshFilter());
     }
 
@@ -87,6 +100,8 @@ public class OrderManagementController {
         cmbDateFilter.setValue("Date: All Dates");
         cmbStatusFilter.setValue("Status: All States");
         cmbPaymentFilter.setValue("Payment: All");
+        cmbSortFilter.setValue("Sort: Latest to Oldest");
+        if (tblHistory != null) tblHistory.getSortOrder().clear();
     }
 
     private boolean applyFilters(TransactionRecord r) {
@@ -333,7 +348,13 @@ public class OrderManagementController {
         filtered.addListener((ListChangeListener<TransactionRecord>) c -> updateSummary(filtered));
 
         SortedList<TransactionRecord> sorted = new SortedList<>(filtered);
-        sorted.comparatorProperty().bind(tblHistory.comparatorProperty());
+        sorted.comparatorProperty().bind(Bindings.createObjectBinding(() -> {
+            Comparator<TransactionRecord> tableComp = tblHistory.getComparator();
+            if (tableComp != null) {
+                return tableComp;
+            }
+            return getSortFilterComparator();
+        }, tblHistory.comparatorProperty(), cmbSortFilter.valueProperty()));
         tblHistory.setItems(sorted);
 
         Label placeholder = new Label("No transactions match the selected filters.");
@@ -372,6 +393,31 @@ public class OrderManagementController {
         Thread t = new Thread(task, "cashier-transaction-loader");
         t.setDaemon(true);
         t.start();
+    }
+
+    private Comparator<TransactionRecord> getSortFilterComparator() {
+        String val = cmbSortFilter != null ? cmbSortFilter.getValue() : null;
+        if (val == null || val.contains("Latest to Oldest")) {
+            return Comparator.comparing(
+                    TransactionRecord::getEffectiveDateTime,
+                    Comparator.nullsLast(Comparator.reverseOrder())
+            ).thenComparing(TransactionRecord::getTransactionId, Comparator.reverseOrder());
+        } else if (val.contains("Oldest to Latest")) {
+            return Comparator.comparing(
+                    TransactionRecord::getEffectiveDateTime,
+                    Comparator.nullsLast(Comparator.naturalOrder())
+            ).thenComparing(TransactionRecord::getTransactionId, Comparator.naturalOrder());
+        } else if (val.contains("Highest Amount")) {
+            return Comparator.comparingDouble(TransactionRecord::getTotal).reversed()
+                    .thenComparing(TransactionRecord::getTransactionId, Comparator.reverseOrder());
+        } else if (val.contains("Lowest Amount")) {
+            return Comparator.comparingDouble(TransactionRecord::getTotal)
+                    .thenComparing(TransactionRecord::getTransactionId, Comparator.naturalOrder());
+        }
+        return Comparator.comparing(
+                TransactionRecord::getEffectiveDateTime,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        );
     }
 
     private void updateSummary(List<TransactionRecord> visible) {

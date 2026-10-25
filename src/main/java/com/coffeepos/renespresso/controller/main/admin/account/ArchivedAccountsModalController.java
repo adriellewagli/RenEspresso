@@ -254,6 +254,11 @@ public class ArchivedAccountsModalController {
             return;
         }
 
+        if (!AlertUtil.requestSecurityAuthorization("Authorize Permanent Deletion",
+                "Enter your username and password to authorize permanently deleting account \"" + row.name() + "\".", "Authorize Delete")) {
+            return;
+        }
+
         try {
             UserDAO.hardDeleteAccount(row.id());
             archivedAccounts.remove(row);

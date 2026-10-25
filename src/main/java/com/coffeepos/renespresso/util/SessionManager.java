@@ -27,5 +27,12 @@ public final class SessionManager {
 
     public static synchronized User getCurrentUser() { return currentUser; }
 
+    public static synchronized void updateCurrentUserProfile(String fullName, String username) {
+        if (currentUser != null) {
+            currentUser.setFullName(fullName);
+            currentUser.setUsername(username);
+        }
+    }
+
     public static synchronized boolean isLoggedIn() { return currentUser != null; }
 }

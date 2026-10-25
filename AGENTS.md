@@ -65,10 +65,16 @@ This document records architectural conventions, established business logic, dom
   - Admins can see everything (all accounts: Admin, Manager, Cashier) and manage staff accounts between Manager and Cashier.
   - **Role-Based Listing Order:** The account list is ordered hierarchically based on roles: `Admin` -> `Manager` -> `Cashier` (with newest accounts first within each role, matching `HomeDAO`).
 - **Manager Access Constraints:**
-  - Managers **cannot see Admin accounts** and can **only see Cashiers** in the account list, search filter, and role dropdown.
+  - Managers **cannot see Admin accounts** or other Managers, but can see **their own account** and **all Cashiers** in the account list and role filter.
   - **Managers Cannot Elevate:** Managers cannot elevate Cashier accounts to Manager or Admin (role ComboBox locked to "Cashier", enforced at UI and DAO layers).
   - **Managers Cannot Create Co-Managers:** Managers can strictly add Cashier accounts only (button "+ Add Cashier", role locked to "Cashier", enforced at UI and DAO layers).
   - Home dashboard staff widget for Managers only displays Cashier staff metrics.
+  - **Settings Exclusivity (No Settings for Manager):** The Settings menu (Store Information, Data Backups) is strictly exclusive to the **Admin** role. Managers do not have a Settings navigation button in their sidebar, and access is enforced at the controller level.
+- **Own Profile Editing & Role Immutability Rule:**
+  - Any logged-in user (Admin or Manager) can see their own account in the Account Management table to edit their profile credentials (name, username, password).
+  - **Cannot Edit Own Role:** When editing their own account, the role dropdown is locked/disabled (`isRoleDisabled = true`) with tooltip `"You cannot change your own role."`, validated in `AccountController.validate()`, and guarded at the database DAO layer in `UserDAO.updateAccount()`.
+  - Logged-in users cannot deactivate or archive their own active account.
+  - Updating one's own profile synchronizes the live session via `SessionManager.updateCurrentUserProfile()`.
 
 ---
 
@@ -168,3 +174,59 @@ This document records architectural conventions, established business logic, dom
    - **UI Role Selection:** In `AccountController.java` (`showAccountDialog`), when an Admin adds an account, `allowedRoles` is set strictly to `List.of("Manager", "Cashier")`, removing `"Admin"` from the role ComboBox options.
    - **UI Form Validation:** Added validation in `AccountController.validate()` returning `"Admins cannot create another Admin account. Only Manager or Cashier accounts can be created."` if an admin creation attempt occurs.
    - **DAO Security Enforcement:** In `UserDAO.registerUser()`, added guard `if ("ADMIN".equalsIgnoreCase(user.getRole())) return false;`, ensuring backend security defense-in-depth against secondary admin creation.
+15. **[COMPLETED] Settings Left Menu Hover Contrast Fix:**
+   - **Root Cause:** The Settings left menu buttons (`Store Information`, `Backup`) previously shared the global `.nav-button` class with the dark chocolate sidebar. In `modern.css` and `dashboard.css`, `.nav-button:hover` set `-fx-text-fill: #FFFFFF;` (for dark sidebar hover). When hovering over the Settings buttons on a white/cream card background, the text turned pure white, rendering it invisible.
+   - **Resolution:** Assigned dedicated `.settings-nav-card` and `.settings-nav-btn` classes in `SettingsView.fxml`. In `settings.css`, explicitly styled `.settings-nav-btn` and scoped `.settings-root .nav-button` with rich coffee text `-fx-text-fill: #5E3023;` across default, hover (`#F8EFE4`), selected (`#F6E7D5`), and selected-hover (`#EED7BE`) states. Standardized Settings `.card` background to crisp `#FFFFFF`.
+16. **[COMPLETED] Transaction History Sorting (Latest to Oldest):**
+   - **Requirement:** Add sort functionality to transaction history with "Latest to Oldest" default.
+   - **Sort ComboBox Filter:** Added `cmbSortFilter` to the filter toolbar in both Admin (`TransactionView.fxml` / `TransactionController.java`) and Staff (`OrderManagementView.fxml` / `OrderManagementController.java`). Options include `"Sort: Latest to Oldest"`, `"Sort: Oldest to Latest"`, `"Sort: Highest Amount"`, and `"Sort: Lowest Amount"`.
+   - **Chronological Comparator:** Added `getEffectiveDateTime()` on `TransactionRecord.java` (using `updatedAt` if modified, falling back to `createdAt`). Built a dynamic `SortedList` comparator binding that respects manual table column clicks if active, otherwise defaulting to the selected dropdown sort (newest timestamp first, then descending transaction ID).
+   - **Clear Filters Integration:** Resetting filters restores `cmbSortFilter` to `"Sort: Latest to Oldest"` and clears manual table column sort orders.
+### 1.10 Dish & Category Archiving Lifecycle
+- **Soft-Delete by Default (Archive):**
+  - Active dishes and categories are soft-deleted (`is_archived = 1`) rather than immediately permanently deleted.
+  - Archived dishes and categories are excluded from POS (`PosController`) and active Menu Management (`MenuController`), but remain safely in the database so that historical receipts, past transaction line items (`transaction_items`), and Sales Analytics (`SalesDAO`) stay 100% intact.
+- **Category Archiving Guard:**
+  - A category cannot be archived if it currently contains active dishes (`MenuDAO.getActiveProductCountByCategory(id) > 0`). The user is prompted to archive or reassign all dishes in that category first.
+- **Dish Restoration & Category Auto-Prompt:**
+  - When restoring an archived dish whose category is also archived, the system prompts the user to restore the category as well so the dish can properly appear on the active menu.
+- **Permanent Deletion & Financial Audit Protection:**
+  - **Dishes:** An archived dish can only be permanently deleted if it has NO past transaction lines (`MenuDAO.productHasSalesHistory(id) == false`). If it appears in past transactions, permanent deletion is strictly blocked to preserve financial audit logs.
+  - **Categories:** An archived category can only be permanently deleted if NO dishes in the system (archived or active) reference it (`MenuDAO.getTotalProductCountByCategory(id) == 0`).
+- **Archived Menu Items Modal:**
+  - `ArchivedMenuModalView.fxml` & `ArchivedMenuModalController.java`: A tabbed modal accessible from the single Menu Management header button (`Archived Items (N)`) and the Category Creator panel (`Archived Categories (N)`).
+  - Provides search filtering, live count badges, empty states, and restore/delete actions for both dishes and categories.
+
+---
+
+### 1.11 Specific User Security Credentials Authorization Rule
+- **Rule:** For high-stakes, sensitive administrative operations, the system strictly requires the active user (Admin or Manager) to enter their specific username and password for authentication before proceeding.
+- **Enforce Current User Identity:** When `enforceCurrentUser = true` in `AlertUtil.requestSecurityAuthorization()` and `AdminAuthController.java`, the entered username must match `SessionManager.getCurrentUser().getUsername()`. The prompt displays the user's role and username prompt (e.g. `Enter @admin`), requiring them to provide their own active credentials. Password hashes are validated against the database via `UserDAO.validateAdminCredentials()`.
+- **Protected Sensitive Operations:**
+  1. **Account Credentials & Profile Changes:** Changing full name, username, or password on staff or own account in Account Management (`AccountController`).
+  2. **Adding Accounts & Menu Items:** Registering new staff accounts (`AccountController`), adding new dishes to the menu (`MenuConfigureController`), or creating new categories (`MenuConfigureController`).
+  3. **Archiving:** Archiving staff accounts (`AccountController`), archiving dishes (`MenuController`), or archiving categories (`MenuConfigureController`).
+  4. **Permanent Deletion:** Permanently deleting archived staff accounts (`ArchivedAccountsModalController`), permanently deleting archived dishes (`ArchivedMenuModalController`), or permanently deleting archived categories (`ArchivedMenuModalController`).
+- **Cashier POS Order Cancellation:** POS order cancellations in the order queue continue to allow any Admin or Manager to authorize a cashier's void request (`enforceCurrentUser = false`).
+
+---
+
+18. **[COMPLETED] Dish and Category Archiving System:**
+   - **Schema Migration:** Added `is_archived TINYINT(1) NOT NULL DEFAULT 0` to `products` and `categories` tables in `DatabaseManager.java` and `MenuDAO.java`.
+   - **DAO Layer:** Updated `MenuDAO.getCategories()` and `MenuDAO.getProducts()` to filter by `COALESCE(is_archived, 0) = 0`. Added `getArchivedProducts()`, `getArchivedCategories()`, `archiveProduct()`, `restoreProduct()`, `archiveCategory()`, `restoreCategory()`, `productHasSalesHistory()`, `getActiveProductCountByCategory()`, and `getTotalProductCountByCategory()`.
+   - **Active Menu & Category Actions:** Replaced destructive delete with soft-delete Archive action (`icon-archive`, amber hover) on dish cards in `MenuController.java` and category rows in `MenuConfigureController.java`.
+   - **Archived Menu Modal:** Created `ArchivedMenuModalView.fxml` and `ArchivedMenuModalController.java` with a tabbed segmented control (`Dishes (N)` and `Categories (N)`), search filtering, dish thumbnail/name/price/stock rendering, category name/dishes count rendering, and restore/hard-delete actions with sales protection checks.
+19. **[COMPLETED] Admin-Exclusive Settings & Single Archive Button:**
+   - **Single Archive Button:** Consolidated the Menu Management header archive controls into one single button (`Archived Items (N)`) in `MenuView.fxml` and `MenuController.java`, showing the combined tally of archived dishes and categories and opening the tabbed archive modal.
+   - **Admin-Exclusive Settings:** In `AdminDashboardController.java`, when a Manager logs in, `btnSettings` is completely hidden and unmanaged (`btnSettings.setVisible(false); btnSettings.setManaged(false);`), excluded from navigation lists, and protected at `showSettings()`. Sidebar subtitle also updates dynamically to `"Manager Portal"` when a manager logs in.
+20. **[COMPLETED] Specific User Security Credentials Verification for Sensitive Operations:**
+   - **Security Modal:** Enhanced `AdminAuthModalView.fxml` and `AdminAuthController.java` with dynamic role header labels, current-user prompt text, and `enforceCurrentUser` identity check validating input against `SessionManager.getCurrentUser()`.
+   - **Central Alert Utility:** Added `AlertUtil.requestSecurityAuthorization(title, message, btnText)` defaulting `enforceCurrentUser = true`.
+   - **Covered Sensitive Actions:**
+     - **Changing Credentials:** In `AccountController.java`, editing existing staff or own account credentials requires username & password verification.
+     - **Adding Accounts:** In `AccountController.java`, adding a new staff account requires credentials verification.
+     - **Archiving Accounts:** In `AccountController.java`, archiving a staff account requires credentials verification.
+     - **Permanently Deleting Accounts:** In `ArchivedAccountsModalController.java`, permanently deleting an account requires credentials verification.
+     - **Adding Dishes & Categories:** In `MenuConfigureController.java`, creating a new dish or adding a new category requires credentials verification.
+     - **Archiving Dishes & Categories:** In `MenuController.java` (dishes) and `MenuConfigureController.java` (categories), archiving items requires credentials verification.
+     - **Permanently Deleting Dishes & Categories:** In `ArchivedMenuModalController.java`, permanently deleting dishes or categories requires credentials verification.

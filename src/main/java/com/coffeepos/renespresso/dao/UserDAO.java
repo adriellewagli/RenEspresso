@@ -216,6 +216,14 @@ public class UserDAO {
                 try (ResultSet rs = check.executeQuery()) {
                     if (rs.next()) {
                         String currentRole = rs.getString("role");
+                        User sessionUser = SessionManager.getCurrentUser();
+                        boolean isSelf = sessionUser != null && sessionUser.getUserId() == id;
+
+                        // A user cannot change their own role under any circumstances
+                        if (isSelf && !currentRole.equalsIgnoreCase(role)) {
+                            throw new SQLException("You cannot change your own role.");
+                        }
+
                         boolean wasAdmin = "ADMIN".equalsIgnoreCase(currentRole);
                         boolean nowAdmin = "ADMIN".equalsIgnoreCase(role);
                         if (wasAdmin && !nowAdmin) {
@@ -224,10 +232,9 @@ public class UserDAO {
                         if (!wasAdmin && nowAdmin) {
                             throw new SQLException("Existing staff accounts cannot be elevated to Admin.");
                         }
-                        User sessionUser = SessionManager.getCurrentUser();
-                        if (sessionUser != null && "MANAGER".equalsIgnoreCase(sessionUser.getRole())) {
+                        if (!isSelf && sessionUser != null && "MANAGER".equalsIgnoreCase(sessionUser.getRole())) {
                             if (!"CASHIER".equalsIgnoreCase(currentRole) || !"CASHIER".equalsIgnoreCase(role)) {
-                                throw new SQLException("Managers cannot create co-managers or elevate accounts.");
+                                throw new SQLException("Managers can only manage Cashier accounts.");
                             }
                         }
                     }

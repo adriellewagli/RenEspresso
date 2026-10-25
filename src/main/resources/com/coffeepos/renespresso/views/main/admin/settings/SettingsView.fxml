@@ -29,9 +29,9 @@
     <HBox spacing="20.0" VBox.vgrow="ALWAYS">
 
         <!-- ============ LEFT MENU ============ -->
-        <VBox maxHeight="-Infinity" minWidth="250.0" prefWidth="250.0" spacing="6.0" styleClass="card, nav-card">
-            <ToggleButton maxWidth="Infinity" selected="true" styleClass="nav-button" text="🏪   Store Information" toggleGroup="$navGroup" userData="secStore" />
-            <ToggleButton maxWidth="Infinity" styleClass="nav-button" text="💾   Backup" toggleGroup="$navGroup" userData="secBackup" />
+        <VBox maxHeight="-Infinity" minWidth="250.0" prefWidth="250.0" spacing="6.0" styleClass="card, settings-nav-card">
+            <ToggleButton maxWidth="Infinity" selected="true" styleClass="settings-nav-btn" text="🏪   Store Information" toggleGroup="$navGroup" userData="secStore" />
+            <ToggleButton maxWidth="Infinity" styleClass="settings-nav-btn" text="💾   Backup" toggleGroup="$navGroup" userData="secBackup" />
         </VBox>
 
         <!-- ============ RIGHT CONTENT ============ -->

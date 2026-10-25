@@ -39,15 +39,15 @@
             <children>
                 <VBox spacing="6.0">
                     <children>
-                        <Label style="-fx-text-fill: #5E3023; -fx-font-size: 12px; -fx-font-weight: bold;" text="ADMIN USERNAME" />
-                        <TextField fx:id="txtUsername" prefHeight="38.0" promptText="Enter admin username"
+                        <Label fx:id="lblUsernameHeader" style="-fx-text-fill: #5E3023; -fx-font-size: 12px; -fx-font-weight: bold;" text="USERNAME" />
+                        <TextField fx:id="txtUsername" prefHeight="38.0" promptText="Enter username"
                                    style="-fx-background-color: #F8F2E8; -fx-background-radius: 8px; -fx-border-color: #E7DCCB; -fx-border-radius: 8px; -fx-padding: 0 12; -fx-text-fill: #2F2118; -fx-font-size: 13px;" />
                     </children>
                 </VBox>
                 <VBox spacing="6.0">
                     <children>
-                        <Label style="-fx-text-fill: #5E3023; -fx-font-size: 12px; -fx-font-weight: bold;" text="ADMIN PASSWORD" />
-                        <PasswordField fx:id="txtPassword" prefHeight="38.0" promptText="Enter admin password"
+                        <Label fx:id="lblPasswordHeader" style="-fx-text-fill: #5E3023; -fx-font-size: 12px; -fx-font-weight: bold;" text="PASSWORD" />
+                        <PasswordField fx:id="txtPassword" prefHeight="38.0" promptText="Enter password"
                                        style="-fx-background-color: #F8F2E8; -fx-background-radius: 8px; -fx-border-color: #E7DCCB; -fx-border-radius: 8px; -fx-padding: 0 12; -fx-text-fill: #2F2118; -fx-font-size: 13px;" />
                     </children>
                 </VBox>
