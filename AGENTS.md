@@ -211,6 +211,43 @@ This document records architectural conventions, established business logic, dom
 
 ---
 
+### 1.12 Client-to-Server Multi-Terminal Architecture
+- **Dynamic Configuration Discovery (`DatabaseManager`):**
+  - Priority sequence for locating `db.properties`:
+    1. Working directory (`./db.properties`)
+    2. User configuration directory (`~/.renespresso/db.properties`)
+    3. Application subdirectory (`./config/db.properties`)
+    4. Embedded classpath fallback (`/db.properties`)
+  - Server machine runs with `db.host=localhost` (or its LAN IP).
+  - Client POS machines point `db.host` to the Server's LAN IP address (e.g. `192.168.1.33`).
+- **Dynamic Server Image Serving (`ImageStore`):**
+  - `ImageStore.getBaseUrl()` dynamically references `http://<db.host>/Renesspresso/`.
+  - Client terminals automatically download dish photos directly from the server's Apache `htdocs/Renesspresso/` without needing local image files.
+- **Server Connection Setup Modal (`ServerConfigModalView.fxml` & `ServerConfigController.java`):**
+  - Accessible directly on the login screen (`btnServerConfig`) with live connection status pill (`🟢 Server: host:port` or `⚠️ Server Disconnected`).
+  - Allows client operators to view, test (`testConnection`), and save (`saveAndReconnect`) server IP and database credentials with friendly troubleshooting guidance for firewall and remote access (`%`) grants.
+- **Background Multi-Terminal Order Sync:**
+  - `UserSession.syncFromDatabase()` polls the database periodically in the background (every 5 seconds in `UserViewController.setupLiveClock`).
+  - New orders placed by one client terminal automatically appear in the active queue and dashboard of all other connected terminals.
+
+---
+
+### 1.13 PHP Remote Image & Category Folder Management API
+- **Endpoint Location:** `C:\xampp\htdocs\Renesspresso\api.php` (served over HTTP at `http://<server-host>/Renesspresso/api.php`). Version-controlled in repository at `server/api.php` and `src/main/resources/server/api.php`.
+- **Supported Operations:**
+  - `action=ping`: Health check returning JSON status and base directory.
+  - `action=upload` / `action=edit`: Accepts multipart form-data (`file`/`image`, `category`, `custom_name`/`dish_name`, `old_path`). Automatically organizes files into clean PascalCase category folders (e.g. `HotCoffee/`, `MilkTea/`, `Breads&Pastries/`), generates standardized filenames, and unlinks old images if replaced.
+  - `action=delete`: Deletes an image file given relative path `path` with directory traversal protection (`safePath`).
+  - `action=create_category_folder`: Automatically generates or ensures existence of a category folder when a new category is added in JavaFX.
+  - `action=delete_category_folder`: Deletes the category folder and its contents when an archived category is permanently deleted.
+- **Java Client Integration (`ImageStore.java`):**
+  - `uploadToServer(...)`: Multipart POST sending image binary and metadata to `api.php?action=upload`.
+  - `save(File, category, dishName, oldPath)`: First attempts upload to server via `api.php`; falls back gracefully to local storage if offline.
+  - `delete(path)`: If path contains separators, fires an asynchronous HTTP request to `api.php?action=delete&path=...`.
+  - `createCategoryFolder(name)` & `deleteCategoryFolder(name)`: Triggers background HTTP requests to create or delete category folders on the Apache server.
+
+---
+
 18. **[COMPLETED] Dish and Category Archiving System:**
    - **Schema Migration:** Added `is_archived TINYINT(1) NOT NULL DEFAULT 0` to `products` and `categories` tables in `DatabaseManager.java` and `MenuDAO.java`.
    - **DAO Layer:** Updated `MenuDAO.getCategories()` and `MenuDAO.getProducts()` to filter by `COALESCE(is_archived, 0) = 0`. Added `getArchivedProducts()`, `getArchivedCategories()`, `archiveProduct()`, `restoreProduct()`, `archiveCategory()`, `restoreCategory()`, `productHasSalesHistory()`, `getActiveProductCountByCategory()`, and `getTotalProductCountByCategory()`.
@@ -230,3 +267,13 @@ This document records architectural conventions, established business logic, dom
      - **Adding Dishes & Categories:** In `MenuConfigureController.java`, creating a new dish or adding a new category requires credentials verification.
      - **Archiving Dishes & Categories:** In `MenuController.java` (dishes) and `MenuConfigureController.java` (categories), archiving items requires credentials verification.
      - **Permanently Deleting Dishes & Categories:** In `ArchivedMenuModalController.java`, permanently deleting dishes or categories requires credentials verification.
+21. **[COMPLETED] Client-to-Server Multi-Terminal Configuration & Sync:**
+   - **External db.properties Discovery:** Updated `DatabaseManager` to look for external `db.properties` in current working directory and `~/.renespresso/db.properties` before falling back to classpath, enabling client terminals to point to any server IP without recompiling.
+   - **Dynamic Image Host:** Updated `ImageStore.getBaseUrl()` to dynamically pull the server host from `DatabaseManager.getHost()`, allowing clients to load dish images over HTTP (`http://<server-ip>/Renesspresso/`) from the server.
+   - **Interactive Server Setup Modal:** Created `ServerConfigModalView.fxml` and `ServerConfigController.java` accessible via `btnServerConfig` on the Login screen, providing a real-time connection status pill, instant asynchronous connection testing with diagnostic feedback, and persistent saving.
+   - **Multi-Terminal Background Order Sync:** Implemented `UserSession.syncFromDatabase()` invoked on a 5-second interval in `UserViewController.setupLiveClock`, ensuring orders submitted from any client terminal immediately propagate to the order queue and dashboard of other terminals.
+22. **[COMPLETED] PHP Remote Image & Category Folder Management API:**
+   - **PHP Endpoint (`api.php`):** Implemented lightweight REST-like PHP script in XAMPP Apache `htdocs/Renesspresso/api.php` (and version-controlled in `server/api.php` and `src/main/resources/server/api.php`). Supports `ping`, `upload`, `edit`, `delete`, `create_category_folder`, and `delete_category_folder` with directory traversal guards.
+   - **Client Java Integration (`ImageStore.java`):** Added multipart HTTP client for image upload and replacement, background HTTP calls for category folder creation/deletion, and path deletion.
+   - **UI Flow Integration:** Wired folder creation into category addition in `MenuConfigureController.java`, dish image upload/edit into `MenuConfigureController.handleSave()`, dish photo deletion into `ArchivedMenuModalController.handleHardDeleteDish()`, and category folder deletion into `ArchivedMenuModalController.handleHardDeleteCategory()`.
+

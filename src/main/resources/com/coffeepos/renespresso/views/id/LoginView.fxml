@@ -186,6 +186,15 @@
                     </effect>
                 </Button>
 
+                <!-- Server Connection status button -->
+                <Button fx:id="btnServerConfig" focusTraversable="false" onAction="#handleOpenServerConfig"
+                        style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #895737; -fx-font-size: 11px; -fx-padding: 4 8;"
+                        text="🖥️ Server: localhost">
+                    <VBox.margin>
+                        <Insets top="2.0" />
+                    </VBox.margin>
+                </Button>
+
             </children>
         </VBox>
     </children>

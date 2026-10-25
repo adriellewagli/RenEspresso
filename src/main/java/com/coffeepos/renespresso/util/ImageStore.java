@@ -5,8 +5,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,20 +23,46 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
+import com.coffeepos.renespresso.config.DatabaseManager;
+
 public final class ImageStore {
 
     /** Local folder for images uploaded through the admin screen. */
     private static final Path DIR = Paths.get(System.getProperty("user.home"), ".renespresso", "menu-images");
 
-    /** Apache (XAMPP htdocs) folder that holds the server-side images. Change only here if the server moves. */
-    private static final String IMAGE_BASE = "http://localhost/Renesspresso/";
+    /** Apache (XAMPP htdocs) folder that holds the server-side images. Derived from configured server host. */
+    public static String getBaseUrl() {
+        String host = DatabaseManager.getHost();
+        if (host == null || host.isBlank()) host = "localhost";
+        return "http://" + host + "/Renesspresso/";
+    }
+
+    public static String getApiUrl() {
+        return getBaseUrl() + "api.php";
+    }
 
     private ImageStore() {}
 
     // =====================================================================
-    //  LOCAL UPLOADS (admin screen)
+    //  IMAGE UPLOADS & REMOTE SERVER INTEGRATION
     // =====================================================================
+
     public static String save(File src) throws IOException {
+        return save(src, null, null, null);
+    }
+
+    public static String save(File src, String categoryName, String dishName, String oldPath) throws IOException {
+        // 1. Attempt upload to Apache server via PHP API
+        try {
+            String serverPath = uploadToServer(src, categoryName, dishName, oldPath);
+            if (serverPath != null && !serverPath.isBlank()) {
+                return serverPath;
+            }
+        } catch (Exception e) {
+            System.err.println("ImageStore: Remote server upload note (falling back to local): " + e.getMessage());
+        }
+
+        // 2. Fallback: Save to local user folder
         Files.createDirectories(DIR);
         String n = src.getName();
         String ext = n.contains(".") ? n.substring(n.lastIndexOf('.')).toLowerCase() : ".png";
@@ -37,10 +71,142 @@ public final class ImageStore {
         return fileName;
     }
 
-    public static void delete(String fileName) {
-        if (fileName == null || fileName.isBlank()) return;
-        if (!Paths.get(fileName).getFileName().toString().equals(fileName)) return;  // file names only
-        try { Files.deleteIfExists(DIR.resolve(fileName)); } catch (IOException ignored) {}
+    public static String uploadToServer(File src, String categoryName, String dishName, String oldPath) throws IOException {
+        String boundary = "===" + System.currentTimeMillis() + "===";
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
+
+        URL url = URI.create(getApiUrl() + "?action=upload").toURL();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(12000);
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        conn.setUseCaches(false);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.setRequestProperty("User-Agent", "RenEspresso-POS");
+        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+
+        try (OutputStream os = conn.getOutputStream();
+             PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true)) {
+
+            // Form param: category
+            if (categoryName != null && !categoryName.isBlank()) {
+                writer.append(twoHyphens).append(boundary).append(lineEnd);
+                writer.append("Content-Disposition: form-data; name=\"category\"").append(lineEnd);
+                writer.append("Content-Type: text/plain; charset=UTF-8").append(lineEnd);
+                writer.append(lineEnd).append(categoryName).append(lineEnd);
+            }
+
+            // Form param: custom_name
+            if (dishName != null && !dishName.isBlank()) {
+                writer.append(twoHyphens).append(boundary).append(lineEnd);
+                writer.append("Content-Disposition: form-data; name=\"custom_name\"").append(lineEnd);
+                writer.append("Content-Type: text/plain; charset=UTF-8").append(lineEnd);
+                writer.append(lineEnd).append(dishName).append(lineEnd);
+            }
+
+            // Form param: old_path
+            if (oldPath != null && !oldPath.isBlank()) {
+                writer.append(twoHyphens).append(boundary).append(lineEnd);
+                writer.append("Content-Disposition: form-data; name=\"old_path\"").append(lineEnd);
+                writer.append("Content-Type: text/plain; charset=UTF-8").append(lineEnd);
+                writer.append(lineEnd).append(oldPath).append(lineEnd);
+            }
+
+            // File field
+            String fileName = src.getName();
+            writer.append(twoHyphens).append(boundary).append(lineEnd);
+            writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"").append(fileName).append("\"").append(lineEnd);
+            writer.append("Content-Type: application/octet-stream").append(lineEnd);
+            writer.append(lineEnd);
+            writer.flush();
+
+            // Write file binary
+            Files.copy(src.toPath(), os);
+            os.flush();
+
+            writer.append(lineEnd);
+            writer.append(twoHyphens).append(boundary).append(twoHyphens).append(lineEnd);
+            writer.flush();
+        }
+
+        int status = conn.getResponseCode();
+        if (status >= 200 && status < 300) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) response.append(line);
+                String respStr = response.toString();
+                String path = extractJsonField(respStr, "path");
+                if (path != null && !path.isBlank()) {
+                    return path;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void delete(String path) {
+        if (path == null || path.isBlank()) return;
+
+        // 1. Remote server deletion if path has directory separator
+        if (path.contains("/") || path.contains("\\")) {
+            new Thread(() -> {
+                try {
+                    String clean = path.replace('\\', '/');
+                    URL u = URI.create(getApiUrl() + "?action=delete&path=" + URLEncoder.encode(clean, StandardCharsets.UTF_8)).toURL();
+                    HttpURLConnection c = (HttpURLConnection) u.openConnection();
+                    c.setConnectTimeout(4000);
+                    c.setRequestMethod("GET");
+                    c.getResponseCode();
+                } catch (Exception ignored) {}
+            }, "image-delete-thread").start();
+        }
+
+        // 2. Local file deletion fallback
+        try {
+            Path p = DIR.resolve(path);
+            if (p.toAbsolutePath().normalize().startsWith(DIR.toAbsolutePath().normalize())) {
+                Files.deleteIfExists(p);
+            }
+        } catch (IOException ignored) {}
+    }
+
+    public static boolean createCategoryFolder(String categoryName) {
+        if (categoryName == null || categoryName.isBlank()) return false;
+        try {
+            URL u = URI.create(getApiUrl() + "?action=create_category_folder&category=" + URLEncoder.encode(categoryName, StandardCharsets.UTF_8)).toURL();
+            HttpURLConnection c = (HttpURLConnection) u.openConnection();
+            c.setConnectTimeout(4000);
+            c.setRequestMethod("GET");
+            return c.getResponseCode() == 200;
+        } catch (Exception e) {
+            System.err.println("ImageStore: createCategoryFolder note: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean deleteCategoryFolder(String categoryName) {
+        if (categoryName == null || categoryName.isBlank()) return false;
+        try {
+            URL u = URI.create(getApiUrl() + "?action=delete_category_folder&category=" + URLEncoder.encode(categoryName, StandardCharsets.UTF_8)).toURL();
+            HttpURLConnection c = (HttpURLConnection) u.openConnection();
+            c.setConnectTimeout(4000);
+            c.setRequestMethod("GET");
+            return c.getResponseCode() == 200;
+        } catch (Exception e) {
+            System.err.println("ImageStore: deleteCategoryFolder note: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static String extractJsonField(String json, String key) {
+        if (json == null) return null;
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]+)\"");
+        java.util.regex.Matcher m = p.matcher(json);
+        return m.find() ? m.group(1).replace("\\/", "/") : null;
     }
 
     // =====================================================================
@@ -114,7 +280,7 @@ public final class ImageStore {
         for (int i = 0; i < parts.length; i++) {
             parts[i] = URLEncoder.encode(parts[i], StandardCharsets.UTF_8).replace("+", "%20");
         }
-        return IMAGE_BASE + String.join("/", parts);
+        return getBaseUrl() + String.join("/", parts);
     }
 
     // =====================================================================

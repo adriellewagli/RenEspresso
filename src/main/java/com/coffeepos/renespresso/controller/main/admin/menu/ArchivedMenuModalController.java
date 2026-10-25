@@ -495,6 +495,7 @@ public class ArchivedMenuModalController {
             MenuDAO.deleteCategory(c.id());
             categories.remove(c);
             updateCounters();
+            new Thread(() -> ImageStore.deleteCategoryFolder(c.name()), "cat-folder-delete").start();
             AlertUtil.showSuccess("Category Deleted", "Category \"" + c.name() + "\" was permanently deleted.");
         } catch (SQLIntegrityConstraintViolationException e) {
             AlertUtil.showWarning("Cannot Delete Category",

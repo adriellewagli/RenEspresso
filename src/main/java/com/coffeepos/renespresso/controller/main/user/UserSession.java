@@ -92,6 +92,59 @@ public final class UserSession {
         }
     }
 
+    /** Synchronize live transactions from the database across multiple terminals */
+    public synchronized void syncFromDatabase() {
+        try {
+            List<TransactionRecord> todayList = TransactionDAO.loadTodayTransactions();
+            if (todayList.isEmpty() && transactionHistory.isEmpty()) return;
+
+            javafx.application.Platform.runLater(() -> {
+                double newSales = 0;
+                int newOrders = 0;
+                int newItems = 0;
+                int newDisc = 0;
+                for (TransactionRecord r : todayList) {
+                    if (r.getStatus() != OrderStatus.CANCELLED) {
+                        newSales += r.getTotal();
+                        newOrders++;
+                        newItems += r.getItemCount();
+                        if (r.isDiscounted()) newDisc++;
+                    }
+                }
+                salesTotal = newSales;
+                ordersCount = newOrders;
+                itemsSold = newItems;
+                discountedOrders = newDisc;
+                if (!todayList.isEmpty()) {
+                    lastOrderTime = todayList.get(0).getTime();
+                    ticketNumber = Math.max(ticketNumber, todayList.size() + 1);
+                }
+
+                // Check existing
+                java.util.Map<Integer, TransactionRecord> map = new java.util.HashMap<>();
+                for (TransactionRecord r : transactionHistory) {
+                    map.put(r.getTransactionId(), r);
+                }
+
+                for (int i = todayList.size() - 1; i >= 0; i--) {
+                    TransactionRecord remote = todayList.get(i);
+                    TransactionRecord local = map.get(remote.getTransactionId());
+                    if (local != null) {
+                        if (local.getStatus() != remote.getStatus()) {
+                            local.setStatus(remote.getStatus());
+                        }
+                    } else {
+                        // New order from another terminal
+                        transactionHistory.add(0, remote);
+                        map.put(remote.getTransactionId(), remote);
+                    }
+                }
+            });
+        } catch (Exception ignored) {
+            // Silently ignore transient network glitches during periodic polling
+        }
+    }
+
     /**
      * All transactions (every day) rung up by the logged-in cashier, newest first.
      * Filtered in the database by transactions.cashier_id, so two staff with the same name

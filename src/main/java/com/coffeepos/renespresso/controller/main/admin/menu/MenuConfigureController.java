@@ -328,6 +328,7 @@ public class MenuConfigureController {
             newCatField.clear();
             refreshCategoryList();
             updateArchivedCategoriesCount();
+            new Thread(() -> ImageStore.createCategoryFolder(name), "cat-folder-create").start();
         } catch (SQLException ex) {
             ex.printStackTrace();
             AlertUtil.showError("Could not create category", ex.getMessage());
@@ -590,8 +591,12 @@ public class MenuConfigureController {
 
         try {
             if (pathText.isEmpty()) newImage = null;
-            else if (ImageStore.isStored(pathText)) newImage = ImageStore.fileNameOf(pathText);
-            else { newImage = ImageStore.save(new File(pathText)); copied = true; }
+            else if (new File(pathText).isFile()) {
+                newImage = ImageStore.save(new File(pathText), cat != null ? cat.name() : null, name, oldImage);
+                copied = true;
+            } else if (ImageStore.isStored(pathText)) {
+                newImage = ImageStore.fileNameOf(pathText);
+            }
 
             String desc = descField.getText().trim();
             String descOrNull = desc.isEmpty() ? null : desc;

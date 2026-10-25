@@ -3,6 +3,7 @@ package com.coffeepos.renespresso.util;
 import com.coffeepos.renespresso.controller.util.AdminAuthController;
 import com.coffeepos.renespresso.controller.util.AlertController;
 import com.coffeepos.renespresso.controller.util.ConfirmAlertController;
+import com.coffeepos.renespresso.controller.util.ServerConfigController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -22,9 +23,32 @@ public class AlertUtil {
     private static final String ALERT_VIEW_PATH = "/com/coffeepos/renespresso/views/util/CustomAlertView.fxml";
     private static final String CONFIRM_VIEW_PATH = "/com/coffeepos/renespresso/views/util/ConfirmAlertView.fxml";
     private static final String ADMIN_AUTH_VIEW_PATH = "/com/coffeepos/renespresso/views/util/AdminAuthModalView.fxml";
+    private static final String SERVER_CONFIG_VIEW_PATH = "/com/coffeepos/renespresso/views/util/ServerConfigModalView.fxml";
 
     //PALLETE
     private static final String SYSTEM_PRIMARY_COLOR = "#6f4e37"; // Renespresso Coffee Brown
+
+    public static boolean showServerConfigModal() {
+        try {
+            URL xmlUrl = AlertUtil.class.getResource(SERVER_CONFIG_VIEW_PATH);
+            if (xmlUrl == null) {
+                throw new IllegalStateException("Cannot find FXML file: " + SERVER_CONFIG_VIEW_PATH);
+            }
+
+            FXMLLoader loader = new FXMLLoader(xmlUrl);
+            Parent root = loader.load();
+
+            ServerConfigController controller = loader.getController();
+
+            Stage stage = createModalStage(root);
+            stage.showAndWait();
+
+            return controller.isSaved();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     public enum AlertType {
         INFO("☕", SYSTEM_PRIMARY_COLOR),

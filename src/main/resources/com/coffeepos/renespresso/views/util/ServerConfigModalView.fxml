@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefWidth="480.0" spacing="16.0"
+      style="-fx-background-color: #FFFDF7; -fx-border-color: #DCC7AA; -fx-border-width: 1.5px; -fx-border-radius: 14px; -fx-background-radius: 14px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.20), 20, 0, 0, 6);"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coffeepos.renespresso.controller.util.ServerConfigController">
+    <padding>
+        <Insets bottom="24.0" left="28.0" right="28.0" top="24.0" />
+    </padding>
+    <children>
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <children>
+                <Label style="-fx-font-size: 26px; -fx-text-fill: #5E3023;" text="🖥️" />
+                <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label style="-fx-text-fill: #5E3023; -fx-font-weight: bold;" text="Database Server Connection">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <Label style="-fx-text-fill: #6B5444; -fx-font-size: 12px;" text="Configure client-to-server settings for this POS terminal." wrapText="true" />
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <!-- Divider -->
+        <Region maxHeight="1.0" prefHeight="1.0" style="-fx-background-color: #EADBC8;" />
+
+        <!-- Form fields -->
+        <VBox spacing="12.0">
+            <children>
+                <!-- Host & Port Row -->
+                <HBox spacing="12.0">
+                    <children>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 11px; -fx-font-weight: bold;" text="SERVER HOST / IP ADDRESS" />
+                                <TextField fx:id="txtHost" prefHeight="38.0" promptText="e.g. 192.168.1.33 or localhost"
+                                           style="-fx-background-color: #F8F2E8; -fx-background-radius: 8px; -fx-border-color: #E7DCCB; -fx-border-radius: 8px; -fx-padding: 0 12; -fx-text-fill: #2F2118; -fx-font-size: 13px;" />
+                            </children>
+                        </VBox>
+                        <VBox prefWidth="100.0" spacing="4.0">
+                            <children>
+                                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 11px; -fx-font-weight: bold;" text="PORT" />
+                                <TextField fx:id="txtPort" prefHeight="38.0" promptText="3306"
+                                           style="-fx-background-color: #F8F2E8; -fx-background-radius: 8px; -fx-border-color: #E7DCCB; -fx-border-radius: 8px; -fx-padding: 0 12; -fx-text-fill: #2F2118; -fx-font-size: 13px;" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <!-- Database Name -->
+                <VBox spacing="4.0">
+                    <children>
+                        <Label style="-fx-text-fill: #5E3023; -fx-font-size: 11px; -fx-font-weight: bold;" text="DATABASE NAME" />
+                        <TextField fx:id="txtDbName" prefHeight="38.0" promptText="coffee"
+                                   style="-fx-background-color: #F8F2E8; -fx-background-radius: 8px; -fx-border-color: #E7DCCB; -fx-border-radius: 8px; -fx-padding: 0 12; -fx-text-fill: #2F2118; -fx-font-size: 13px;" />
+                    </children>
+                </VBox>
+
+                <!-- User & Password Row -->
+                <HBox spacing="12.0">
+                    <children>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 11px; -fx-font-weight: bold;" text="USERNAME" />
+                                <TextField fx:id="txtUser" prefHeight="38.0" promptText="root or pos_user"
+                                           style="-fx-background-color: #F8F2E8; -fx-background-radius: 8px; -fx-border-color: #E7DCCB; -fx-border-radius: 8px; -fx-padding: 0 12; -fx-text-fill: #2F2118; -fx-font-size: 13px;" />
+                            </children>
+                        </VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label style="-fx-text-fill: #5E3023; -fx-font-size: 11px; -fx-font-weight: bold;" text="PASSWORD" />
+                                <PasswordField fx:id="txtPassword" prefHeight="38.0" promptText="Leave empty if none"
+                                               style="-fx-background-color: #F8F2E8; -fx-background-radius: 8px; -fx-border-color: #E7DCCB; -fx-border-radius: 8px; -fx-padding: 0 12; -fx-text-fill: #2F2118; -fx-font-size: 13px;" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <!-- Config file location note -->
+                <Label fx:id="lblConfigLocation" style="-fx-text-fill: #8C7A6B; -fx-font-size: 11px; -fx-font-style: italic;" text="Config: db.properties" wrapText="true" />
+
+                <!-- Status / Error Feedback Card -->
+                <VBox fx:id="statusBox" managed="false" spacing="4.0"
+                      style="-fx-background-color: #F5EFEB; -fx-background-radius: 8px; -fx-padding: 10 12; -fx-border-color: #E2D3C4; -fx-border-radius: 8px;"
+                      visible="false">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="8.0">
+                            <children>
+                                <Label fx:id="lblStatusIcon" style="-fx-font-size: 14px;" text="ℹ️" />
+                                <Label fx:id="lblStatusTitle" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #5E3023;" text="Status" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <ProgressIndicator fx:id="progressIndicator" prefHeight="16.0" prefWidth="16.0" visible="false" />
+                            </children>
+                        </HBox>
+                        <Label fx:id="lblStatusDetails" style="-fx-text-fill: #6B5444; -fx-font-size: 11px;" text="Details" wrapText="true" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+
+        <!-- Actions -->
+        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <children>
+                <Button fx:id="btnCancel" cancelButton="true" onAction="#handleCancel" prefHeight="36.0" prefWidth="85.0"
+                        style="-fx-background-color: transparent; -fx-border-color: #DCC7AA; -fx-border-radius: 8px; -fx-text-fill: #6F4E37; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 12px;" text="Cancel" />
+                <Button fx:id="btnTest" onAction="#handleTestConnection" prefHeight="36.0" prefWidth="130.0"
+                        style="-fx-background-color: #E8DDD0; -fx-border-color: #C08552; -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-text-fill: #5E3023; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 12px;" text="Test Connection" />
+                <Button fx:id="btnSave" defaultButton="true" onAction="#handleSaveAndConnect" prefHeight="36.0" prefWidth="135.0"
+                        style="-fx-background-color: #5E3023; -fx-text-fill: #FFFDF7; -fx-background-radius: 8px; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 12px;" text="Save &amp; Connect" />
+            </children>
+            <VBox.margin>
+                <Insets top="4.0" />
+            </VBox.margin>
+        </HBox>
+    </children>
+</VBox>

@@ -1,11 +1,13 @@
 package com.coffeepos.renespresso.controller.id;
 
+import com.coffeepos.renespresso.config.DatabaseManager;
 import com.coffeepos.renespresso.dao.UserDAO;
 import com.coffeepos.renespresso.model.User;
 import com.coffeepos.renespresso.util.AlertUtil;
 import com.coffeepos.renespresso.util.NavigateUtil;
 import com.coffeepos.renespresso.controller.main.user.UserSession;
 import com.coffeepos.renespresso.util.SessionManager;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -32,6 +34,9 @@ public class LoginController {
 
     @FXML
     private Button loginButton;
+
+    @FXML
+    private Button btnServerConfig;
 
     private boolean isPasswordVisible = false;
 
@@ -60,6 +65,29 @@ public class LoginController {
         visiblePasswordField.setOnAction(this::handleLogin);
 
         loginButton.setOnAction(this::handleLogin);
+
+        updateServerStatus();
+    }
+
+    private void updateServerStatus() {
+        if (btnServerConfig == null) return;
+        boolean connected = DatabaseManager.isConnected();
+        String host = DatabaseManager.getHost();
+        String port = DatabaseManager.getPort();
+        if (connected) {
+            btnServerConfig.setText("🟢 Server: " + host + ":" + port);
+            btnServerConfig.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #2E7D32; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 8;");
+        } else {
+            btnServerConfig.setText("⚠️ Server Disconnected (Click to setup)");
+            btnServerConfig.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #C62828; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 8;");
+        }
+    }
+
+    @FXML
+    private void handleOpenServerConfig() {
+        if (AlertUtil.showServerConfigModal()) {
+            updateServerStatus();
+        }
     }
 
     // TOGGLE SHOW/HIDE PASSWORD
@@ -98,6 +126,18 @@ public class LoginController {
             return;
         }
 
+        if (!DatabaseManager.isConnected()) {
+            boolean open = AlertUtil.showYesNo("Database Disconnected",
+                    "Cannot reach the database server at " + DatabaseManager.getHost() + ":" + DatabaseManager.getPort() + ".\n\n"
+                            + "Would you like to configure server connection settings now?");
+            if (open) {
+                if (AlertUtil.showServerConfigModal()) {
+                    updateServerStatus();
+                }
+            }
+            return;
+        }
+
         User user = UserDAO.authenticate(username, password);
 
         if (user != null) {
@@ -114,7 +154,12 @@ public class LoginController {
                 NavigateUtil.navigateTo(event, "main/user/UserView.fxml", "Renespresso POS Terminal", NavigateUtil.WindowMode.FULLSCREEN_WORKSPACE);
             }
         } else {
-            AlertUtil.showError("Authentication Failed", "Invalid username or password.");
+            if (!DatabaseManager.isConnected()) {
+                updateServerStatus();
+                AlertUtil.showError("Server Connection Lost", "Connection to the database server was lost. Please check Server Settings.");
+            } else {
+                AlertUtil.showError("Authentication Failed", "Invalid username or password.");
+            }
         }
     }
 }

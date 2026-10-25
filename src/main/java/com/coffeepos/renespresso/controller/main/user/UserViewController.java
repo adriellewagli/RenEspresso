@@ -126,7 +126,14 @@ public class UserViewController {
             Date now = new Date();
             lblClock.setText(clockFormat.format(now));
             lblDate.setText(dateFormat.format(now));
-            if (++tick % 30 == 0 && homeView.isVisible()) refreshDashboard();   // refresh "x mins ago"
+            tick++;
+            if (tick % 5 == 0) {
+                // Background multi-terminal sync every 5 seconds
+                Thread syncThread = new Thread(() -> session.syncFromDatabase(), "terminal-sync-worker");
+                syncThread.setDaemon(true);
+                syncThread.start();
+            }
+            if (tick % 30 == 0 && homeView.isVisible()) refreshDashboard();   // refresh "x mins ago"
         }));
         clockTimeline.setCycleCount(Timeline.INDEFINITE);
         clockTimeline.play();
