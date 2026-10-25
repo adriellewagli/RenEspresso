@@ -79,8 +79,8 @@ public class TransactionSeeder {
 
             // 4. Generate transactions for the last 14 days
             Random rng = new Random(42); // fixed seed for repeatable realistic distribution
-            LocalDate today = LocalDate.of(2026, 10, 23);
-            LocalDate start = today.minusDays(13); // 14 days total: Oct 10 to Oct 23
+            LocalDate today = LocalDate.now();
+            LocalDate start = today.minusDays(13); // 14 days total up to today
 
             String insertTxSql = """
                 INSERT INTO transactions (
@@ -176,7 +176,7 @@ public class TransactionSeeder {
                         status = "CANCELLED";
                         payStatus = "Refunded";
                     } else if (isToday && time.getHour() >= 21 && rng.nextDouble() < 0.35) {
-                        status = rng.nextBoolean() ? "PREPARING" : "READY";
+                        status = "PREPARING";
                     }
 
                     if ("COMPLETED".equals(status)) {

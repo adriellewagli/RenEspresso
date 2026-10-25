@@ -115,19 +115,30 @@ public class HomeDAO {
     }
 
     private static List<RecentOrder> recentOrders(Connection c) throws SQLException {
-        String sql = "SELECT t.transaction_id, COALESCE(u.full_name, '-') AS cashier, "
-                + "t.total_amount, t.status, t.created_at "
+        String sql = "SELECT t.transaction_id, COALESCE(u.full_name, 'Former Staff') AS cashier, "
+                + "t.total_amount, "
+                + "CASE WHEN UPPER(TRIM(t.status)) = 'READY' THEN 'COMPLETED' "
+                + "     ELSE COALESCE(NULLIF(TRIM(t.status), ''), 'COMPLETED') END AS status, "
+                + "t.created_at "
                 + "FROM transactions t LEFT JOIN users u ON u.user_id = t.cashier_id "
                 + "ORDER BY t.created_at DESC LIMIT 8";
         List<RecentOrder> out = new ArrayList<>();
         try (PreparedStatement ps = c.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
+                String cashier = rs.getString("cashier");
+                if (cashier == null || cashier.isBlank() || "-".equals(cashier.trim())) {
+                    cashier = "Former Staff";
+                }
+                String status = rs.getString("status");
+                if (status == null || status.isBlank()) {
+                    status = "COMPLETED";
+                }
                 out.add(new RecentOrder(
                         rs.getInt("transaction_id"),
-                        rs.getString("cashier"),
+                        cashier,
                         rs.getDouble("total_amount"),
-                        rs.getString("status"),
+                        status,
                         rs.getTimestamp("created_at").toLocalDateTime()));
             }
         }

@@ -71,16 +71,17 @@
     <HBox spacing="16.0" minHeight="0.0" prefHeight="0.0" VBox.vgrow="ALWAYS">
         <VBox styleClass="card, panel-card" prefWidth="560.0" minHeight="0.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
             <Label styleClass="card-title" text="Recent Transactions" />
+            <Label styleClass="card-subtitle" text="Latest store orders and status" />
             <TableView fx:id="recentTable" minHeight="0.0" prefHeight="0.0" styleClass="recent-table" VBox.vgrow="ALWAYS">
                 <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                 </columnResizePolicy>
                 <columns>
-                    <TableColumn fx:id="colId" text="ID" />
-                    <TableColumn fx:id="colCashier" text="CASHIER" />
-                    <TableColumn fx:id="colTotal" text="TOTAL" />
-                    <TableColumn fx:id="colStatus" text="STATUS" />
-                    <TableColumn fx:id="colTime" text="TIME" />
+                    <TableColumn fx:id="colId" prefWidth="80.0" text="ID" />
+                    <TableColumn fx:id="colCashier" prefWidth="190.0" text="CASHIER" />
+                    <TableColumn fx:id="colTotal" prefWidth="110.0" text="TOTAL" />
+                    <TableColumn fx:id="colStatus" prefWidth="130.0" text="STATUS" />
+                    <TableColumn fx:id="colTime" prefWidth="150.0" text="TIME" />
                 </columns>
             </TableView>
         </VBox>

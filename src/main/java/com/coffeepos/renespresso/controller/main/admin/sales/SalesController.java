@@ -157,7 +157,7 @@ public class SalesController {
 
         // selected-range KPIs
         var t = d.totals();
-        lblRangeNote.setText(period.range + "  (since " + d.start().format(SINCE_FMT) + ")");
+        lblRangeNote.setText(d.rangeLabel());
         lblRangeRevenue.setText(money(t.revenue()));
         lblRangeOrders.setText(String.valueOf(t.orders()));
         lblAvgOrder.setText(money(t.orders() == 0 ? 0 : t.revenue() / t.orders()));
@@ -188,11 +188,21 @@ public class SalesController {
         }
         addTooltips(rev, true);
         addTooltips(ord, false);
-        salesChart.getData().setAll(rev);
-        ordersChart.getData().setAll(ord);
+
+        if (salesChart.getXAxis() instanceof javafx.scene.chart.CategoryAxis catX) {
+            catX.getCategories().clear();
+        }
+        if (ordersChart.getXAxis() instanceof javafx.scene.chart.CategoryAxis catX) {
+            catX.getCategories().clear();
+        }
+
+        salesChart.getData().clear();
+        salesChart.getData().add(rev);
+        ordersChart.getData().clear();
+        ordersChart.getData().add(ord);
 
         lblChartTitle.setText(period.title + " Revenue");
-        lblChartSub.setText(period.range + " • cancelled orders excluded");
+        lblChartSub.setText(period.range + " \u2022 cancelled orders excluded");
 
         // current vs previous bucket, and the best bucket
         if (pts.isEmpty()) {
@@ -205,7 +215,7 @@ public class SalesController {
         String trend = "Current " + period.unit + " (in progress): " + money(cur.revenue());
         if (prev != null && prev.revenue() > 0) {
             double pct = (cur.revenue() - prev.revenue()) / prev.revenue() * 100;
-            trend += "   " + (pct >= 0 ? "▲ " : "▼ ") + String.format("%.1f%%", Math.abs(pct))
+            trend += "   " + (pct >= 0 ? "\u25B2 " : "\u25BC ") + String.format("%.1f%%", Math.abs(pct))
                     + " vs previous " + period.unit;
         }
         lblTrend.setText(trend);
@@ -218,7 +228,7 @@ public class SalesController {
         }
         lblBest.setText(best.revenue() <= 0 ? "No sales in this range"
                 : "Best " + period.unit + ": " + best.label() + " (" + money(best.revenue()) + ")"
-                + "   •   Average per " + period.unit + ": " + money(sum / pts.size()));
+                + "   \u2022   Average per " + period.unit + ": " + money(sum / pts.size()));
     }
 
     private void showHours(List<Slice> hours) {
@@ -226,11 +236,15 @@ public class SalesController {
         s.setName("Revenue");
         for (Slice h : hours) {
             XYChart.Data<String, Number> point = new XYChart.Data<>(hourLabel(Integer.parseInt(h.name())), h.value());
-            String tip = hourLabel(Integer.parseInt(h.name())) + ": " + money(h.value()) + " • " + orders(h.count());
+            String tip = hourLabel(Integer.parseInt(h.name())) + ": " + money(h.value()) + " \u2022 " + orders(h.count());
             point.nodeProperty().addListener((o, a, n) -> { if (n != null) Tooltip.install(n, new Tooltip(tip)); });
             s.getData().add(point);
         }
-        hourChart.getData().setAll(s);
+        if (hourChart.getXAxis() instanceof javafx.scene.chart.CategoryAxis catX) {
+            catX.getCategories().clear();
+        }
+        hourChart.getData().clear();
+        hourChart.getData().add(s);
     }
 
     private void showProducts(List<ProductRow> products) {

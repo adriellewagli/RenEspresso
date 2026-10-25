@@ -2,8 +2,12 @@ package com.coffeepos.renespresso.controller.main.admin.home;
 
 import com.coffeepos.renespresso.dao.HomeDAO;
 import com.coffeepos.renespresso.dao.HomeDAO.*;
+import com.coffeepos.renespresso.model.OrderStatus;
+import com.coffeepos.renespresso.model.User;
+import com.coffeepos.renespresso.util.SessionManager;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -16,9 +20,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.util.Duration;
-import com.coffeepos.renespresso.model.User;
-import com.coffeepos.renespresso.util.SessionManager;
+
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -164,6 +169,7 @@ public class HomeController {
         }
 
         recentTable.setItems(FXCollections.observableArrayList(s.recent()));
+        Platform.runLater(() -> recentTable.scrollTo(0));
     }
 
     private void clearSales() {
@@ -216,6 +222,8 @@ public class HomeController {
     // ------------------------------------------------------------------ TABLE
 
     private void setupTable() {
+        recentTable.setFixedCellSize(44.0);
+
         colId.setCellValueFactory(c -> new ReadOnlyStringWrapper("#" + c.getValue().id()));
         colCashier.setCellValueFactory(c -> new ReadOnlyStringWrapper(c.getValue().cashier()));
         colTotal.setCellValueFactory(c -> new ReadOnlyStringWrapper(MONEY.format(c.getValue().total())));
@@ -232,14 +240,49 @@ public class HomeController {
         colTime.setCellFactory(c -> textCell("muted-cell"));
         colStatus.setCellFactory(c -> new TableCell<>() {
             @Override
-            protected void updateItem(String status, boolean empty) {
-                super.updateItem(status, empty);
+            protected void updateItem(String rawStatus, boolean empty) {
+                super.updateItem(rawStatus, empty);
                 setText(null);
-                if (empty || status == null) { setGraphic(null); return; }
-                String nice = status.charAt(0) + status.substring(1).toLowerCase();
-                Label pill = new Label(nice);
-                pill.getStyleClass().addAll("pill", "status-" + status.toLowerCase());
-                setGraphic(pill);
+                if (empty) {
+                    setGraphic(null);
+                    return;
+                }
+
+                String s = (rawStatus == null || rawStatus.isBlank()) ? "COMPLETED" : rawStatus.trim().toUpperCase();
+                OrderStatus status;
+                try {
+                    status = OrderStatus.valueOf(s);
+                } catch (IllegalArgumentException e) {
+                    if ("PREPARING".equalsIgnoreCase(s)) status = OrderStatus.PREPARING;
+                    else if ("CANCELLED".equalsIgnoreCase(s) || "VOIDED".equalsIgnoreCase(s)) status = OrderStatus.CANCELLED;
+                    else if ("PENDING".equalsIgnoreCase(s)) status = OrderStatus.PENDING;
+                    else status = OrderStatus.COMPLETED;
+                }
+
+                Circle dot = new Circle(4);
+                Color dotColor = switch (status) {
+                    case PREPARING -> Color.web("#D97706");
+                    case PENDING -> Color.web("#6B7280");
+                    case COMPLETED -> Color.web("#10B981");
+                    case CANCELLED -> Color.web("#EF4444");
+                };
+                dot.setFill(dotColor);
+
+                Label textLbl = new Label(status.label());
+                textLbl.getStyleClass().add("status-text");
+
+                HBox pill = new HBox(6, dot, textLbl);
+                pill.setAlignment(Pos.CENTER);
+                pill.getStyleClass().addAll("status-pill", "status-pill-" + status.name().toLowerCase());
+                pill.setMinHeight(22);
+                pill.setPrefHeight(22);
+                pill.setMaxHeight(22);
+                pill.setMaxWidth(Region.USE_PREF_SIZE);
+
+                HBox wrapper = new HBox(pill);
+                wrapper.setFillHeight(false);
+                wrapper.setAlignment(Pos.CENTER_LEFT);
+                setGraphic(wrapper);
             }
         });
 

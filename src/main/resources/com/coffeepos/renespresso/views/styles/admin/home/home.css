@@ -37,11 +37,11 @@
 
 /* ===== Cards ===== */
 .card {
-    -fx-background-color: #FFFDFA;
+    -fx-background-color: #FFFFFF;
     -fx-background-radius: 16;
     -fx-border-color: #EFE5D6;
     -fx-border-radius: 16;
-    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.06), 12, 0, 0, 2);
+    -fx-effect: dropshadow(gaussian, rgba(94, 48, 35, 0.05), 12, 0, 0, 2);
 }
 .kpi-title { -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; }
 .kpi-value { -fx-text-fill: #2F2118; -fx-font-size: 28px; -fx-font-weight: bold; }
@@ -80,36 +80,142 @@
     -fx-faint-focus-color: transparent;
 }
 .recent-table .column-header-background {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent transparent #E7DCCB transparent;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #EFE5D6 transparent;
     -fx-border-width: 0 0 1 0;
 }
 .recent-table .column-header,
-.recent-table .filler { -fx-background-color: transparent; -fx-border-color: transparent; -fx-size: 40; }
+.recent-table .filler {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent;
+    -fx-size: 38px;
+}
 .recent-table .column-header .label {
-    -fx-text-fill: #895737; -fx-font-size: 11px; -fx-font-weight: bold; -fx-alignment: CENTER-LEFT;
+    -fx-text-fill: #895737;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER-LEFT;
 }
 .recent-table .table-row-cell {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent transparent #EFE6D8 transparent;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #F5EFEB transparent;
     -fx-border-width: 0 0 1 0;
-    -fx-cell-size: 38;
+    -fx-cell-size: 44px;
 }
-.recent-table .table-row-cell:hover { -fx-background-color: #FBF6EE; }
-.recent-table .table-row-cell:empty { -fx-background-color: transparent; -fx-border-color: transparent; }
+.recent-table .table-row-cell:hover {
+    -fx-background-color: #FCF9F5;
+}
+.recent-table .table-row-cell:selected {
+    -fx-background-color: #F8F2EA;
+}
+.recent-table .table-row-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
 .recent-table .table-cell {
-    -fx-border-color: transparent; -fx-padding: 0 8; -fx-alignment: CENTER-LEFT;
-    -fx-text-fill: #6B5444; -fx-font-size: 12px;
+    -fx-border-color: transparent;
+    -fx-padding: 0 10;
+    -fx-alignment: CENTER-LEFT;
+    -fx-text-fill: #6B5444;
+    -fx-font-size: 12px;
 }
-.recent-table .table-cell.name-cell  { -fx-text-fill: #2F2118; -fx-font-weight: bold; }
-.recent-table .table-cell.muted-cell { -fx-text-fill: #7A6757; }
+.recent-table .table-cell.name-cell {
+    -fx-text-fill: #2F2118;
+    -fx-font-weight: bold;
+}
+.recent-table .table-cell.muted-cell {
+    -fx-text-fill: #7A6757;
+}
 
-/* ===== Pills ===== */
+/* Scrollbar within Recent Transactions */
+.recent-table .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8px;
+    -fx-min-width: 8px;
+    -fx-max-width: 8px;
+}
+.recent-table .scroll-bar:horizontal {
+    -fx-pref-height: 0px;
+    -fx-min-height: 0px;
+    -fx-max-height: 0px;
+    -fx-opacity: 0;
+}
+.recent-table .scroll-bar:vertical > .track,
+.recent-table .scroll-bar:vertical > .track-background {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+.recent-table .scroll-bar:vertical > .thumb {
+    -fx-background-color: #E2D7CC;
+    -fx-background-radius: 8px;
+    -fx-background-insets: 1;
+}
+.recent-table .scroll-bar:vertical:hover > .thumb {
+    -fx-background-color: #C08552;
+}
+.recent-table .scroll-bar > .increment-button,
+.recent-table .scroll-bar > .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+}
+.recent-table .scroll-bar > .increment-button > .increment-arrow,
+.recent-table .scroll-bar > .decrement-button > .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+/* ===== Status Pill Badge (Standardized with Transaction & Order Management) ===== */
+.status-pill {
+    -fx-padding: 2 10 2 8;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-min-height: 22px;
+    -fx-pref-height: 22px;
+    -fx-max-height: 22px;
+    -fx-alignment: CENTER;
+    -fx-spacing: 6;
+}
+
+.status-pill-preparing {
+    -fx-background-color: #FEF3C7;
+}
+.status-pill-preparing .status-text {
+    -fx-text-fill: #B45309;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.status-pill-completed {
+    -fx-background-color: #DEF7EC;
+}
+.status-pill-completed .status-text {
+    -fx-text-fill: #03543F;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.status-pill-cancelled {
+    -fx-background-color: #F8D7DA;
+}
+.status-pill-cancelled .status-text {
+    -fx-text-fill: #9B1C1C;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.status-pill-pending {
+    -fx-background-color: #F3F4F6;
+}
+.status-pill-pending .status-text {
+    -fx-text-fill: #4B5563;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+/* ===== Role Pills (for Staff Overview) ===== */
 .pill { -fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 10px; -fx-font-weight: bold; }
 .role-admin      { -fx-background-color: #E1ECF7; -fx-text-fill: #2B6CB0; }
 .role-manager    { -fx-background-color: #EDE4F7; -fx-text-fill: #6B3FA0; }
 .role-cashier    { -fx-background-color: #EEEAE4; -fx-text-fill: #5A5148; }
-
-.status-completed { -fx-background-color: #DCEBE3; -fx-text-fill: #2F6F52; }
-.status-voided    { -fx-background-color: #FBE0DE; -fx-text-fill: #C53030; }
-.status-pending   { -fx-background-color: #FCEBDD; -fx-text-fill: #D9731F; }

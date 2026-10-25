@@ -4,7 +4,7 @@
 .sales-subtitle  { -fx-text-fill: #895737; -fx-font-size: 15px; }
 
 .card {
-    -fx-background-color: #FFFDFA;
+    -fx-background-color: #FFFFFF;
     -fx-background-radius: 16;
     -fx-border-color: #EFE5D6;
     -fx-border-radius: 16;
@@ -58,19 +58,36 @@
 }
 
 /* ---------- charts ---------- */
-.chart-bar {
+.chart-bar,
+.default-color0.chart-bar,
+.default-color1.chart-bar,
+.default-color2.chart-bar,
+.default-color3.chart-bar,
+.default-color4.chart-bar {
     -fx-bar-fill: #895737;
     -fx-background-radius: 4 4 0 0;
 }
-.default-color0.chart-bar { -fx-bar-fill: #895737; }
 
 .axis-label, .axis { -fx-tick-label-fill: #8C7A6A; }
 .chart-horizontal-grid-lines { -fx-stroke: #EFE5D6; }
 
 /* orders line chart */
-.default-color0.chart-series-line { -fx-stroke: #5E3023; -fx-stroke-width: 2.5px; }
-.default-color0.chart-line-symbol {
-    -fx-background-color: #5E3023, #FFFDFA;
+.chart-series-line,
+.default-color0.chart-series-line,
+.default-color1.chart-series-line,
+.default-color2.chart-series-line,
+.default-color3.chart-series-line,
+.default-color4.chart-series-line {
+    -fx-stroke: #5E3023;
+    -fx-stroke-width: 2.5px;
+}
+.chart-line-symbol,
+.default-color0.chart-line-symbol,
+.default-color1.chart-line-symbol,
+.default-color2.chart-line-symbol,
+.default-color3.chart-line-symbol,
+.default-color4.chart-line-symbol {
+    -fx-background-color: #5E3023, #FFFFFF;
 }
 
 /* hover tooltips */

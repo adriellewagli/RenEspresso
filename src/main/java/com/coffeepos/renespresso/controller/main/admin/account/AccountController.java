@@ -444,7 +444,25 @@ public class AccountController {
             scene.getStylesheets().addAll(ConfirmUtil.collectStylesheets(accountTable));
             stage.setScene(scene);
 
-            stage.setOnShown(e -> stage.centerOnScreen());
+            stage.setOnShowing(e -> {
+                root.applyCss();
+                javafx.stage.Window owner = stage.getOwner();
+                if (owner != null && owner.getWidth() > 0 && owner.getHeight() > 0) {
+                    double w = root.prefWidth(-1);
+                    double h = root.prefHeight(w);
+                    stage.setX(owner.getX() + (owner.getWidth() - (w > 0 ? w : 920)) / 2);
+                    stage.setY(owner.getY() + (owner.getHeight() - (h > 0 ? h : 580)) / 2);
+                }
+            });
+            stage.setOnShown(e -> {
+                javafx.stage.Window owner = stage.getOwner();
+                if (owner != null && owner.getWidth() > 0 && owner.getHeight() > 0) {
+                    stage.setX(owner.getX() + (owner.getWidth() - stage.getWidth()) / 2);
+                    stage.setY(owner.getY() + (owner.getHeight() - stage.getHeight()) / 2);
+                } else {
+                    stage.centerOnScreen();
+                }
+            });
 
             stage.showAndWait();
 

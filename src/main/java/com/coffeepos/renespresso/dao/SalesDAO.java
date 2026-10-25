@@ -45,8 +45,8 @@ public final class SalesDAO {
             this.sqlKey = sqlKey;
         }
 
-        /** First day of the oldest bucket shown. */
-        LocalDate start(LocalDate today) {
+        /** First day of the oldest bucket shown in trend charts. */
+        LocalDate trendStart(LocalDate today) {
             return switch (this) {
                 case DAILY -> today.minusDays(29);
                 case WEEKLY -> today.with(DayOfWeek.MONDAY).minusWeeks(11);
@@ -54,6 +54,48 @@ public final class SalesDAO {
                 case QUARTERLY -> today.withDayOfMonth(1)
                         .withMonth((today.getMonthValue() - 1) / 3 * 3 + 1).minusMonths(21);
                 case YEARLY -> today.withDayOfYear(1).minusYears(4);
+            };
+        }
+
+        LocalDate start(LocalDate today) {
+            return trendStart(today);
+        }
+
+        /** Start date (inclusive) of the active current period for cards and breakdown tables. */
+        LocalDate currentPeriodStart(LocalDate today) {
+            return switch (this) {
+                case DAILY -> today;
+                case WEEKLY -> today.with(DayOfWeek.MONDAY);
+                case MONTHLY -> today.withDayOfMonth(1);
+                case QUARTERLY -> today.withDayOfMonth(1).withMonth((today.getMonthValue() - 1) / 3 * 3 + 1);
+                case YEARLY -> today.withDayOfYear(1);
+            };
+        }
+
+        /** End date (exclusive) of the active current period for cards and breakdown tables. */
+        LocalDate currentPeriodEnd(LocalDate today) {
+            return switch (this) {
+                case DAILY -> today.plusDays(1);
+                case WEEKLY -> today.with(DayOfWeek.MONDAY).plusWeeks(1);
+                case MONTHLY -> today.withDayOfMonth(1).plusMonths(1);
+                case QUARTERLY -> today.withDayOfMonth(1).withMonth((today.getMonthValue() - 1) / 3 * 3 + 1).plusMonths(3);
+                case YEARLY -> today.withDayOfYear(1).plusYears(1);
+            };
+        }
+
+        /** User-facing label for the active range. */
+        String currentPeriodLabel(LocalDate today) {
+            return switch (this) {
+                case DAILY -> "Today (" + today.format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH)) + ")";
+                case WEEKLY -> {
+                    LocalDate mon = today.with(DayOfWeek.MONDAY);
+                    LocalDate sun = mon.plusDays(6);
+                    yield "This Week (" + mon.format(DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH))
+                            + " \u2013 " + sun.format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH)) + ")";
+                }
+                case MONTHLY -> "This Month (" + today.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)) + ")";
+                case QUARTERLY -> "This Quarter (Q" + ((today.getMonthValue() - 1) / 3 + 1) + " " + today.getYear() + ")";
+                case YEARLY -> "This Year (" + today.getYear() + ")";
             };
         }
 
@@ -101,7 +143,7 @@ public final class SalesDAO {
 
     public record ProductRow(String name, int qty, double revenue) {}
 
-    public record SalesData(Period period, LocalDate start, Kpis kpis, List<Point> series,
+    public record SalesData(Period period, LocalDate start, String rangeLabel, Kpis kpis, List<Point> series,
                             RangeTotals totals, List<Slice> payments, List<Slice> hours,
                             List<ProductRow> products, List<Slice> cashiers) {}
 
@@ -109,18 +151,24 @@ public final class SalesDAO {
 
     public static SalesData load(Period period) throws SQLException {
         LocalDate today = LocalDate.now();
-        LocalDate start = period.start(today);
-        Timestamp from = Timestamp.valueOf(start.atStartOfDay());
+        LocalDate trendStart = period.trendStart(today);
+        Timestamp trendFrom = Timestamp.valueOf(trendStart.atStartOfDay());
+
+        LocalDate periodStart = period.currentPeriodStart(today);
+        LocalDate periodEnd = period.currentPeriodEnd(today);
+        Timestamp startTs = Timestamp.valueOf(periodStart.atStartOfDay());
+        Timestamp endTs = Timestamp.valueOf(periodEnd.atStartOfDay());
+        String rangeLabel = period.currentPeriodLabel(today);
 
         try (Connection conn = DatabaseManager.getConnection()) {
-            return new SalesData(period, start,
+            return new SalesData(period, trendStart, rangeLabel,
                     kpis(conn),
-                    series(conn, period, start, today, from),
-                    totals(conn, from),
-                    payments(conn, from),
-                    hours(conn, from),
-                    products(conn, from),
-                    cashiers(conn, from));
+                    series(conn, period, trendStart, today, trendFrom),
+                    totals(conn, startTs, endTs),
+                    payments(conn, startTs, endTs),
+                    hours(conn, startTs, endTs),
+                    products(conn, startTs, endTs),
+                    cashiers(conn, startTs, endTs));
         }
     }
 
@@ -136,7 +184,7 @@ public final class SalesDAO {
                 COALESCE(SUM(CASE WHEN YEAR(created_at) = YEAR(CURDATE()) THEN total_amount END), 0) AS year_sales,
                 COUNT(CASE WHEN YEAR(created_at) = YEAR(CURDATE()) THEN 1 END) AS year_orders
             FROM transactions
-            WHERE status <> 'CANCELLED'
+            WHERE COALESCE(status, 'COMPLETED') <> 'CANCELLED'
         """;
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
@@ -153,7 +201,7 @@ public final class SalesDAO {
     private static List<Point> series(Connection conn, Period period, LocalDate start,
                                       LocalDate today, Timestamp from) throws SQLException {
         String sql = "SELECT " + period.sqlKey + " AS k, COALESCE(SUM(total_amount), 0) AS rev, COUNT(*) AS cnt "
-                + "FROM transactions WHERE created_at >= ? AND status <> 'CANCELLED' GROUP BY k";
+                + "FROM transactions WHERE created_at >= ? AND COALESCE(status, 'COMPLETED') <> 'CANCELLED' GROUP BY k";
 
         Map<String, double[]> found = new HashMap<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -173,19 +221,20 @@ public final class SalesDAO {
         return points;
     }
 
-    private static RangeTotals totals(Connection conn, Timestamp from) throws SQLException {
+    private static RangeTotals totals(Connection conn, Timestamp start, Timestamp end) throws SQLException {
         String sql = """
             SELECT
-                COALESCE(SUM(CASE WHEN status <> 'CANCELLED' THEN total_amount END), 0) AS rev,
-                COUNT(CASE WHEN status <> 'CANCELLED' THEN 1 END) AS orders,
+                COALESCE(SUM(CASE WHEN COALESCE(status, 'COMPLETED') <> 'CANCELLED' THEN total_amount END), 0) AS rev,
+                COUNT(CASE WHEN COALESCE(status, 'COMPLETED') <> 'CANCELLED' THEN 1 END) AS orders,
                 COUNT(CASE WHEN status = 'CANCELLED' THEN 1 END) AS cancelled,
-                COALESCE(SUM(CASE WHEN status <> 'CANCELLED' THEN vat END), 0) AS vat,
-                COALESCE(SUM(CASE WHEN status <> 'CANCELLED' THEN discount END), 0) AS discount
+                COALESCE(SUM(CASE WHEN COALESCE(status, 'COMPLETED') <> 'CANCELLED' THEN vat END), 0) AS vat,
+                COALESCE(SUM(CASE WHEN COALESCE(status, 'COMPLETED') <> 'CANCELLED' THEN discount END), 0) AS discount
             FROM transactions
-            WHERE created_at >= ?
+            WHERE created_at >= ? AND created_at < ?
         """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, from);
+            ps.setTimestamp(1, start);
+            ps.setTimestamp(2, end);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new RangeTotals(rs.getDouble("rev"), rs.getInt("orders"),
@@ -196,17 +245,18 @@ public final class SalesDAO {
         return new RangeTotals(0, 0, 0, 0, 0);
     }
 
-    private static List<Slice> payments(Connection conn, Timestamp from) throws SQLException {
+    private static List<Slice> payments(Connection conn, Timestamp start, Timestamp end) throws SQLException {
         String sql = """
-            SELECT COALESCE(payment_method, 'Unknown') AS m, SUM(total_amount) AS rev, COUNT(*) AS cnt
+            SELECT COALESCE(payment_method, 'Cash') AS m, SUM(total_amount) AS rev, COUNT(*) AS cnt
             FROM transactions
-            WHERE created_at >= ? AND status <> 'CANCELLED'
+            WHERE created_at >= ? AND created_at < ? AND COALESCE(status, 'COMPLETED') <> 'CANCELLED'
             GROUP BY m
             ORDER BY rev DESC
         """;
         List<Slice> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, from);
+            ps.setTimestamp(1, start);
+            ps.setTimestamp(2, end);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) list.add(new Slice(rs.getString("m"), rs.getDouble("rev"), rs.getInt("cnt")));
             }
@@ -215,17 +265,18 @@ public final class SalesDAO {
     }
 
     /** Always 24 entries (0..23); name is the hour number. */
-    private static List<Slice> hours(Connection conn, Timestamp from) throws SQLException {
+    private static List<Slice> hours(Connection conn, Timestamp start, Timestamp end) throws SQLException {
         String sql = """
             SELECT HOUR(created_at) AS h, SUM(total_amount) AS rev, COUNT(*) AS cnt
             FROM transactions
-            WHERE created_at >= ? AND status <> 'CANCELLED'
+            WHERE created_at >= ? AND created_at < ? AND COALESCE(status, 'COMPLETED') <> 'CANCELLED'
             GROUP BY h
         """;
         double[] rev = new double[24];
         int[] cnt = new int[24];
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, from);
+            ps.setTimestamp(1, start);
+            ps.setTimestamp(2, end);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int h = rs.getInt("h");
@@ -241,21 +292,22 @@ public final class SalesDAO {
         return list;
     }
 
-    private static List<ProductRow> products(Connection conn, Timestamp from) throws SQLException {
+    private static List<ProductRow> products(Connection conn, Timestamp start, Timestamp end) throws SQLException {
         String sql = """
             SELECT p.name AS name, SUM(ti.quantity) AS qty, SUM(ti.quantity * ti.price) AS rev
             FROM transaction_items ti
             JOIN transactions t ON t.transaction_id = ti.transaction_id
             JOIN product_variants pv ON pv.variant_id = ti.variant_id
             JOIN products p ON p.id = pv.product_id
-            WHERE t.created_at >= ? AND t.status <> 'CANCELLED'
+            WHERE t.created_at >= ? AND t.created_at < ? AND COALESCE(t.status, 'COMPLETED') <> 'CANCELLED'
             GROUP BY p.id, p.name
             ORDER BY qty DESC, rev DESC
             LIMIT 8
         """;
         List<ProductRow> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, from);
+            ps.setTimestamp(1, start);
+            ps.setTimestamp(2, end);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) list.add(new ProductRow(rs.getString("name"), rs.getInt("qty"), rs.getDouble("rev")));
             }
@@ -263,19 +315,20 @@ public final class SalesDAO {
         return list;
     }
 
-    private static List<Slice> cashiers(Connection conn, Timestamp from) throws SQLException {
+    private static List<Slice> cashiers(Connection conn, Timestamp start, Timestamp end) throws SQLException {
         String sql = """
-            SELECT COALESCE(u.full_name, 'Unknown') AS name, SUM(t.total_amount) AS rev, COUNT(*) AS cnt
+            SELECT COALESCE(u.full_name, 'Former Staff') AS name, SUM(t.total_amount) AS rev, COUNT(*) AS cnt
             FROM transactions t
             LEFT JOIN users u ON u.user_id = t.cashier_id
-            WHERE t.created_at >= ? AND t.status <> 'CANCELLED'
+            WHERE t.created_at >= ? AND t.created_at < ? AND COALESCE(t.status, 'COMPLETED') <> 'CANCELLED'
             GROUP BY t.cashier_id, u.full_name
             ORDER BY rev DESC
             LIMIT 5
         """;
         List<Slice> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, from);
+            ps.setTimestamp(1, start);
+            ps.setTimestamp(2, end);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) list.add(new Slice(rs.getString("name"), rs.getDouble("rev"), rs.getInt("cnt")));
             }

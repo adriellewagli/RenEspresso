@@ -58,6 +58,8 @@ public class ArchivedAccountsModalController {
         SortedList<AccountRow> sorted = new SortedList<>(filtered);
         sorted.comparatorProperty().bind(archivedTable.comparatorProperty());
         archivedTable.setItems(sorted);
+        archivedTable.getSortOrder().add(colRole);
+        colRole.setSortType(TableColumn.SortType.ASCENDING);
 
         VBox emptyBox = new VBox(8);
         emptyBox.setAlignment(Pos.CENTER);
@@ -95,6 +97,7 @@ public class ArchivedAccountsModalController {
         colName.setCellFactory(c -> textCell("name-cell"));
         colUsername.setCellFactory(c -> textCell("muted-cell"));
         colRole.setCellFactory(c -> rolePillCell());
+        colRole.setComparator((r1, r2) -> Integer.compare(rolePriority(r1), rolePriority(r2)));
         colLastLogin.setCellFactory(c -> textCell("muted-cell"));
         colCreated.setCellFactory(c -> textCell("muted-cell"));
         colActions.setCellFactory(c -> actionsCell());
@@ -247,7 +250,7 @@ public class ArchivedAccountsModalController {
         }
 
         if (!AlertUtil.showYesNo("Permanently Delete Account",
-                "Are you sure you want to permanently delete \"" + row.name() + "\" (@" + row.username() + ") from the database?\n\nWarning: This action cannot be undone.")) {
+                "Are you sure you want to permanently delete \"" + row.name() + "\" (@" + row.username() + ") from the database?\n\nWarning: This action cannot be undone. Past sales rung up by this staff member will be preserved as 'Former Staff'.")) {
             return;
         }
 
@@ -275,5 +278,15 @@ public class ArchivedAccountsModalController {
     private static String formatLastLogin(LocalDateTime dt) {
         if (dt == null) return "Never";
         return dt.format(DATE_FMT) + " · " + dt.format(TIME_FMT);
+    }
+
+    private static int rolePriority(String role) {
+        if (role == null) return 99;
+        return switch (role.toUpperCase()) {
+            case "ADMIN" -> 1;
+            case "MANAGER" -> 2;
+            case "CASHIER" -> 3;
+            default -> 4;
+        };
     }
 }
