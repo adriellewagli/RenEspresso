@@ -41,6 +41,25 @@
         <VBox alignment="CENTER" prefWidth="394.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
 
+                <StackPane maxHeight="76.0" maxWidth="76.0" minHeight="76.0" minWidth="76.0">
+                    <children>
+                        <ImageView fitHeight="76.0" fitWidth="76.0" preserveRatio="true">
+                            <image>
+                                <Image url="@../../images/logo.png" />
+                            </image>
+                            <effect>
+                                <DropShadow blurType="GAUSSIAN" color="#00000088" height="12.0" offsetY="3.0" radius="6.0" width="12.0" />
+                            </effect>
+                            <clip>
+                                <Rectangle arcHeight="32.0" arcWidth="32.0" height="76.0" width="76.0" />
+                            </clip>
+                        </ImageView>
+                    </children>
+                    <VBox.margin>
+                        <Insets bottom="4.0" />
+                    </VBox.margin>
+                </StackPane>
+
                 <HBox alignment="CENTER" spacing="0.0">
                     <children>
                         <Label style="-fx-text-fill: #F3E9DC;" text="Ren">
@@ -186,14 +205,7 @@
                     </effect>
                 </Button>
 
-                <!-- Server Connection status button -->
-                <Button fx:id="btnServerConfig" focusTraversable="false" onAction="#handleOpenServerConfig"
-                        style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #895737; -fx-font-size: 11px; -fx-padding: 4 8;"
-                        text="🖥️ Server: localhost">
-                    <VBox.margin>
-                        <Insets top="2.0" />
-                    </VBox.margin>
-                </Button>
+
 
             </children>
         </VBox>

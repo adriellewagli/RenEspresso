@@ -1,9 +1,21 @@
 package com.coffeepos.renespresso.util;
 
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.RotateTransition;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.shape.StrokeLineCap;
+import javafx.util.Duration;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -210,15 +222,210 @@ public final class ImageStore {
     }
 
     // =====================================================================
-    //  IMAGE VIEWS
+    //  IMAGE VIEWS & LOADING EFFECTS
     // =====================================================================
 
     /**
-     * Accepts any of:
-     *  - a full URL            "http://localhost/Renesspresso/Shake/X.png"
-     *  - a server path         "Shake/X.png"  (prefixed with IMAGE_BASE)
-     *  - a local file name     "3f2a...png"   (from ~/.renespresso/menu-images)
+     * Resolves a relative or full image path into an HTTP server URL if applicable.
      */
+    public static String resolveImageUrl(String path) {
+        if (path == null || path.isBlank()) return null;
+        path = path.trim();
+        if (path.startsWith("http://") || path.startsWith("https://")) return path;
+        if (path.contains("/") || path.contains("\\")) return serverUrl(path);
+        return null;
+    }
+
+    /**
+     * Resolves a local image file if present.
+     */
+    public static File resolveLocalFile(String path) {
+        if (path == null || path.isBlank()) return null;
+        path = path.trim();
+        File asFile = new File(path);
+        if (asFile.isAbsolute() && asFile.exists()) return asFile;
+        File f = DIR.resolve(path).toFile();
+        return f.exists() ? f : null;
+    }
+
+    /**
+     * Builds a full circular photo card containing:
+     * 1. A warm coffee-cream placeholder layer (with stylized coffee cup emblem / initial)
+     * 2. An animated loading indicator ring & pulse while the image is loading over network
+     * 3. An ImageView that smoothly fades in on load completion
+     * 4. Automatic error / disconnection fallback: if the server disconnects or fails,
+     *    the loading indicator immediately hides and the card gracefully stays in normal placeholder state.
+     */
+    public static StackPane circlePhotoNode(String path, String dishName, double size) {
+        StackPane root = new StackPane();
+        root.setMinSize(size, size);
+        root.setPrefSize(size, size);
+        root.setMaxSize(size, size);
+        root.getStyleClass().add("photo-container");
+
+        double radius = size / 2.0;
+
+        // --- LAYER 1: Background & Clip ---
+        Circle bg = new Circle(radius);
+        bg.setFill(Color.web("#FAF2E8"));
+        bg.setStroke(Color.web("#E6D3BE"));
+        bg.setStrokeWidth(Math.max(1.0, size * 0.02));
+
+        Circle clip = new Circle(radius, radius, radius);
+        root.setClip(clip);
+
+        // --- LAYER 2: Fallback / Placeholder Layer ---
+        Node placeholderNode = createPlaceholder(dishName, size);
+        root.getChildren().addAll(bg, placeholderNode);
+
+        if (path == null || path.isBlank()) {
+            return root; // No image specified, display clean placeholder
+        }
+
+        // --- LAYER 3: Animated Loading Ring & Soft Pulse ---
+        double arcRadius = Math.max(8.0, radius - (size * 0.08));
+        Arc loadingArc = new Arc(0, 0, arcRadius, arcRadius, 0, 90);
+        loadingArc.setFill(null);
+        loadingArc.setStroke(Color.web("#C08552"));
+        loadingArc.setStrokeWidth(Math.max(2.0, size * 0.045));
+        loadingArc.setStrokeLineCap(StrokeLineCap.ROUND);
+
+        RotateTransition rotate = new RotateTransition(Duration.millis(900), loadingArc);
+        rotate.setByAngle(360);
+        rotate.setCycleCount(Animation.INDEFINITE);
+        rotate.setInterpolator(Interpolator.LINEAR);
+
+        FadeTransition pulse = new FadeTransition(Duration.millis(600), placeholderNode);
+        pulse.setFromValue(0.45);
+        pulse.setToValue(0.95);
+        pulse.setAutoReverse(true);
+        pulse.setCycleCount(Animation.INDEFINITE);
+
+        root.getChildren().add(loadingArc);
+        rotate.play();
+        pulse.play();
+
+        // --- LAYER 4: Image View ---
+        ImageView iv = new ImageView();
+        iv.setFitWidth(size);
+        iv.setFitHeight(size);
+        iv.setPreserveRatio(true);
+        iv.setSmooth(true);
+        iv.setOpacity(0.0);
+        root.getChildren().add(iv);
+
+        String resolvedUrl = resolveImageUrl(path);
+        File localFile = (resolvedUrl == null) ? resolveLocalFile(path) : null;
+
+        Runnable startLoad = () -> {
+            Image img;
+            if (resolvedUrl != null) {
+                img = new Image(resolvedUrl, size * 3, size * 3, true, true, true);
+            } else if (localFile != null && localFile.exists()) {
+                img = new Image(localFile.toURI().toString(), size * 3, size * 3, true, true, true);
+            } else {
+                rotate.stop();
+                pulse.stop();
+                loadingArc.setVisible(false);
+                placeholderNode.setOpacity(1.0);
+                return;
+            }
+
+            iv.setImage(img);
+
+            Runnable crop = () -> {
+                double w = img.getWidth(), h = img.getHeight(), s = Math.min(w, h);
+                if (s > 0) iv.setViewport(new Rectangle2D((w - s) / 2, (h - s) / 2, s, s));
+            };
+
+            Runnable onLoaded = () -> {
+                crop.run();
+                rotate.stop();
+                pulse.stop();
+                loadingArc.setVisible(false);
+                placeholderNode.setOpacity(1.0);
+
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(250), iv);
+                fadeIn.setFromValue(iv.getOpacity());
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            };
+
+            Runnable onError = () -> {
+                rotate.stop();
+                pulse.stop();
+                loadingArc.setVisible(false);
+                placeholderNode.setOpacity(1.0);
+                iv.setOpacity(0.0); // Gracefully stays at clean normal placeholder
+            };
+
+            if (img.getProgress() >= 1.0) {
+                if (img.isError()) onError.run();
+                else onLoaded.run();
+            } else {
+                img.progressProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.doubleValue() >= 1.0) {
+                        if (img.isError()) onError.run();
+                        else onLoaded.run();
+                    }
+                });
+            }
+
+            img.errorProperty().addListener((obs, oldVal, isErr) -> {
+                if (isErr) onError.run();
+            });
+        };
+
+        startLoad.run();
+
+        // Attach reload action for server reconnection auto-recovery
+        root.getProperties().put("reloadAction", (Runnable) () -> {
+            iv.setOpacity(0.0);
+            loadingArc.setVisible(true);
+            rotate.play();
+            pulse.play();
+            startLoad.run();
+        });
+
+        return root;
+    }
+
+    /**
+     * Creates a placeholder emblem (warm coffee cup or dish initial).
+     */
+    private static Node createPlaceholder(String dishName, double size) {
+        StackPane p = new StackPane();
+        p.setMinSize(size, size);
+        p.setMaxSize(size, size);
+
+        if (size >= 48) {
+            SVGPath cup = new SVGPath();
+            cup.setContent("M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z");
+            cup.setFill(Color.web("#C08552"));
+            double scale = (size * 0.36) / 24.0;
+            cup.setScaleX(scale);
+            cup.setScaleY(scale);
+            p.getChildren().add(cup);
+        } else {
+            String initial = (dishName != null && !dishName.isBlank()) ? dishName.substring(0, 1).toUpperCase() : "☕";
+            Label lbl = new Label(initial);
+            lbl.setStyle("-fx-text-fill: #895737; -fx-font-weight: bold; -fx-font-size: " + Math.max(11, (int)(size * 0.44)) + "px;");
+            p.getChildren().add(lbl);
+        }
+        return p;
+    }
+
+    /**
+     * Triggers a reload on a photo card when the server reconnects.
+     */
+    public static void reloadPhotoNode(StackPane photoNode) {
+        if (photoNode == null) return;
+        Object action = photoNode.getProperties().get("reloadAction");
+        if (action instanceof Runnable r) {
+            r.run();
+        }
+    }
+
     public static ImageView circleView(String path, double size) {
         if (path == null || path.isBlank()) return null;
         path = path.trim();

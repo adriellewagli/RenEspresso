@@ -251,21 +251,7 @@ public class ArchivedMenuModalController {
                     return;
                 }
 
-                Node photoNode;
-                ImageView iv = ImageStore.circleView(item.imagePath(), 34);
-                if (iv != null) {
-                    photoNode = iv;
-                } else {
-                    Label initial = new Label(item.name().isEmpty() ? "?" : item.name().substring(0, 1).toUpperCase());
-                    initial.setMinSize(34, 34);
-                    initial.setPrefSize(34, 34);
-                    initial.setMaxSize(34, 34);
-                    initial.setAlignment(Pos.CENTER);
-                    initial.setStyle("-fx-background-color: #FAF2E8; -fx-text-fill: #895737; "
-                            + "-fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 100; "
-                            + "-fx-border-color: #EBD9C3; -fx-border-radius: 100;");
-                    photoNode = initial;
-                }
+                Node photoNode = ImageStore.circlePhotoNode(item.imagePath(), item.name(), 34);
 
                 Label titleLbl = new Label(item.name());
                 titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #2F2118; -fx-font-size: 13px;");

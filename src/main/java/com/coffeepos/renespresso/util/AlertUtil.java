@@ -176,6 +176,7 @@ public class AlertUtil {
 
     private static Stage createModalStage(Parent root) {
         Stage stage = new Stage();
+        NavigateUtil.applyAppIcon(stage);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initStyle(StageStyle.TRANSPARENT);
 

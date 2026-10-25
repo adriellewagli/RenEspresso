@@ -92,10 +92,29 @@ public final class UserSession {
         }
     }
 
+    private static final java.util.concurrent.atomic.AtomicBoolean serverOnline = new java.util.concurrent.atomic.AtomicBoolean(true);
+    private static java.util.function.Consumer<Boolean> onConnectionStateChanged;
+
+    public static void setOnConnectionStateChanged(java.util.function.Consumer<Boolean> listener) {
+        onConnectionStateChanged = listener;
+    }
+
+    public static boolean isServerOnline() {
+        return serverOnline.get();
+    }
+
+    private static void notifyConnection(boolean online) {
+        boolean prev = serverOnline.getAndSet(online);
+        if (prev != online && onConnectionStateChanged != null) {
+            javafx.application.Platform.runLater(() -> onConnectionStateChanged.accept(online));
+        }
+    }
+
     /** Synchronize live transactions from the database across multiple terminals */
     public synchronized void syncFromDatabase() {
         try {
             List<TransactionRecord> todayList = TransactionDAO.loadTodayTransactions();
+            notifyConnection(true);
             if (todayList.isEmpty() && transactionHistory.isEmpty()) return;
 
             javafx.application.Platform.runLater(() -> {
@@ -140,8 +159,8 @@ public final class UserSession {
                     }
                 }
             });
-        } catch (Exception ignored) {
-            // Silently ignore transient network glitches during periodic polling
+        } catch (Exception ex) {
+            notifyConnection(false);
         }
     }
 

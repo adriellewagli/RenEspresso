@@ -276,4 +276,20 @@ This document records architectural conventions, established business logic, dom
    - **PHP Endpoint (`api.php`):** Implemented lightweight REST-like PHP script in XAMPP Apache `htdocs/Renesspresso/api.php` (and version-controlled in `server/api.php` and `src/main/resources/server/api.php`). Supports `ping`, `upload`, `edit`, `delete`, `create_category_folder`, and `delete_category_folder` with directory traversal guards.
    - **Client Java Integration (`ImageStore.java`):** Added multipart HTTP client for image upload and replacement, background HTTP calls for category folder creation/deletion, and path deletion.
    - **UI Flow Integration:** Wired folder creation into category addition in `MenuConfigureController.java`, dish image upload/edit into `MenuConfigureController.handleSave()`, dish photo deletion into `ArchivedMenuModalController.handleHardDeleteDish()`, and category folder deletion into `ArchivedMenuModalController.handleHardDeleteCategory()`.
+23. **[COMPLETED] Coffee Cup Brand Identity & Window Stage Icons:**
+   - **Logo Asset:** Designed and generated official RenEspresso coffee cup emblem with heart latte art, aromatic steam, and warm coffee palette (`logo.png`, `RenEspresso.ico`, `app.ico`).
+   - **Window & Dialog Stage Icons:** Added `NavigateUtil.applyAppIcon(stage)` ensuring all primary windows, modals (`AlertUtil`), and taskbar entries display the official coffee cup icon.
+   - **Login View Integration:** Featured branded coffee cup emblem above the title in `LoginView.fxml` with soft drop shadow and squircle clipping.
+24. **[COMPLETED] Image Loading Effects, Network Disconnection Fallback & Auto-Recovery:**
+   - **Photo Card Node (`ImageStore.circlePhotoNode`):** Layered circular photo container with background circle, warm coffee cup placeholder, rotating arc loading spinner (`#C08552`), and soft pulse animation while downloading images over LAN.
+   - **Fade-in Transition:** Smooth 250ms opacity fade-in once image bytes are fully received.
+   - **Disconnection Fallback ("Go Back Normal"):** If the server disconnects or an image fails to load, the loading indicator immediately stops and the card gracefully stays in normal placeholder state.
+   - **Reconnection Recovery:** `UserSession.setOnConnectionStateChanged` detects server recovery during background terminal polling and automatically calls `posViewController.renderMenu()` to reload dish photos smoothly back to normal.
+25. **[COMPLETED] Standalone Windows Executable & Inno Setup Installer:**
+   - **Standalone App (`RenEspresso.exe`):** Bundled embedded Java 21 runtime and dependencies with `jpackage` into `target/dist/RenEspresso/`, running without any external Java installation required.
+   - **Single-File Setup Installer (`RenEspresso_v1.0_Setup.exe`):** Built 76MB Windows installer using Inno Setup (`package/windows/RenEspresso.iss`) with Desktop shortcuts, Start Menu group, and uninstaller.
+   - **Automation Script:** Provided `build-dist.bat` for one-click recompilation and packaging.
 
+26. **[COMPLETED] Logo Icon-Only Design & Login Clean Up:**
+   - **Pure Cup Icon Emblem:** Removed all text/typography from the official brand logo (`logo.png`, `app.ico`, `package/windows/RenEspresso.ico`), leaving only the centered coffee cup with heart latte art, aromatic steam, and saucer inside the warm rounded square tile.
+   - **Removed Localhost Indicator on Login:** Removed the `btnServerConfig` button and localhost label from `LoginView.fxml` and cleaned up `LoginController.java`, providing a clean, distraction-free login interface while retaining automatic server connection prompts if unreachable.

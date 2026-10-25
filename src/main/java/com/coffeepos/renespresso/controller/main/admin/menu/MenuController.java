@@ -243,16 +243,10 @@ public class MenuController {
     }
 
     private StackPane buildCard(Product p) {
-        StackPane photo = new StackPane();
+        StackPane photo = ImageStore.circlePhotoNode(p.imagePath(), p.name(), PHOTO);
         photo.getStyleClass().add("dish-photo");
-        ImageView iv = ImageStore.circleView(p.imagePath(), PHOTO);
-        if (iv != null) {
-            if (!p.available()) iv.setEffect(new ColorAdjust(0, -1, -0.1, 0));
-            photo.getChildren().add(iv);
-        } else {
-            Label ph = new Label(p.name().isEmpty() ? "?" : p.name().substring(0, 1).toUpperCase());
-            ph.getStyleClass().add("dish-placeholder");
-            photo.getChildren().add(ph);
+        if (!p.available()) {
+            photo.setEffect(new ColorAdjust(0, -1, -0.1, 0));
         }
 
         Label category = new Label(p.category().toUpperCase());

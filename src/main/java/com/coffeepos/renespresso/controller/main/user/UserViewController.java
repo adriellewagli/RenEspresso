@@ -103,6 +103,13 @@ public class UserViewController {
 
         // Home reacts to every new / completed / cancelled order
         session.transactionHistory.addListener((ListChangeListener<TransactionRecord>) c -> refreshDashboard());
+
+        UserSession.setOnConnectionStateChanged(online -> {
+            if (online && posViewController != null && posView != null && posView.isVisible()) {
+                posViewController.renderMenu();
+            }
+        });
+
         showHome();
     }
 

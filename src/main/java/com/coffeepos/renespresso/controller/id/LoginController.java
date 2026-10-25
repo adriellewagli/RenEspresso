@@ -35,9 +35,6 @@ public class LoginController {
     @FXML
     private Button loginButton;
 
-    @FXML
-    private Button btnServerConfig;
-
     private boolean isPasswordVisible = false;
 
     private static final String EYE_OPEN_PATH =
@@ -65,29 +62,6 @@ public class LoginController {
         visiblePasswordField.setOnAction(this::handleLogin);
 
         loginButton.setOnAction(this::handleLogin);
-
-        updateServerStatus();
-    }
-
-    private void updateServerStatus() {
-        if (btnServerConfig == null) return;
-        boolean connected = DatabaseManager.isConnected();
-        String host = DatabaseManager.getHost();
-        String port = DatabaseManager.getPort();
-        if (connected) {
-            btnServerConfig.setText("🟢 Server: " + host + ":" + port);
-            btnServerConfig.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #2E7D32; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 8;");
-        } else {
-            btnServerConfig.setText("⚠️ Server Disconnected (Click to setup)");
-            btnServerConfig.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #C62828; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 8;");
-        }
-    }
-
-    @FXML
-    private void handleOpenServerConfig() {
-        if (AlertUtil.showServerConfigModal()) {
-            updateServerStatus();
-        }
     }
 
     // TOGGLE SHOW/HIDE PASSWORD
@@ -131,9 +105,7 @@ public class LoginController {
                     "Cannot reach the database server at " + DatabaseManager.getHost() + ":" + DatabaseManager.getPort() + ".\n\n"
                             + "Would you like to configure server connection settings now?");
             if (open) {
-                if (AlertUtil.showServerConfigModal()) {
-                    updateServerStatus();
-                }
+                AlertUtil.showServerConfigModal();
             }
             return;
         }
@@ -155,7 +127,6 @@ public class LoginController {
             }
         } else {
             if (!DatabaseManager.isConnected()) {
-                updateServerStatus();
                 AlertUtil.showError("Server Connection Lost", "Connection to the database server was lost. Please check Server Settings.");
             } else {
                 AlertUtil.showError("Authentication Failed", "Invalid username or password.");

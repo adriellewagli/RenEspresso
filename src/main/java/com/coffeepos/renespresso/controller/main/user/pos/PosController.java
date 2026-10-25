@@ -170,7 +170,7 @@ public class PosController {
         categoryBar.getChildren().add(b);
     }
 
-    private void renderMenu() {
+    public void renderMenu() {
         String q = txtMenuSearch.getText() == null ? "" : txtMenuSearch.getText().trim().toLowerCase();
 
         List<Product> shown = products.stream()
@@ -217,18 +217,8 @@ public class PosController {
     private VBox buildCard(Product p) {
         boolean sellable = p.available() && p.quantity() > 0;
 
-        StackPane photo = new StackPane();
+        StackPane photo = ImageStore.circlePhotoNode(p.imagePath(), p.name(), PHOTO);
         photo.getStyleClass().add("dish-photo");
-        // ImageStore decides: full URL, "Folder/File.png" on the server, or a local upload
-        ImageView iv = ImageStore.circleView(p.imagePath(), PHOTO);
-
-        if (iv != null) {
-            photo.getChildren().add(iv);
-        } else {
-            Label ph = new Label(p.name().isEmpty() ? "?" : p.name().substring(0, 1).toUpperCase());
-            ph.getStyleClass().add("dish-placeholder");
-            photo.getChildren().add(ph);
-        }
 
         Label category = new Label(p.category().toUpperCase());
         category.getStyleClass().add("dish-category");

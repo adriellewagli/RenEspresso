@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -18,6 +19,17 @@ import java.net.URL;
 public class NavigateUtil {
 
     private static final String VIEWS_PATH = "/com/coffeepos/renespresso/views/";
+
+    public static void applyAppIcon(Stage stage) {
+        if (stage != null && stage.getIcons().isEmpty()) {
+            try {
+                URL iconUrl = NavigateUtil.class.getResource("/com/coffeepos/renespresso/images/logo.png");
+                if (iconUrl != null) {
+                    stage.getIcons().add(new Image(iconUrl.toExternalForm()));
+                }
+            } catch (Exception ignored) {}
+        }
+    }
 
     public enum WindowMode {
         // PAG NASA LABAS
@@ -34,6 +46,7 @@ public class NavigateUtil {
 
     // PARA TAWAG TAWAG NALANG PAG SWITCH NG WINDOWS
     public static void navigateTo(Stage stage, String fxmlPath, String title, WindowMode mode) {
+        applyAppIcon(stage);
         String fullPath = VIEWS_PATH + fxmlPath;
         try {
             URL xmlUrl = NavigateUtil.class.getResource(fullPath);
